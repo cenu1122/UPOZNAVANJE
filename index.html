@@ -3,142 +3,311 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ma-BH Namještaj po mjeri</title>
+  <title>LjubavNaPrviKlik | Pronađi Svoju Srodnu Dušu</title>
 
-  <!-- Osnovni CSS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: Arial, sans-serif; line-height:1.6; background-color:#f8f8f8; color:#333; }
-    header { background-color:#2c3e50; color:#fff; padding:20px 0; text-align:center; }
-    nav { background-color:#34495e; }
-    nav ul { display:flex; justify-content:center; list-style:none; flex-wrap:wrap; }
-    nav ul li { margin:0 15px; }
-    nav ul li a { color:#fff; text-decoration:none; padding:15px 0; display:block; }
-    nav ul li a:hover { color:#e67e22; }
-    section { padding:60px 20px; max-width:1200px; margin:auto; }
-    h2 { text-align:center; margin-bottom:20px; color:#2c3e50; }
-    #o-nama p, #kontakt p { max-width:800px; margin:10px auto; text-align:center; }
-    .recenzije { display:flex; flex-wrap:wrap; justify-content:center; gap:20px; }
-    .recenzija { background-color:#fff; padding:20px; border-radius:10px; width:300px; box-shadow:0 2px 8px rgba(0,0,0,0.1); text-align:center; }
-    form { max-width:500px; margin:auto; display:flex; flex-direction:column; }
-    input, textarea, button { padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ccc; font-size:1rem; }
-    button { background-color:#2c3e50; color:#fff; border:none; cursor:pointer; }
-    button:hover { background-color:#e67e22; }
-    .gallery { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px; }
-    .gallery img { width:100%; height:auto; border-radius:10px; transition: transform 0.3s; cursor:pointer; }
-    .gallery img:hover { transform: scale(1.05); }
-    footer { background-color:#2c3e50; color:#fff; text-align:center; padding:20px 0; }
-    #pocetna { text-align:center; padding:100px 20px; background-color:#ecf0f1; }
-    #pocetna h1 { font-size:3rem; margin-bottom:20px; }
-    #pocetna p { font-size:1.2rem; max-width:700px; margin:auto; }
-    .map-container { margin:40px auto; max-width:800px; height:400px; }
-    iframe { width:100%; height:100%; border:0; border-radius:10px; }
-  </style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; background-color: #fff0f3; color: #2b2d42; }
+    
+    /* Navigation Bar */
+    header { background-color: #d90429; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    .logo { font-size: 1.6rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    
+    nav ul { display: flex; list-style: none; align-items: center; }
+    nav ul li { margin-left: 20px; }
+    nav ul li a { color: #fff; text-decoration: none; font-weight: 500; transition: color 0.3s; }
+    nav ul li a:hover { color: #ffccd5; }
 
-  <!-- GLightbox CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
+    /* Language Switcher */
+    .lang-select { background: #ef233c; color: #fff; border: 1px solid #ffb3c1; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; outline: none; font-weight: bold; }
+
+    /* Hero Section */
+    #hero { background: linear-gradient(rgba(217, 4, 41, 0.75), rgba(43, 45, 66, 0.85)), url('https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1350&q=80') center/cover no-repeat; color: #fff; text-align: center; padding: 130px 20px; }
+    #hero h1 { font-size: 3.2rem; margin-bottom: 15px; font-weight: 800; }
+    #hero p { font-size: 1.3rem; max-width: 750px; margin: 0 auto 35px auto; color: #ffe5ec; }
+    
+    /* Hero Buttons */
+    .hero-buttons { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+    .btn { padding: 14px 32px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; text-decoration: none; transition: all 0.3s ease; cursor: pointer; border: none; }
+    .btn-primary { background-color: #ffb3c1; color: #800020; box-shadow: 0 4px 15px rgba(255, 179, 193, 0.4); }
+    .btn-primary:hover { background-color: #ffffff; color: #d90429; transform: translateY(-3px); }
+    .btn-secondary { background-color: transparent; color: #fff; border: 2px solid #fff; }
+    .btn-secondary:hover { background-color: #fff; color: #d90429; transform: translateY(-3px); }
+
+    /* Common Section Layout */
+    section { padding: 70px 20px; max-width: 1200px; margin: auto; }
+    h2 { text-align: center; margin-bottom: 30px; color: #800020; font-size: 2.2rem; position: relative; }
+    h2::after { content: '❤️'; font-size: 1.2rem; display: block; margin-top: 5px; }
+
+    /* Cards Grid */
+    .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 20px; }
+    .card { background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(217, 4, 41, 0.08); text-align: center; border-bottom: 4px solid #ef233c; transition: transform 0.3s; }
+    .card:hover { transform: translateY(-5px); }
+    .card h3 { margin-bottom: 15px; color: #d90429; }
+
+    /* Translator Box */
+    .translator-box { background: #fff; padding: 35px; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); max-width: 700px; margin: auto; text-align: center; }
+    .translator-inputs { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+    .lang-pair { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+    .lang-pair select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; font-weight: bold; }
+    
+    /* Reviews Section */
+    .reviews-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+    .review-card { background: #fff; padding: 25px; border-radius: 15px; width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); font-style: italic; border-left: 5px solid #d90429; }
+    .review-card p { margin-bottom: 12px; color: #4a4e69; }
+    .review-card strong { display: block; font-style: normal; color: #d90429; text-align: right; }
+
+    /* Contact Form */
+    form { max-width: 600px; margin: auto; display: flex; flex-direction: column; background: #fff; padding: 35px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+    input, textarea { padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; outline: none; }
+    input:focus, textarea:focus { border-color: #d90429; }
+
+    /* Footer */
+    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 25px 0; margin-top: 50px; }
+
+    @media (max-width: 768px) {
+      header { flex-direction: column; gap: 15px; }
+      nav ul { flex-wrap: wrap; justify-content: center; gap: 10px; }
+      nav ul li { margin-left: 0; }
+      #hero h1 { font-size: 2.3rem; }
+      .lang-pair { flex-direction: column; }
+    }
+  </style>
 </head>
 <body>
 
   <header>
-    <h1>ma-BH Namještaj po mjeri</h1>
+    <a href="#hero" class="logo">❤️ LjubavNaPrviKlik</a>
+    <nav>
+      <ul>
+        <li><a href="#hero" data-i18n="nav_home">Početna</a></li>
+        <li><a href="#about" data-i18n="nav_about">O nama</a></li>
+        <li><a href="#why-us" data-i18n="nav_why">Zašto mi</a></li>
+        <li><a href="#translator" data-i18n="nav_trans">Prevodilac</a></li>
+        <li><a href="#reviews" data-i18n="nav_reviews">Iskustva</a></li>
+        <li><a href="#contact" data-i18n="nav_contact">Kontakt</a></li>
+        <li>
+          <select id="langSwitcher" class="lang-select" onchange="changeLanguage(this.value)">
+            <option value="bs">BS 🇧🇦</option>
+            <option value="en">EN 🇬🇧</option>
+            <option value="de">DE 🇩🇪</option>
+          </select>
+        </li>
+      </ul>
+    </nav>
   </header>
 
-  <nav>
-    <ul>
-      <li><a href="#pocetna">Početna</a></li>
-      <li><a href="#o-nama">O nama</a></li>
-      <li><a href="#recenzije">Recenzije</a></li>
-      <li><a href="#galerija">Galerija</a></li>
-      <li><a href="#kontakt">Kontakt</a></li>
-      <li><a href="#lokacija">Lokacija</a></li>
-    </ul>
-  </nav>
-
-  <!-- Početna -->
-  <section id="pocetna">
-    <h1>Dobrodošli u ma-BH Namještaj</h1>
-    <p>Izrada namještaja po mjeri za svaki dom – kvalitetno, precizno i po vašim željama. Naša strast je pretvoriti ideje u stvarnost i unijeti toplinu u svaki prostor.</p>
+  <section id="hero">
+    <h1 data-i18n="hero_title">Pronađite Ljubav Svog Života</h1>
+    <p data-i18n="hero_desc">Upoznajte slobodne muškarce i žene iz cijelog svijeta. Sigurna, brza i jednostavna platforma za spajanje srodnih duša.</p>
+    <div class="hero-buttons">
+      <a href="REGISTRACIJA.html" class="btn btn-primary" data-i18n="btn_register">REGISTRACIJA</a>
+      <a href="LOGIN.html" class="btn btn-secondary" data-i18n="btn_login">LOGIN</a>
+    </div>
   </section>
 
-  <!-- O nama -->
-  <section id="o-nama">
-    <h2>O nama</h2>
-    <p>ma-BH je firma specijalizirana za izradu namještaja po mjeri. Sa više od deset godina iskustva u industriji, naš tim posvećuje posebnu pažnju svakom detalju. Od planiranja, dizajna, odabira materijala, do konačne montaže, svaki korak je pažljivo izveden kako bi vaš prostor bio funkcionalan i estetski savršen.</p>
-    <p>Naša filozofija je jednostavna: personalizirani namještaj koji odražava vašu osobnost i stil, sa vrhunskom kvalitetom i dugotrajnošću. U ma-BH, vaš san o idealnom prostoru postaje stvarnost.</p>
+  <section id="about">
+    <h2 data-i18n="about_title">O Našem Portalu</h2>
+    <div style="text-align: center; max-width: 800px; margin: auto;">
+      <p data-i18n="about_text1">Naša misija je spajanje ljudi koji traže iskrene veze, ljubav i prijateljstvo. Bez obzira gdje se nalazite, pomažemo vam da pronađete idealnog partnera.</p>
+      <br>
+      <p data-i18n="about_text2">Uz moderne opcije filtriranja profila i ugrađeni sustav za automatsko prevođenje poruka, jezične barijere više ne postoje!</p>
+    </div>
   </section>
 
-  <!-- Recenzije -->
-  <section id="recenzije">
-    <h2>Recenzije</h2>
-    <div class="recenzije">
-      <div class="recenzija">
-        <p>"Izvrsna usluga i vrhunski kvalitet! Toplo preporučujem."</p>
-        <strong>- Marko P.</strong>
+  <section id="why-us">
+    <h2 data-i18n="why_title">Zašto Izabrati Nas</h2>
+    <div class="grid-container">
+      <div class="card">
+        <h3 data-i18n="why_1_title">🔒 100% Sigurnost</h3>
+        <p data-i18n="why_1_desc">Svi profili su provjereni kako bismo vam osigurali ugodno i sigurno iskustvo dopisivanja.</p>
       </div>
-      <div class="recenzija">
-        <p>"Namještaj po mjeri savršeno odgovara mom prostoru. Hvala!"</p>
-        <strong>- Ana S.</strong>
+      <div class="card">
+        <h3 data-i18n="why_2_title">💬 Automatski Prevodilac</h3>
+        <p data-i18n="why_2_desc">Razgovarajte s partnerima iz bilo koje zemlje – naše poruke se automatski prevode na vaš jezik.</p>
       </div>
-      <div class="recenzija">
-        <p>"Profesionalni i ljubazni, rezultat je fantastičan. Svaka preporuka!"</p>
-        <strong>- Ivica K.</strong>
+      <div class="card">
+        <h3 data-i18n="why_3_title">🎯 Pametno Spajanje</h3>
+        <p data-i18n="why_3_desc">Naš algoritam spaja muškarce i žene na temelju zajedničkih interesa, hobija i životnih ciljeva.</p>
       </div>
     </div>
   </section>
 
-  <!-- Galerija -->
-  <section id="galerija">
-    <h2>Galerija</h2>
-    <div class="gallery"></div>
+  <section id="translator">
+    <h2 data-i18n="trans_title">Automatsko Prevođenje Poruka</h2>
+    <div class="translator-box">
+      <p data-i18n="trans_desc">Komunicirajte s partnerom bez jezičkih prepreka! Isprobajte kako naš sustav u realnom vremenu prevodi vašu poruku partneru:</p>
+      
+      <div class="translator-inputs">
+        <div class="lang-pair">
+          <span><strong>Moj jezik:</strong> Bosanski</span>
+          <span>➡️</span>
+          <div>
+            <strong>Jezik partnera:</strong>
+            <select id="partnerLang">
+              <option value="en">English (Engleski)</option>
+              <option value="de">Deutsch (Njemački)</option>
+            </select>
+          </div>
+        </div>
+
+        <textarea id="sourceText" rows="3" placeholder="Upišite poruku ovdje (npr. Zdravo, kako si danas?)..."></textarea>
+        <button class="btn btn-primary" onclick="translateMessage()" data-i18n="btn_translate">Prevedi i Pošalji</button>
+
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: left; border: 1px solid #eee;">
+          <small style="color: #666;" data-i18n="trans_result_label">Kako partner vidi vašu poruku:</small>
+          <div id="translatedResult" style="font-size: 1.1rem; font-weight: bold; color: #d90429; margin-top: 5px;">...</div>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <!-- Kontakt -->
-  <section id="kontakt">
-    <h2>Kontakt</h2>
-    <p>Imate pitanje ili želite dogovoriti konzultacije? Ispunite formu ispod ili nas direktno kontaktirajte putem emaila ili telefona. Radujemo se razgovoru s vama!</p>
-    <form>
-      <input type="text" placeholder="Vaše ime" required>
-      <input type="email" placeholder="Vaš email" required>
-      <input type="text" placeholder="Predmet" required>
-      <textarea placeholder="Vaša poruka" rows="5" required></textarea>
-      <button type="submit">Pošalji</button>
+  <section id="reviews">
+    <h2 data-i18n="reviews_title">Iskustva Sretnih Parova</h2>
+    <div class="reviews-container">
+      <div class="review-card">
+        <p data-i18n="rev_1_text">"Zahvaljujući automatskom prevodiocu upoznala sam Thomasa iz Njemačke. Danas smo sretno vjenčani!"</p>
+        <strong>- Emina & Thomas 💍</strong>
+      </div>
+      <div class="review-card">
+        <p data-i18n="rev_2_text">"Najbolji portal za upoznavanje! Registrirao sam se bez velikih očekivanja i pronašao ženu svog života."</p>
+        <strong>- Amer K. ❤️</strong>
+      </div>
+      <div class="review-card">
+        <p data-i18n="rev_3_text">"Sigurno okruženje, odlični profili i jednostavna komunikacija. Toplo preporučujem svima!"</p>
+        <strong>- Sabina M. ✨</strong>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <h2 data-i18n="contact_title">Imate Pitanja? Kontaktirajte Nas</h2>
+    <form id="contactForm">
+      <input type="text" placeholder="Vaše ime" data-i18n-ph="ph_name" required>
+      <input type="email" placeholder="Vaš E-mail" data-i18n-ph="ph_email" required>
+      <textarea placeholder="Vaša poruka" rows="5" data-i18n-ph="ph_message" required></textarea>
+      <button type="submit" class="btn btn-primary" style="background-color: #d90429; color: white;" data-i18n="btn_send">Pošalji Upit</button>
     </form>
   </section>
 
-  <!-- Lokacija -->
-  <section id="lokacija">
-    <h2>Naša lokacija</h2>
-    <p>Posjetite nas ili nas kontaktirajte za detalje. Naša radionica se nalazi na lako dostupnoj lokaciji u [Grad/Adresa].</p>
-    <div class="map-container">
-      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d...replace_with_your_map_link..." allowfullscreen="" loading="lazy"></iframe>
-    </div>
-  </section>
-
   <footer>
-    <p>&copy; 2026 ma-BH Namještaj po mjeri. Sva prava zadržana.</p>
+    <p>© 2026 LjubavNaPrviKlik. <span data-i18n="footer_rights">Sva prava zadržana. Pronađite sreću.</span></p>
   </footer>
 
-  <!-- GLightbox JS -->
-  <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
   <script>
-    const lightbox = GLightbox({ selector: '.glightbox' });
-    const gallery = document.querySelector('.gallery');
-    for (let i = 1; i <= 47; i++) {
-      const link = document.createElement('a');
-      link.href = `gallery/MABH${i}.jpg`;
-      link.className = 'glightbox';
-      link.setAttribute('data-gallery', 'mabh-gallery');
+    const translations = {
+      bs: {
+        nav_home: "Početna", nav_about: "O nama", nav_why: "Zašto mi", nav_trans: "Prevodilac", nav_reviews: "Iskustva", nav_contact: "Kontakt",
+        hero_title: "Pronađite Ljubav Svog Života",
+        hero_desc: "Upoznajte slobodne muškarce i žene iz cijelog svijeta. Sigurna, brza i jednostavna platforma za spajanje srodnih duša.",
+        btn_register: "REGISTRACIJA", btn_login: "LOGIN",
+        about_title: "O Našem Portalu",
+        about_text1: "Naša misija je spajanje ljudi koji traže iskrene veze, ljubav i prijateljstvo. Bez obzira gdje se nalazite, pomažemo vam da pronađete idealnog partnera.",
+        about_text2: "Uz moderne opcije filtriranja profila i ugrađeni sustav za automatsko prevođenje poruka, jezične barijere više ne postoje!",
+        why_title: "Zašto Izabrati Nas",
+        why_1_title: "🔒 100% Sigurnost", why_1_desc: "Svi profili su provjereni kako bismo vam osigurali ugodno i sigurno iskustvo dopisivanja.",
+        why_2_title: "💬 Automatski Prevodilac", why_2_desc: "Razgovarajte s partnerima iz bilo koje zemlje – naše poruke se automatski prevode na vaš jezik.",
+        why_3_title: "🎯 Pametno Spajanje", why_3_desc: "Naš algoritam spaja muškarce i žene na temelju zajedničkih interesa, hobija i životnih ciljeva.",
+        trans_title: "Automatsko Prevođenje Poruka",
+        trans_desc: "Komunicirajte s partnerom bez jezičkih prepreka! Isprobajte kako naš sustav u realnom vremenu prevodi vašu poruku partneru:",
+        btn_translate: "Prevedi i Pošalji", trans_result_label: "Kako partner vidi vašu poruku:",
+        reviews_title: "Iskustva Sretnih Parova",
+        rev_1_text: '"Zahvaljujući automatskom prevodiocu upoznala sam Thomasa iz Njemačke. Danas smo sretno vjenčani!"',
+        rev_2_text: '"Najbolji portal za upoznavanje! Registrirao sam se bez velikih očekivanja i pronašao ženu svog života."',
+        rev_3_text: '"Sigurno okruženje, odlični profili i jednostavna komunikacija. Toplo preporučujem svima!"',
+        contact_title: "Imate Pitanja? Kontaktirajte Nas",
+        ph_name: "Vaše ime", ph_email: "Vaš E-mail", ph_message: "Vaša poruka", btn_send: "Pošalji Upit",
+        footer_rights: "Sva prava zadržana. Pronađite sreću."
+      },
+      en: {
+        nav_home: "Home", nav_about: "About Us", nav_why: "Why Us", nav_trans: "Translator", nav_reviews: "Success Stories", nav_contact: "Contact",
+        hero_title: "Find The Love Of Your Life",
+        hero_desc: "Meet single men and women from all over the world. Safe, fast and simple platform to match soulmates.",
+        btn_register: "REGISTRATION", btn_login: "LOGIN",
+        about_title: "About Our Dating Site",
+        about_text1: "Our mission is to connect people looking for genuine relationships, love, and friendship. No matter where you are, we help you find your match.",
+        about_text2: "With modern filters and built-in automatic chat translation, language barriers no longer exist!",
+        why_title: "Why Choose Us",
+        why_1_title: "🔒 100% Safe", why_1_desc: "All profiles are verified to ensure a comfortable and secure chatting experience.",
+        why_2_title: "💬 Auto Translator", why_2_desc: "Chat with partners from any country – messages are automatically translated to your language.",
+        why_3_title: "🎯 Smart Matchmaker", why_3_desc: "Our algorithm matches men and women based on shared interests, hobbies, and goals.",
+        trans_title: "Automatic Message Translation",
+        trans_desc: "Communicate without language limits! Try how our real-time system translates your text to your partner:",
+        btn_translate: "Translate & Send", trans_result_label: "How your partner sees your message:",
+        reviews_title: "Happy Couple Stories",
+        rev_1_text: '"Thanks to the automatic translator I met Thomas from Germany. Today we are happily married!"',
+        rev_2_text: '"Best dating portal! I registered without high expectations and found the love of my life."',
+        rev_3_text: '"Safe environment, great profiles and easy communication. Highly recommended!"',
+        contact_title: "Have Questions? Contact Us",
+        ph_name: "Your Name", ph_email: "Your E-mail", ph_message: "Your Message", btn_send: "Send Inquiry",
+        footer_rights: "All rights reserved. Find happiness."
+      },
+      de: {
+        nav_home: "Startseite", nav_about: "Über uns", nav_why: "Warum wir", nav_trans: "Übersetzer", nav_reviews: "Erfolgsgeschichten", nav_contact: "Kontakt",
+        hero_title: "Finden Sie die Liebe Ihres Lebens",
+        hero_desc: "Lernen Sie single Männer und Frauen aus der ganzen Welt kennen. Sichere und einfache Dating-Plattform.",
+        btn_register: "REGISTRIERUNG", btn_login: "LOGIN",
+        about_title: "Über unser Portal",
+        about_text1: "Unsere Mission ist es, Menschen zu verbinden, die nach echten Beziehungen, Liebe und Freundschaft suchen.",
+        about_text2: "Mit moderner Filtersuche und automatischer Nachrichtenübersetzung gibt es keine Sprachbarrieren mehr!",
+        why_title: "Warum uns wählen",
+        why_1_title: "🔒 100% Sicher", why_1_desc: "Alle Profile werden überprüft, um ein sicheres Chat-Erlebnis zu gewährleisten.",
+        why_2_title: "💬 Auto-Übersetzer", why_2_desc: "Chatten Sie mit Partnern aus jedem Land – Nachrichten werden automatisch übersetzt.",
+        why_3_title: "🎯 Intelligentes Matching", why_3_desc: "Unser Algorithmus verbindet Männer und Frauen basierend auf gemeinsamen Interessen.",
+        trans_title: "Automatische Nachrichtenübersetzung",
+        trans_desc: "Kommunizieren Sie ohne Sprachgrenzen! Testen Sie unsere Echtzeit-Übersetzung:",
+        btn_translate: "Übersetzen & Senden", trans_result_label: "So sieht Ihr Partner die Nachricht:",
+        reviews_title: "Erfolgsgeschichten von Paaren",
+        rev_1_text: '"Dank des automatischen Übersetzers habe ich Thomas kennengelernt. Heute sind wir verheiratet!"',
+        rev_2_text: '"Beste Dating-Seite! Ich habe hier die Liebe meines Lebens gefunden."',
+        rev_3_text: '"Sichere Umgebung, tolle Profile und einfache Kommunikation. Sehr zu empfehlen!"',
+        contact_title: "Haben Sie Fragen? Kontaktieren Sie uns",
+        ph_name: "Ihr Name", ph_email: "Ihre E-Mail", ph_message: "Ihre Nachricht", btn_send: "Anfrage Senden",
+        footer_rights: "Alle Rechte vorbehalten."
+      }
+    };
 
-      const img = document.createElement('img');
-      img.src = `gallery/MABH${i}.jpg`;
-      img.alt = `MABH${i}`;
+    function changeLanguage(lang) {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang] && translations[lang][key]) el.textContent = translations[lang][key];
+      });
 
-      link.appendChild(img);
-      gallery.appendChild(link);
+      document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+        const key = el.getAttribute('data-i18n-ph');
+        if (translations[lang] && translations[lang][key]) el.setAttribute('placeholder', translations[lang][key]);
+      });
+    }
+
+    // Besplatni API za automatsko prevođenje u realnom vremenu (MyMemory API)
+    async function translateMessage() {
+      const text = document.getElementById('sourceText').value;
+      const targetLang = document.getElementById('partnerLang').value;
+      const resultDiv = document.getElementById('translatedResult');
+
+      if (!text.trim()) {
+        resultDiv.textContent = "Molimo unesite poruku za prevođenje!";
+        return;
+      }
+
+      resultDiv.textContent = "Prevođenje u toku...";
+
+      try {
+        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=bs|${targetLang}`);
+        const data = await res.json();
+        
+        if (data.responseData) {
+          resultDiv.textContent = `[${targetLang.toUpperCase()}] "${data.responseData.translatedText}"`;
+        } else {
+          resultDiv.textContent = "Greška pri prevođenju.";
+        }
+      } catch (err) {
+        resultDiv.textContent = "Greška u mrežnoj vezi s prevodiocem.";
+      }
     }
   </script>
 
 </body>
 </html>
-
