@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registracija | Supabase Auth</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .card {
+            background: #ffffff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .card h2 {
+            margin-bottom: 0.5rem;
+            color: #1a1a1a;
+            text-align: center;
+        }
+
+        .card p {
+            color: #666;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.85rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: #3ecf8e; /* Supabase zelena boja */
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: #3ecf8e;
+            color: #111827;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #34b27b;
+        }
+
+        .btn:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        .message {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            text-align: center;
+            display: none;
+        }
+
+        .message.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+
+        .message.success {
+            background-color: #d1fae5;
+            color: #065f46;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Kreirajte Račun</h2>
+        <p>Unesite svoje podatke za registraciju</p>
+
+        <form id="signup-form">
+            <div class="form-group">
+                <label for="email">E-mail adresa</label>
+                <input type="email" id="email" placeholder="vaš@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Lozinka</label>
+                <input type="password" id="password" placeholder="••••••••" minlength="6" required>
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn">Registriraj se</button>
+        </form>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        // 1. Inicijalizacija Supabase klijenta
+        const SUPABASE_URL = 'TVOJ_SUPABASE_URL_OVDE';
+        const SUPABASE_ANON_KEY = 'TVOJ_SUPABASE_ANON_KEY_OVDE';
+
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // 2. Elementi forme
+        const signupForm = document.getElementById('signup-form');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const submitBtn = document.getElementById('submit-btn');
+        const messageDiv = document.getElementById('message');
+
+        // 3. Obrada registracije
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            // Priprema UI-ja
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Registriranje...';
+            showMessage('', '');
+
+            // Supabase Auth poziv
+            const { data, error } = await _supabase.auth.signUp({
+                email: email,
+                password: password,
+            });
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Registriraj se';
+
+            if (error) {
+                showMessage(error.message, 'error');
+            } else {
+                showMessage('Registracija uspješna! Provjerite svoj e-mail za potvrdu računa.', 'success');
+                signupForm.reset();
+            }
+        });
+
+        // Pomoćna funkcija za poruke
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = 'message ' + type;
+        }
+    </script>
+</body>
+</html>
+
+Ako želiš dodatna polja (npr. Ime, Prezime, Rola)
+
+Supabase omogućuje spremanje dodatnih meta-podataka korisnika direktno prilikom registracije unutar options.data:
+JavaScript
+
+const { data, error } = await _supabase.auth.signUp({
+    email: email,
+    password: password,
+    options: {
+        data: {
+            full_name: 'Nusret Halilović',
+            role: 'admin'
+        }
+    }
+});
