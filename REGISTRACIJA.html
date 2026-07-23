@@ -1,208 +1,174 @@
 <!DOCTYPE html>
-<html lang="hr">
+<html lang="bs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registracija | Supabase Auth</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registracija | LjubavNaPrviKlik</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    header { background-color: #d90429; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    .logo { font-size: 1.5rem; font-weight: bold; color: #fff; text-decoration: none; }
     
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+    .main-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
+    .register-card { background: #fff; width: 100%; max-width: 480px; padding: 35px; border-radius: 20px; box-shadow: 0 10px 25px rgba(217, 4, 41, 0.1); border-top: 5px solid #d90429; }
+    .register-card h2 { text-align: center; color: #800020; margin-bottom: 8px; font-size: 1.8rem; }
+    .subtitle { text-align: center; color: #666; font-size: 0.95rem; margin-bottom: 25px; }
 
-        body {
-            background-color: #f4f6f8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #2b2d42; }
+    .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; outline: none; }
+    .form-group input:focus, .form-group select:focus { border-color: #d90429; }
 
-        .card {
-            background: #ffffff;
-            padding: 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            width: 100%;
-            max-width: 400px;
-        }
+    .btn-submit { width: 100%; background-color: #d90429; color: #fff; padding: 14px; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
+    .btn-submit:hover { background-color: #ef233c; }
 
-        .card h2 {
-            margin-bottom: 0.5rem;
-            color: #1a1a1a;
-            text-align: center;
-        }
+    #statusMessage { margin-top: 15px; text-align: center; font-weight: bold; }
+    .footer-links { text-align: center; margin-top: 20px; font-size: 0.95rem; }
+    .footer-links a { color: #d90429; text-decoration: none; font-weight: bold; }
 
-        .card p {
-            color: #666;
-            font-size: 0.9rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.2rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.4rem;
-            font-weight: 600;
-            color: #333;
-            font-size: 0.85rem;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .form-group input:focus {
-            border-color: #3ecf8e; /* Supabase zelena boja */
-        }
-
-        .btn {
-            width: 100%;
-            padding: 0.8rem;
-            background-color: #3ecf8e;
-            color: #111827;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn:hover {
-            background-color: #34b27b;
-        }
-
-        .btn:disabled {
-            background-color: #a0aec0;
-            cursor: not-allowed;
-        }
-
-        .message {
-            margin-top: 1rem;
-            padding: 0.75rem;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            text-align: center;
-            display: none;
-        }
-
-        .message.error {
-            background-color: #fee2e2;
-            color: #991b1b;
-            display: block;
-        }
-
-        .message.success {
-            background-color: #d1fae5;
-            color: #065f46;
-            display: block;
-        }
-    </style>
+    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
+  </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>Kreirajte Račun</h2>
-        <p>Unesite svoje podatke za registraciju</p>
+  <header>
+    <a href="index.html" class="logo">❤️ LjubavNaPrviKlik</a>
+  </header>
 
-        <form id="signup-form">
-            <div class="form-group">
-                <label for="email">E-mail adresa</label>
-                <input type="email" id="email" placeholder="vaš@email.com" required>
-            </div>
+  <div class="main-container">
+    <div class="register-card">
+      <h2>Napravi Profil</h2>
+      <p class="subtitle">Pronađi nekog posebnog već danas</p>
 
-            <div class="form-group">
-                <label for="password">Lozinka</label>
-                <input type="password" id="password" placeholder="••••••••" minlength="6" required>
-            </div>
+      <form id="registerForm" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label>Ime i Prezime</label>
+          <input type="text" id="ime" placeholder="Npr. Ana Anić" required>
+        </div>
 
-            <button type="submit" id="submit-btn" class="btn">Registriraj se</button>
-        </form>
+        <div class="form-group">
+          <label>E-mail Adresa</label>
+          <input type="email" id="email" placeholder="vas@email.com" required>
+        </div>
 
-        <div id="message" class="message"></div>
+        <div class="form-group">
+          <label>Lozinka</label>
+          <input type="password" id="password" placeholder="Najmanje 6 znakova" required minlength="6">
+        </div>
+
+        <div class="form-group">
+          <label>Ja sam:</label>
+          <select id="spol" required>
+            <option value="Zensko">Žensko</option>
+            <option value="Musko">Muško</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Profilna Slika</label>
+          <input type="file" id="slikaInput" accept="image/*" required>
+        </div>
+
+        <button type="submit" class="btn-submit" id="regBtn">REGISTRUJ SE</button>
+      </form>
+
+      <div id="statusMessage"></div>
+
+      <div class="footer-links">
+        Već imate profil? <a href="LOGIN.html">Prijavite se ovdje</a>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // 1. Inicijalizacija Supabase klijenta
-        const SUPABASE_URL = 'TVOJ_SUPABASE_URL_OVDE';
-        const SUPABASE_ANON_KEY = 'TVOJ_SUPABASE_ANON_KEY_OVDE';
+  <footer>
+    <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
+  </footer>
 
-        const { createClient } = supabase;
-        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <script>
+    // Inicijalizacija Supabase-a
+    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_IFx6dxZ-ILfYK_3VgelcMw_tYOX0y45';
 
-        // 2. Elementi forme
-        const signupForm = document.getElementById('signup-form');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const submitBtn = document.getElementById('submit-btn');
-        const messageDiv = document.getElementById('message');
+    const { createClient } = supabase;
+    const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // 3. Obrada registracije
-        signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+    async function handleRegister(e) {
+      e.preventDefault();
+      
+      const ime = document.getElementById('ime').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const spol = document.getElementById('spol').value;
+      const fileInput = document.getElementById('slikaInput');
+      const file = fileInput.files[0];
 
-            const email = emailInput.value;
-            const password = passwordInput.value;
+      const statusDiv = document.getElementById('statusMessage');
+      const regBtn = document.getElementById('regBtn');
 
-            // Priprema UI-ja
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Registriranje...';
-            showMessage('', '');
+      statusDiv.style.color = '#0056b3';
+      statusDiv.textContent = 'Registracija u toku... Molimo sačekajte.';
+      regBtn.disabled = true;
 
-            // Supabase Auth poziv
-            const { data, error } = await _supabase.auth.signUp({
-                email: email,
-                password: password,
-            });
-
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Registriraj se';
-
-            if (error) {
-                showMessage(error.message, 'error');
-            } else {
-                showMessage('Registracija uspješna! Provjerite svoj e-mail za potvrdu računa.', 'success');
-                signupForm.reset();
-            }
+      try {
+        // 1. Registracija u Supabase Auth
+        const { data: authData, error: authError } = await _supabase.auth.signUp({
+          email: email,
+          password: password
         });
 
-        // Pomoćna funkcija za poruke
-        function showMessage(text, type) {
-            messageDiv.textContent = text;
-            messageDiv.className = 'message ' + type;
-        }
-    </script>
+        if (authError) throw authError;
+
+        // 2. Upload slike u Storage bucket 'galerija'
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `profili/${fileName}`;
+
+        const { error: uploadError } = await _supabase.storage
+          .from('galerija')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        // 3. Preuzimanje Public URL-a slike
+        const { data: urlData } = _supabase.storage
+          .from('galerija')
+          .getPublicUrl(filePath);
+
+        const imageUrl = urlData.publicUrl;
+
+        // 4. Upis korisnika u tabelu UPOZNAVANJ_KORISNICI
+        const { error: dbError } = await _supabase
+          .from('UPOZNAVANJ_KORISNICI')
+          .insert([
+            {
+              ime: ime,
+              email: email,
+              spol: spol,
+              slika_url: imageUrl
+            }
+          ]);
+
+        if (dbError) throw dbError;
+
+        statusDiv.style.color = 'green';
+        statusDiv.textContent = 'Registracija uspješna! Preusmjeravanje na login...';
+
+        setTimeout(() => {
+          window.location.href = 'LOGIN.html';
+        }, 1500);
+
+      } catch (err) {
+        statusDiv.style.color = 'red';
+        statusDiv.textContent = 'Greška: ' + err.message;
+        regBtn.disabled = false;
+      }
+    }
+  </script>
+
 </body>
 </html>
-
-Ako želiš dodatna polja (npr. Ime, Prezime, Rola)
-
-Supabase omogućuje spremanje dodatnih meta-podataka korisnika direktno prilikom registracije unutar options.data:
-JavaScript
-
-const { data, error } = await _supabase.auth.signUp({
-    email: email,
-    password: password,
-    options: {
-        data: {
-            full_name: 'Nusret Halilović',
-            role: 'admin'
-        }
-    }
-});
