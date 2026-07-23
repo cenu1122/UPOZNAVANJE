@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registracija</title>
 
-  <!-- Ažurirana Supabase SDK verzija koja podržava nove i stare ključeve -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.min.js"></script>
+  <!-- Supabase JS SDK v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     body {
@@ -102,16 +102,11 @@
 
 <script>
   const SUPABASE_URL = 'https://uduwpvdjmanrpgumdrfh.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_IfX6dxz-ILfYK_3VgelcMw_tYOX0y45PL';
+  
+  // Tvoj tačni Anon JWT ključ:
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
 
-  // Inicijalizacija Supabase klijenta sa eksplicitnim auth postavkama
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  });
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   const form = document.getElementById('registerForm');
   const statusDiv = document.getElementById('statusMessage');
@@ -142,7 +137,7 @@
 
       statusDiv.className = 'success-msg';
       statusDiv.textContent = 'Registracija uspješna! Provjerite e-mail za potvrdu.';
-      console.log('Korisnik uspjeno registrovan:', data);
+      console.log('Korisnik uspješno registrovan:', data);
 
     } catch (error) {
       statusDiv.className = 'error-msg';
