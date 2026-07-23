@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LjubavNaPrviKlik | Groq AI Prevodilac</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; background-color: #fff0f3; color: #2b2d42; }
+    
+    /* Header & Nav */
+    header { background-color: #d90429; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    .logo { font-size: 1.6rem; font-weight: bold; color: #fff; text-decoration: none; }
+    nav ul { display: flex; list-style: none; align-items: center; }
+    nav ul li { margin-left: 20px; }
+    nav ul li a { color: #fff; text-decoration: none; font-weight: 500; }
+    .lang-select { background: #ef233c; color: #fff; border: 1px solid #ffb3c1; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+
+    /* Hero */
+    #hero { background: linear-gradient(rgba(217, 4, 41, 0.75), rgba(43, 45, 66, 0.85)), url('https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1350&q=80') center/cover no-repeat; color: #fff; text-align: center; padding: 120px 20px; }
+    #hero h1 { font-size: 3rem; margin-bottom: 15px; }
+    #hero p { font-size: 1.2rem; max-width: 700px; margin: 0 auto 30px auto; }
+    .hero-buttons { display: flex; justify-content: center; gap: 20px; }
+    .btn { padding: 12px 30px; font-size: 1rem; font-weight: bold; border-radius: 25px; text-decoration: none; cursor: pointer; border: none; }
+    .btn-primary { background-color: #ffb3c1; color: #800020; }
+    .btn-secondary { background-color: transparent; color: #fff; border: 2px solid #fff; }
+
+    /* Sections */
+    section { padding: 60px 20px; max-width: 1100px; margin: auto; }
+    h2 { text-align: center; margin-bottom: 25px; color: #800020; }
+
+    /* Translator Box */
+    .translator-box { background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); max-width: 650px; margin: auto; }
+    .translator-inputs { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
+    textarea { padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; resize: vertical; }
+    select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; font-weight: bold; }
+
+    /* Footer */
+    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: 40px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="#hero" class="logo">❤️ LjubavNaPrviKlik</a>
+    <nav>
+      <ul>
+        <li><a href="#hero">Početna</a></li>
+        <li><a href="#translator">Groq AI Prevodilac</a></li>
+        <li>
+          <select class="lang-select">
+            <option>BS 🇧🇦</option>
+            <option>EN 🇬🇧</option>
+            <option>DE 🇩🇪</option>
+          </select>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <section id="hero">
+    <h1>Pronađite Ljubav Svog Života</h1>
+    <p>Razgovarajte s partnerima širom svijeta uz pomoć inteligentnog Groq AI prevodioca u realnom vremenu.</p>
+    <div class="hero-buttons">
+      <a href="REGISTRACIJA.html" class="btn btn-primary">REGISTRACIJA</a>
+      <a href="LOGIN.html" class="btn btn-secondary">LOGIN</a>
+    </div>
+  </section>
+
+  <section id="translator">
+    <h2>⚡ Groq AI Prevodilac Poruka</h2>
+    <div class="translator-box">
+      <p style="text-align: center; color: #555;">Napišite poruku na vašem jeziku, a Groq AI će je prirodno prevesti partneru:</p>
+      
+      <div class="translator-inputs">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label><strong>Ciljni jezik partnera:</strong></label>
+          <select id="targetLang">
+            <option value="English">English 🇬🇧</option>
+            <option value="German">Deutsch 🇩🇪</option>
+            <option value="Bosnian">Bosanski 🇧🇦</option>
+          </select>
+        </div>
+
+        <textarea id="messageInput" rows="4" placeholder="Unesite poruku za partnera (npr. Ćao! Baš mi se sviđa tvoj profil, kako si danas?)..."></textarea>
+        
+        <button class="btn btn-primary" onclick="translateWithGroq()" style="background-color: #d90429; color: white;">
+          Prevedi preko Groq AI
+        </button>
+
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-top: 10px;">
+          <small style="color: #666;">Prijevod (Groq AI):</small>
+          <div id="translationOutput" style="font-size: 1.1rem; font-weight: bold; color: #2b2d42; margin-top: 5px;">
+            ...
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2026 LjubavNaPrviKlik. Pokreće Groq AI & Supabase.</p>
+  </footer>
+
+  <script>
+    // 1. Inicijalizacija Supabase Klijenta
+    const SUPABASE_URL = 'TVOJ_SUPABASE_URL';
+    const SUPABASE_ANON_KEY = 'TVOJ_SUPABASE_ANON_KEY';
+    
+    const { createClient } = supabase;
+    const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 2. Funkcija koja uzima Groq Ključ iz Supabase-a i šalje zahtjev na Groq API
+    async function translateWithGroq() {
+      const text = document.getElementById('messageInput').value;
+      const targetLang = document.getElementById('targetLang').value;
+      const outputDiv = document.getElementById('translationOutput');
+
+      if (!text.trim()) {
+        outputDiv.textContent = "Molimo unesite tekst poruke!";
+        return;
+      }
+
+      outputDiv.textContent = "Groq AI prevodi...";
+
+      try {
+        // A) Dohvati Groq API Ključ iz tvoje Supabase tabele 'POSTAVKE'
+        const { data: config, error: configError } = await _supabase
+          .from('POSTAVKE')
+          .select('vrijednost')
+          .eq('kljuc', 'GROQ_API_KEY')
+          .single();
+
+        if (configError || !config) {
+          throw new Error("Nije moguće dohvatiti Groq API ključ iz Supabase-a.");
+        }
+
+        const groqApiKey = config.vrijednost;
+
+        // B) Pozovi Groq API directno sa dobijenim ključem
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${groqApiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: "llama-3.3-70b-versatile",
+            messages: [
+              {
+                role: "system",
+                content: `You are a professional translator for a dating platform. Translate the user's message into ${targetLang}. Keep the emotional tone, warmth, and natural conversational flow. Return ONLY the translation, without any explanations or extra quotes.`
+              },
+              {
+                role: "user",
+                content: text
+              }
+            ],
+            temperature: 0.3
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.choices && data.choices[0]) {
+          outputDiv.textContent = data.choices[0].message.content;
+        } else {
+          outputDiv.textContent = "Greška u odgovorima od Groq AI-ja.";
+        }
+
+      } catch (err) {
+        outputDiv.textContent = "Greška: " + err.message;
+      }
+    }
+  </script>
+
+</body>
+</html>
