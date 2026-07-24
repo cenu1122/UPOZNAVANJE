@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard & Chat | LjubavNaPrviKlik</title>
+  <title>Dashboard, Pretraga & Chat | LjubavNaPrviKlik</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -22,8 +22,17 @@
     .partner-selector { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; background: #ffe5ec; padding: 15px; border-radius: 12px; }
     select, input { padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
 
+    /* Search Platform Section */
+    .search-box { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+    .search-box input, .search-box select { flex: 1; min-width: 150px; }
+    .btn-search { background-color: #2b2d42; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+    .user-card { border: 1px solid #eee; padding: 12px; border-radius: 10px; text-align: center; background: #fafafa; }
+    .user-card img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; }
+
     /* Chat Box */
-    .chat-box { height: 350px; overflow-y: auto; border: 1px solid #eee; padding: 15px; border-radius: 10px; background: #fafafa; display: flex; flex-direction: column; gap: 12px; }
+    .chat-box { height: 320px; overflow-y: auto; border: 1px solid #eee; padding: 15px; border-radius: 10px; background: #fafafa; display: flex; flex-direction: column; gap: 12px; }
     .message { max-width: 75%; padding: 12px 16px; border-radius: 15px; font-size: 0.95rem; line-height: 1.4; word-break: break-word; }
     .message.sent { background: #d90429; color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
     .message.received { background: #e9ecef; color: #2b2d42; align-self: flex-start; border-bottom-left-radius: 2px; }
@@ -54,7 +63,7 @@
       </div>
 
       <div style="margin-left: auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <label><strong>Izaberi partnera:</strong></label>
+        <label><strong>Izaberi partnera za chat:</strong></label>
         <select id="partnerSelect" onchange="loadMessages()">
           <option value="">-- Izaberite partnera --</option>
         </select>
@@ -66,6 +75,24 @@
           <option value="Bosnian">Bosanski 🇧🇦</option>
         </select>
       </div>
+    </div>
+
+    <div class="card">
+      <h3 style="color: #800020;">🔍 Pretraga partnera po platformama</h3>
+      <p style="font-size: 0.9rem; color: #666; margin-top: 5px;">Pronađite partnere po imenu, gradu ili izaberite mrežnu platformu:</p>
+      
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Unesite ime, grad ili interesovanje...">
+        <select id="platformSelect">
+          <option value="LjubavNaPrviKlik">LjubavNaPrviKlik (Naša baza)</option>
+          <option value="Instagram">Instagram Profil</option>
+          <option value="Facebook">Facebook Profil</option>
+          <option value="Tinder">Tinder Match</option>
+        </select>
+        <button class="btn-search" onclick="searchPartners()">Pretraži</button>
+      </div>
+
+      <div id="searchResults" class="results-grid"></div>
     </div>
 
     <div class="card">
@@ -94,7 +121,7 @@
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let currentUser = null;
 
-    // 1. Provjera sesije i inicijalizacija
+    // 1. Provjera sesije
     async function initDashboard() {
       const { data: { session } } = await _supabase.auth.getSession();
       
@@ -120,13 +147,12 @@
         .subscribe();
     }
 
-    // 2. Odjava korisnika
     async function logout() {
       await _supabase.auth.signOut();
       window.location.href = 'LOGIN.html';
     }
 
-    // 3. Učitaj korisnike za padajući meni
+    // 2. Učitavanje korisnika za Chat
     async function loadPartners() {
       const { data: partners } = await _supabase
         .from('UPOZNAVANJ_KORISNICI')
@@ -147,7 +173,58 @@
       }
     }
 
-    // 4. Učitaj poruke između dva partnera
+    // 3. Funkcija za pretragu po platformama i bazi
+    async function searchPartners() {
+      const query = document.getElementById('searchInput').value.trim();
+      const platform = document.getElementById('platformSelect').value;
+      const resultsDiv = document.getElementById('searchResults');
+
+      resultsDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #666;">Pretraživanje...</div>';
+
+      if (platform === 'LjubavNaPrviKlik') {
+        // Pretraga unutar tvoje Supabase baze
+        let req = _supabase.from('UPOZNAVANJ_KORISNICI').select('*');
+        if (query) {
+          req = req.ilike('ime', `%${query}%`);
+        }
+        const { data: results } = await req;
+
+        resultsDiv.innerHTML = '';
+        if (results && results.length > 0) {
+          results.forEach(u => {
+            if (u.email !== currentUser.email) {
+              resultsDiv.innerHTML += `
+                <div class="user-card">
+                  <img src="${u.slika_url || 'https://via.placeholder.com/80'}" alt="Profil">
+                  <h4>${u.ime || 'Korisnik'}</h4>
+                  <p style="font-size: 0.8rem; color: #666;">${u.email}</p>
+                  <button class="btn-send" style="padding: 5px 10px; margin-top: 8px; font-size: 0.8rem;" onclick="selectPartnerForChat('${u.email}')">Započni Chat</button>
+                </div>
+              `;
+            }
+          });
+        } else {
+          resultsDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #888;">Nema pronađenih korisnika u bazi.</div>';
+        }
+      } else {
+        // Eksterna pretraga (Generisanje linka/Pretraga po platformi)
+        resultsDiv.innerHTML = `
+          <div style="grid-column: 1/-1; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; text-align: center;">
+            <p>Otvaranje eksterne pretrage za <strong>${platform}</strong> sa pojmom: <em>"${query || 'Svi profili'}"</em></p>
+            <a href="https://www.google.com/search?q=site:${platform.toLowerCase()}.com+${encodeURIComponent(query)}" target="_blank" class="btn-search" style="display: inline-block; margin-top: 10px; text-decoration: none;">
+              Pretraži na ${platform} ↗
+            </a>
+          </div>
+        `;
+      }
+    }
+
+    function selectPartnerForChat(email) {
+      document.getElementById('partnerSelect').value = email;
+      loadMessages();
+    }
+
+    // 4. Učitavanje poruka
     async function loadMessages() {
       const partnerEmail = document.getElementById('partnerSelect').value;
       const chatBox = document.getElementById('chatBox');
@@ -183,7 +260,7 @@
       }
     }
 
-    // 5. Slanje poruke i pozivanje Edge funkcije GROQ_POZIVANJR
+    // 5. Slanje poruke sa Edge funkcijom GROQ_POZIVANR
     async function sendMessage() {
       const input = document.getElementById('msgInput');
       const partnerEmail = document.getElementById('partnerSelect').value;
@@ -204,8 +281,7 @@
       let translatedText = '';
 
       try {
-        // Poziv tvoje Edge funkcije GROQ_POZIVANJr
-        const { data, error } = await _supabase.functions.invoke('GROQ_POZIVANJR', {
+        const { data, error } = await _supabase.functions.invoke('GROQ_POZIVANR', {
           body: { text: text, targetLang: targetLang }
         });
 
@@ -219,7 +295,6 @@
         translatedText = text;
       }
 
-      // Upis poruke u tabelu PORUKE
       await _supabase.from('PORUKE').insert([
         {
           posiljalac_email: currentUser.email,
@@ -233,7 +308,6 @@
       loadMessages();
     }
 
-    // Pokreni inicijalizaciju
     initDashboard();
   </script>
 
