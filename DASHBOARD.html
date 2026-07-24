@@ -39,6 +39,12 @@
     .user-card { border: 1px solid #eee; padding: 12px; border-radius: 10px; text-align: center; background: #fafafa; }
     .user-card img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; }
 
+    /* Zaglavlje izabranog partnera u chatu */
+    .chat-header { display: flex; align-items: center; gap: 12px; padding: 10px 15px; background: #fff0f3; border-radius: 10px; margin-bottom: 12px; border: 1px solid #ffccd5; }
+    .chat-header img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #d90429; }
+    .chat-header-info h4 { color: #800020; font-size: 1.1rem; }
+    .chat-header-info p { font-size: 0.85rem; color: #666; }
+
     .chat-box { height: 320px; overflow-y: auto; border: 1px solid #eee; padding: 15px; border-radius: 10px; background: #fafafa; display: flex; flex-direction: column; gap: 12px; }
     .message { max-width: 75%; padding: 12px 16px; border-radius: 15px; font-size: 0.95rem; line-height: 1.4; word-break: break-word; }
     .message.sent { background: #d90429; color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
@@ -46,8 +52,20 @@
     .message .translation { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; border-top: 1px dashed rgba(255,255,255,0.4); padding-top: 4px; }
     .message.received .translation { border-top-color: #ccc; }
 
-    .chat-input-area { display: flex; gap: 10px; margin-top: 15px; }
+    .chat-input-area { display: flex; gap: 10px; margin-top: 15px; align-items: center; }
     .chat-input-area input { flex: 1; }
+    
+    /* Dugme za Mikrofon */
+    .btn-mic { background: #ffffff; color: #d90429; border: 2px solid #d90429; padding: 10px 15px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; transition: all 0.2s; }
+    .btn-mic:hover { background: #ffe5ec; }
+    .btn-mic.recording { background: #d90429; color: #fff; animation: pulse 1.2s infinite; }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
     .btn-send { background: #d90429; color: white; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     .btn-send:hover { background-color: #ef233c; }
 
@@ -59,7 +77,6 @@
   <header>
     <a href="#" class="logo">❤️ LjubavNaPrviKlik</a>
     <div class="header-buttons">
-      <!-- DUGME ZA UBACIVANJE SLIKE -->
       <a href="DODAJ_SLIKU.html" class="btn-upload-nav">📷 Ubaci sliku</a>
       <button class="btn-logout" onclick="logout()">Odjava</button>
     </div>
@@ -114,12 +131,25 @@
     <div class="card">
       <h3 style="margin-bottom: 15px; color: #800020;">💬 Dopisivanje uz AI Prevodilac</h3>
       
+      <!-- Profilno zaglavlje izabranog partnera -->
+      <div id="activePartnerHeader" style="display: none;" class="chat-header">
+        <img id="activePartnerImg" src="https://via.placeholder.com/80" alt="Partner Slika">
+        <div class="chat-header-info">
+          <h4 id="activePartnerName">Ime Partnera</h4>
+          <p id="activePartnerEmail">partner@email.com</p>
+        </div>
+      </div>
+
       <div class="chat-box" id="chatBox">
         <div style="text-align: center; color: #888; margin-top: 100px;">Izaberite partnera iz menija iznad.</div>
       </div>
 
       <div class="chat-input-area">
-        <input type="text" id="msgInput" placeholder="Napišite poruku..." onkeydown="if(event.key==='Enter') sendMessage()">
+        <input type="text" id="msgInput" placeholder="Napišite poruku ili pritisnite mikrofon..." onkeydown="if(event.key==='Enter') sendMessage()">
+        
+        <!-- DUGME ZA MIKROFON -->
+        <button type="button" class="btn-mic" id="micBtn" onclick="toggleSpeechRecognition()" title="Govori umjesto kucanja">🎙️</button>
+        
         <button class="btn-send" onclick="sendMessage()" id="sendBtn">POŠALJI</button>
       </div>
     </div>
@@ -136,6 +166,8 @@
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let currentUser = null;
+    let recognition = null;
+    let isListening = false;
 
     function toggleCustomLangInput() {
       const select = document.getElementById('targetLang');
@@ -150,6 +182,7 @@
       currentUser = session.user;
       document.getElementById('currentUserEmail').textContent = currentUser.email;
       await loadPartners();
+      initSpeechRecognition();
     }
 
     async function logout() {
@@ -158,7 +191,7 @@
     }
 
     async function loadPartners() {
-      const { data: partners } = await _supabase.from('UPOZNAVANJ_KORISNICI').select('EMAIL, IME');
+      const { data: partners } = await _supabase.from('UPOZNAVANJ_KORISNICI').select('EMAIL, IME, SLIKE_URL');
       const partnerSelect = document.getElementById('partnerSelect');
       partnerSelect.innerHTML = '<option value="">-- Izaberite partnera --</option>';
 
@@ -210,8 +243,29 @@
     async function loadMessages() {
       const partnerEmail = document.getElementById('partnerSelect').value;
       const chatBox = document.getElementById('chatBox');
-      if (!partnerEmail) return;
+      const partnerHeader = document.getElementById('activePartnerHeader');
+      
+      if (!partnerEmail) {
+        partnerHeader.style.display = 'none';
+        chatBox.innerHTML = '<div style="text-align: center; color: #888; margin-top: 100px;">Izaberite partnera iz menija iznad.</div>';
+        return;
+      }
 
+      // Učitavanje detalja partnera (Ime i Slika) za zaglavlje
+      const { data: partnerData } = await _supabase
+        .from('UPOZNAVANJ_KORISNICI')
+        .select('IME, SLIKE_URL')
+        .eq('EMAIL', partnerEmail)
+        .single();
+
+      if (partnerData) {
+        document.getElementById('activePartnerName').textContent = partnerData.IME || 'Korisnik';
+        document.getElementById('activePartnerEmail').textContent = partnerEmail;
+        document.getElementById('activePartnerImg').src = partnerData.SLIKE_URL || 'https://via.placeholder.com/80';
+        partnerHeader.style.display = 'flex';
+      }
+
+      // Učitavanje poruka
       const { data: messages } = await _supabase.from('PORUKE').select('*')
         .or(`and(posiljalac_email.eq.${currentUser.email},primalac_email.eq.${partnerEmail}),and(posiljalac_email.eq.${partnerEmail},primalac_email.eq.${currentUser.email})`)
         .order('created_at', { ascending: true });
@@ -226,6 +280,9 @@
               ${msg.prevedeni_tekst ? `<div class="translation">🌐 ${msg.prevedeni_tekst}</div>` : ''}
             </div>`;
         });
+        chatBox.scrollTop = chatBox.scrollHeight;
+      } else {
+        chatBox.innerHTML = '<div style="text-align: center; color: #888; margin-top: 100px;">Započnite razgovor slanjem prve poruke!</div>';
       }
     }
 
@@ -266,6 +323,63 @@
 
       sendBtn.disabled = false;
       loadMessages();
+    }
+
+    /* Funkcije za prepoznavanje govora (Speech-to-Text) */
+    function initSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'bs-BA'; // Bosanski / Hrvatski / Srpski jezik
+
+        recognition.onresult = function(event) {
+          let transcript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+          }
+          document.getElementById('msgInput').value = transcript;
+        };
+
+        recognition.onend = function() {
+          isListening = false;
+          const micBtn = document.getElementById('micBtn');
+          micBtn.classList.remove('recording');
+          micBtn.textContent = '🎙️';
+        };
+
+        recognition.onerror = function(event) {
+          console.error("Greška mikrofona:", event.error);
+          isListening = false;
+          const micBtn = document.getElementById('micBtn');
+          micBtn.classList.remove('recording');
+          micBtn.textContent = '🎙️';
+        };
+      } else {
+        document.getElementById('micBtn').style.display = 'none';
+      }
+    }
+
+    function toggleSpeechRecognition() {
+      if (!recognition) {
+        alert("Vaš pregledač ne podržava glasovni unos.");
+        return;
+      }
+
+      const micBtn = document.getElementById('micBtn');
+
+      if (isListening) {
+        recognition.stop();
+        isListening = false;
+        micBtn.classList.remove('recording');
+        micBtn.textContent = '🎙️';
+      } else {
+        recognition.start();
+        isListening = true;
+        micBtn.classList.add('recording');
+        micBtn.textContent = '🛑';
+      }
     }
 
     initDashboard();
