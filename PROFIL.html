@@ -64,7 +64,7 @@
 
       <!-- Forma za izmjenu podataka -->
       <div class="form-group">
-        <label>Prikazano ime / Nadimak:</label>
+        <label for="nameInput">Prikazano ime / Nadimak:</label>
         <input type="text" id="nameInput" placeholder="Unesite vaše ime">
       </div>
 
@@ -85,83 +85,111 @@
     <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
   </footer>
 
-  <script>
-    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+<script>
+  // Inicijalizacija Supabase-a
+  const SUPABASE_URL = 'TVOJ_SUPABASE_URL';
+  const SUPABASE_KEY = 'TVOJ_SUPABASE_ANON_KEY';
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    let currentUser = null;
+  let currentUser = null;
 
-    // 1. Inicijalizacija i učitavanje profila
-    async function loadProfile() {
-      const { data: { session } } = await _supabase.auth.getSession();
-      
-      if (!session) {
-        window.location.href = 'LOGIN.html';
-        return;
-      }
+  async function ucitajProfil() {
+    const statusMsg = document.getElementById('statusMessage');
 
-      currentUser = session.user;
-      document.getElementById('displayEmail').textContent = currentUser.email;
+    // 1. Provjera prijave
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-      // Povlačenje podataka iz tabele UPOZNAVANJ_KORISNICI
-      const { data, error } = await _supabase
+    if (authError || !user) {
+      console.error("Korisnik nije prijavljen:", authError);
+      window.location.href = "index.html";
+      return;
+    }
+
+    currentUser = user;
+    document.getElementById('displayEmail').innerText = user.email;
+
+    try {
+      // 2. Dohvatanje podataka iz UPOZNAVANJ_KORISNICI
+      const { data: profilData, error: profilError } = await supabase
         .from('UPOZNAVANJ_KORISNICI')
-        .select('IME, SLIKE_URL')
-        .eq('EMAIL', currentUser.email)
+        .select('*')
+        .eq('id', user.id)
         .single();
 
-      if (data) {
-        document.getElementById('displayName').textContent = data.IME || 'Korisnik';
-        document.getElementById('nameInput').value = data.IME || '';
-        
-        if (data.SLIKE_URL) {
-          document.getElementById('profileImg').src = data.SLIKE_URL;
-        }
-      }
-    }
-
-    // 2. Ažuriranje imena na profilu
-    async function updateProfile() {
-      const newName = document.getElementById('nameInput').value.trim();
-      const statusDiv = document.getElementById('statusMessage');
-      const saveBtn = document.getElementById('saveBtn');
-
-      if (!newName) {
-        statusDiv.style.color = 'red';
-        statusDiv.textContent = 'Ime ne može biti prazno!';
-        return;
+      if (profilError && profilError.code !== 'PGRST116') {
+        throw profilError;
       }
 
-      saveBtn.disabled = true;
-      statusDiv.style.color = '#0056b3';
-      statusDiv.textContent = 'Spremanje...';
-
-      const { error } = await _supabase
-        .from('UPOZNAVANJ_KORISNICI')
-        .update({ IME: newName })
-        .eq('EMAIL', currentUser.email);
-
-      saveBtn.disabled = false;
-
-      if (error) {
-        statusDiv.style.color = 'red';
-        statusDiv.textContent = 'Greška: ' + error.message;
+      if (profilData) {
+        const nadimak = profilData.nadimak || profilData.prikazano_ime || 'Korisnik';
+        document.getElementById('displayName').innerText = nadimak;
+        document.getElementById('nameInput').value = nadimak;
       } else {
-        statusDiv.style.color = 'green';
-        statusDiv.textContent = 'Profil je uspješno ažuriran!';
-        document.getElementById('displayName').textContent = newName;
+        document.getElementById('displayName').innerText = 'Unesite nadimak';
       }
+
+      // 3. Dohvatanje slike iz tabele SLIKE
+      const { data: slikaData, error: slikaError } = await supabase
+        .from('SLIKE')
+        .select('url')
+        .eq('korisnik_id', user.id)
+        .maybeSingle();
+
+      if (slikaError) {
+        console.warn("Greška pri dohvatanju slike:", slikaError.message);
+      }
+
+      // 4. Prikaz slike
+      const profileImg = document.getElementById('profileImg');
+      if (slikaData && slikaData.url) {
+        profileImg.src = slikaData.url;
+      } else {
+        profileImg.src = 'https://via.placeholder.com/130?text=Bez+Slike';
+      }
+
+    } catch (err) {
+      console.error("Greška pri učitavanju profila:", err.message);
+      statusMsg.style.color = "red";
+      statusMsg.innerText = "Greška: " + err.message;
+    }
+  }
+
+  // Funkcija za čuvanje izmjena nadimka
+  async function updateProfile() {
+    const statusMsg = document.getElementById('statusMessage');
+    const noviNadimak = document.getElementById('nameInput').value.trim();
+
+    if (!noviNadimak) {
+      statusMsg.style.color = "red";
+      statusMsg.innerText = "Molimo unesite nadimak.";
+      return;
     }
 
-    // 3. Odjava
-    async function logout() {
-      await _supabase.auth.signOut();
-      window.location.href = 'LOGIN.html';
-    }
+    statusMsg.style.color = "#2b2d42";
+    statusMsg.innerText = "Spremanje...";
 
-    loadProfile();
-  </script>
+    const { error } = await supabase
+      .from('UPOZNAVANJ_KORISNICI')
+      .upsert({ id: currentUser.id, nadimak: noviNadimak });
+
+    if (error) {
+      statusMsg.style.color = "red";
+      statusMsg.innerText = "Greška pri čuvanju: " + error.message;
+    } else {
+      statusMsg.style.color = "green";
+      statusMsg.innerText = "Profil uspješno ažuriran!";
+      document.getElementById('displayName').innerText = noviNadimak;
+    }
+  }
+
+  // Funkcija za odjavu
+  async function logout() {
+    await supabase.auth.signOut();
+    window.location.href = "index.html";
+  }
+
+  document.addEventListener('DOMContentLoaded', ucitajProfil);
+</script>
 
 </body>
 </html>
