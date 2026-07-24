@@ -450,6 +450,7 @@
     currentPartnerEmail = null;
   }
 
+  /* Popravljena i osigurana funkcija za pretragu korisnika */
   async function searchUsers() {
     const query = document.getElementById('searchInput').value.trim();
     const selectedGender = document.getElementById('genderSelect').value;
@@ -463,21 +464,31 @@
     try {
       let queryBuilder = _supabase.from('UPOZNAVANJ_KORISNICI').select('*');
 
-      if (query && query.length >= 2) {
+      // 1. Filtriranje po tekstu ako je uneseno
+      if (query.length > 0) {
         queryBuilder = queryBuilder.or(`IME.ilike.%${query}%,MAIL.ilike.%${query}%`);
       }
 
-      if (selectedGender) {
-        queryBuilder = queryBuilder.eq('SPOL', selectedGender);
+      // 2. Filtriranje po spolu
+      if (selectedGender === "Musko") {
+        queryBuilder = queryBuilder.ilike('SPOL', '%Mu%');
+      } else if (selectedGender === "Zensko") {
+        queryBuilder = queryBuilder.ilike('SPOL', '%Že%');
       }
 
+      // 3. Fleksibilno filtriranje po državi
       if (selectedCountry) {
-        queryBuilder = queryBuilder.eq('DRZAVA', selectedCountry);
+        let countrySearchTerm = selectedCountry;
+        if (selectedCountry === "Bosna i Hercegovina") countrySearchTerm = "Bosn";
+        queryBuilder = queryBuilder.ilike('DRZAVA', `%${countrySearchTerm}%`);
       }
 
-      queryBuilder = queryBuilder.neq('USER', currentUser.id).limit(10);
+      // Isključi trenutno prijavljenog korisnika
+      if (currentUser) {
+        queryBuilder = queryBuilder.neq('USER', currentUser.id);
+      }
 
-      const { data: users, error } = await queryBuilder;
+      const { data: users, error } = await queryBuilder.limit(20);
 
       if (error) throw error;
 
@@ -486,7 +497,8 @@
 
     } catch (err) {
       statusMsg.style.color = 'red';
-      statusMsg.innerText = 'Greška: ' + err.message;
+      statusMsg.innerText = 'Greška pri pretrazi: ' + err.message;
+      console.error("Supabase Error:", err);
     }
   }
 
