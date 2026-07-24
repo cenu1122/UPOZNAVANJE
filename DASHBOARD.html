@@ -1,18 +1,3 @@
-Evo kompletnog i pripremljenog koda za DASHBOARD.html.
-
-U ovaj kôd su ugrađene sve funkcionalnosti:
-
-    Open Graph (OG) meta tagovi u <head> sekciji – tako da Facebook prilikom objave na zidu automatski prikaže sliku, naslov i opis aplikacije.
-
-    Razdvojene opcije za dijeljenje – dugme za Javni Post na Facebook Zidu, dugme za Direktne Poruke (sa unaprijed unesenim tekstom i linkom), WhatsApp i Kopiranje linka.
-
-    Pretraga partnera po imenu i e-mailu.
-
-    Chat sa prevodiocem (Groq AI & Supabase).
-
-Zmijeni sav sadržaj u datoteci DASHBOARD.html ovim kodom:
-HTML
-
 <!DOCTYPE html>
 <html lang="bs">
 <head>
@@ -37,13 +22,11 @@ HTML
     .btn-logout { background: #2b2d42; color: #fff; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; }
 
     .main-container { flex: 1; max-width: 1000px; width: 100%; margin: 20px auto; padding: 0 15px; display: flex; flex-direction: column; gap: 20px; }
-    
     .card { background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
     
     .partner-selector { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; background: #ffe5ec; padding: 15px; border-radius: 12px; }
     select, input { padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
 
-    /* Search Platform Section */
     .search-box { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
     .search-box input, .search-box select { flex: 1; min-width: 150px; }
     .btn-search { background-color: #2b2d42; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
@@ -52,7 +35,6 @@ HTML
     .user-card { border: 1px solid #eee; padding: 12px; border-radius: 10px; text-align: center; background: #fafafa; }
     .user-card img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; }
 
-    /* Chat Box */
     .chat-box { height: 320px; overflow-y: auto; border: 1px solid #eee; padding: 15px; border-radius: 10px; background: #fafafa; display: flex; flex-direction: column; gap: 12px; }
     .message { max-width: 75%; padding: 12px 16px; border-radius: 15px; font-size: 0.95rem; line-height: 1.4; word-break: break-word; }
     .message.sent { background: #d90429; color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
@@ -84,68 +66,48 @@ HTML
       </div>
 
       <div style="margin-left: auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <label><strong>Izaberi partnera za chat:</strong></label>
+        <label><strong>Izaberi partnera:</strong></label>
         <select id="partnerSelect" onchange="loadMessages()">
           <option value="">-- Izaberite partnera --</option>
         </select>
 
-        <label><strong>Jezik partnera:</strong></label>
-        <select id="targetLang">
+        <label><strong>Jezik prevoda:</strong></label>
+        <select id="targetLang" onchange="toggleCustomLangInput()">
           <option value="English">English 🇬🇧</option>
           <option value="German">Deutsch 🇩🇪</option>
-          <option value="Bosnian">Bosanski 🇧🇦</option>
+          <option value="Turkish">Türkçe 🇹🇷</option>
+          <option value="Spanish">Español 🇪🇸</option>
+          <option value="French">Français 🇫🇷</option>
+          <option value="Italian">Italiano 🇮🇹</option>
+          <option value="Russian">Русский 🇷🇺</option>
+          <option value="Arabic">العربية 🇸🇦</option>
+          <option value="Chinese">中文 🇨🇳</option>
+          <option value="Bosnian">Bosanski / Hrvatski / Srpski 🇧🇦</option>
+          <option value="CUSTOM">--- Upiši drugi jezik ---</option>
         </select>
+        <input type="text" id="customLangInput" placeholder="Npr. Holandski..." style="display: none; width: 130px;">
       </div>
     </div>
 
     <div class="card">
-      <h3 style="color: #800020;">🔍 Pretraga partnera po platformama</h3>
-      <p style="font-size: 0.9rem; color: #666; margin-top: 5px;">Pronađite partnere po imenu, gradu ili izaberite mrežnu platformu:</p>
-      
+      <h3 style="color: #800020;">🔍 Pretraga partnera</h3>
       <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Unesite ime ili email (ostavite prazno za sve)...">
+        <input type="text" id="searchInput" placeholder="Unesite ime ili email...">
         <select id="platformSelect">
-          <option value="LjubavNaPrviKlik">LjubavNaPrviKlik (Naša baza)</option>
-          <option value="Instagram">Instagram Profil</option>
-          <option value="Facebook">Facebook Profil</option>
-          <option value="Tinder">Tinder Match</option>
+          <option value="LjubavNaPrviKlik">LjubavNaPrviKlik Baza</option>
+          <option value="Instagram">Instagram</option>
+          <option value="Facebook">Facebook</option>
         </select>
         <button class="btn-search" onclick="searchPartners()">Pretraži</button>
       </div>
-
-      <div style="background: #fff0f3; padding: 15px; border-radius: 10px; border: 1px solid #ffb3c1; margin-top: 15px;">
-        <h4 style="color: #800020; margin-bottom: 8px;">📢 Podijeli aplikaciju (Javni Post ili Poruka)</h4>
-        <p style="font-size: 0.85rem; color: #555; margin-bottom: 12px;">
-          Objavite post na svom profilu ili pošaljite spremnu poruku sa linkom prijateljima:
-        </p>
-
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <button onclick="postToFacebookFeed()" style="background: #1877f2; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-            Objavi na Facebook Zidu 🌐
-          </button>
-
-          <button onclick="shareSmartInvite()" style="background: #d90429; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-            Pošalji u Poruci 💬
-          </button>
-
-          <button onclick="shareViaWhatsApp()" style="background: #25d366; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-            WhatsApp Pozivnica 💬
-          </button>
-
-          <button onclick="copyInviteLink()" style="background: #2b2d42; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-            Kopiraj Link 📋
-          </button>
-        </div>
-      </div>
-
       <div id="searchResults" class="results-grid"></div>
     </div>
 
     <div class="card">
-      <h3 style="margin-bottom: 15px; color: #800020;">💬 Dopisivanje u Realnom Vremenu (Groq Prevodilac)</h3>
+      <h3 style="margin-bottom: 15px; color: #800020;">💬 Dopisivanje uz AI Prevodilac</h3>
       
       <div class="chat-box" id="chatBox">
-        <div style="text-align: center; color: #888; margin-top: 100px;">Izaberite partnera iz padajućeg menija iznad za početak chata.</div>
+        <div style="text-align: center; color: #888; margin-top: 100px;">Izaberite partnera iz menija iznad.</div>
       </div>
 
       <div class="chat-input-area">
@@ -167,31 +129,19 @@ HTML
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let currentUser = null;
 
-    const REGISTRATION_URL = 'https://cenu1122.github.io/UPOZNAVANJE/REGISTRACIJA.html';
+    function toggleCustomLangInput() {
+      const select = document.getElementById('targetLang');
+      const customInput = document.getElementById('customLangInput');
+      customInput.style.display = (select.value === 'CUSTOM') ? 'inline-block' : 'none';
+    }
 
-    // 1. Provjera sesije
     async function initDashboard() {
       const { data: { session } } = await _supabase.auth.getSession();
-      
-      if (!session) {
-        window.location.href = 'LOGIN.html';
-        return;
-      }
+      if (!session) { window.location.href = 'LOGIN.html'; return; }
 
       currentUser = session.user;
       document.getElementById('currentUserEmail').textContent = currentUser.email;
-
       await loadPartners();
-      
-      _supabase
-        .channel('public:PORUKE')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'PORUKE' }, payload => {
-          const partnerEmail = document.getElementById('partnerSelect').value;
-          if (payload.new.posiljalac_email === partnerEmail || payload.new.posiljalac_email === currentUser.email) {
-            loadMessages();
-          }
-        })
-        .subscribe();
     }
 
     async function logout() {
@@ -199,80 +149,46 @@ HTML
       window.location.href = 'LOGIN.html';
     }
 
-    // 2. Učitavanje korisnika za Chat
     async function loadPartners() {
-      const { data: partners } = await _supabase
-        .from('UPOZNAVANJ_KORISNICI')
-        .select('email, ime');
-
+      const { data: partners } = await _supabase.from('UPOZNAVANJ_KORISNICI').select('EMAIL, IME');
       const partnerSelect = document.getElementById('partnerSelect');
       partnerSelect.innerHTML = '<option value="">-- Izaberite partnera --</option>';
 
       if (partners) {
         partners.forEach(p => {
-          if (p.email !== currentUser.email) {
+          if (p.EMAIL !== currentUser.email) {
             const opt = document.createElement('option');
-            opt.value = p.email;
-            opt.textContent = `${p.ime || 'Korisnik'} (${p.email})`;
+            opt.value = p.EMAIL;
+            opt.textContent = `${p.IME || 'Korisnik'} (${p.EMAIL})`;
             partnerSelect.appendChild(opt);
           }
         });
       }
     }
 
-    // 3. Pretraga partnera u bazi
     async function searchPartners() {
       const query = document.getElementById('searchInput').value.trim();
-      const platform = document.getElementById('platformSelect').value;
       const resultsDiv = document.getElementById('searchResults');
+      resultsDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center;">Pretraživanje...</div>';
 
-      resultsDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #666;">Pretraživanje...</div>';
+      let req = _supabase.from('UPOZNAVANJ_KORISNICI').select('*');
+      if (query) req = req.or(`IME.ilike.%${query}%,EMAIL.ilike.%${query}%`);
+      const { data: results, error } = await req;
 
-      if (platform === 'LjubavNaPrviKlik') {
-        let req = _supabase.from('UPOZNAVANJ_KORISNICI').select('*');
-        if (query) {
-          req = req.or(`ime.ilike.%${query}%,email.ilike.%${query}%`);
-        }
-        const { data: results, error } = await req;
-
-        resultsDiv.innerHTML = '';
-
-        if (error) {
-          resultsDiv.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: red;">Greška: ${error.message}</div>`;
-          return;
-        }
-
-        if (results && results.length > 0) {
-          let count = 0;
-          results.forEach(u => {
-            if (u.email !== currentUser.email) {
-              count++;
-              resultsDiv.innerHTML += `
-                <div class="user-card">
-                  <img src="${u.slika_url || 'https://via.placeholder.com/80'}" alt="Profil">
-                  <h4>${u.ime || 'Korisnik'}</h4>
-                  <p style="font-size: 0.8rem; color: #666;">${u.email}</p>
-                  <button class="btn-send" style="padding: 5px 10px; margin-top: 8px; font-size: 0.8rem;" onclick="selectPartnerForChat('${u.email}')">Započni Chat</button>
-                </div>
-              `;
-            }
-          });
-
-          if (count === 0) {
-            resultsDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #888;">Nema drugih korisnika u bazi. Pozovite ih preko dugmadi iznad!</div>';
+      resultsDiv.innerHTML = '';
+      if (results && results.length > 0) {
+        results.forEach(u => {
+          if (u.EMAIL !== currentUser.email) {
+            resultsDiv.innerHTML += `
+              <div class="user-card">
+                <h4>${u.IME || 'Korisnik'}</h4>
+                <p style="font-size:0.8rem; color:#666;">${u.EMAIL}</p>
+                <button class="btn-send" style="padding:5px 10px; margin-top:8px;" onclick="selectPartnerForChat('${u.EMAIL}')">Chat</button>
+              </div>`;
           }
-        } else {
-          resultsDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #888;">Nema pronađenih korisnika u bazi.</div>';
-        }
+        });
       } else {
-        resultsDiv.innerHTML = `
-          <div style="grid-column: 1/-1; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; text-align: center;">
-            <p>Otvaranje eksterne pretrage za <strong>${platform}</strong> sa pojmom: <em>"${query || 'Svi profili'}"</em></p>
-            <a href="https://www.google.com/search?q=site:${platform.toLowerCase()}.com+${encodeURIComponent(query)}" target="_blank" class="btn-search" style="display: inline-block; margin-top: 10px; text-decoration: none;">
-              Pretraži na ${platform} ↗
-            </a>
-          </div>
-        `;
+        resultsDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center;">Nema rezultata.</div>';
       }
     }
 
@@ -281,130 +197,62 @@ HTML
       loadMessages();
     }
 
-    // 4. DIJELJENJE & POZIVNICE
-
-    // A) Objava JAVNOG POSTA na Facebook Zidu
-    function postToFacebookFeed() {
-      const fbSharerUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(REGISTRATION_URL)}`;
-      window.open(fbSharerUrl, 'facebook-share-dialog', 'width=626,height=436');
-    }
-
-    // B) Slanje gotove poruke sa unesenim tekstom i linkom
-    async function shareSmartInvite() {
-      const shareData = {
-        title: 'LjubavNaPrviKlik',
-        text: 'Ćao! Pridruži mi se na aplikaciji LjubavNaPrviKlik da se dopisujemo uz uživo AI prevodilac:',
-        url: REGISTRATION_URL
-      };
-
-      if (navigator.share) {
-        try {
-          await navigator.share(shareData);
-        } catch (err) {
-          console.log('Dijeljenje otkazano:', err);
-        }
-      } else {
-        const puniTekst = `${shareData.text} ${shareData.url}`;
-        navigator.clipboard.writeText(puniTekst);
-        alert('Tekst i link su automatski kopirani skupa! Otvorite chat i zalijepite (CTRL+V).');
-      }
-    }
-
-    // C) Slanje preko WhatsAppa
-    function shareViaWhatsApp() {
-      const gotovaPoruka = `Ćao! Pridruži mi se na aplikaciji LjubavNaPrviKlik da se dopisujemo uz uživo AI prevodilac: ${REGISTRATION_URL}`;
-      const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(gotovaPoruka)}`;
-      window.open(waUrl, '_blank');
-    }
-
-    // D) Kopiranje samog linka
-    function copyInviteLink() {
-      navigator.clipboard.writeText(REGISTRATION_URL).then(() => {
-        alert("Pozivni link je kopiran u međuspremnik!");
-      }).catch(err => {
-        console.error("Greška pri kopiranju:", err);
-      });
-    }
-
-    // 5. Učitavanje poruka
     async function loadMessages() {
       const partnerEmail = document.getElementById('partnerSelect').value;
       const chatBox = document.getElementById('chatBox');
+      if (!partnerEmail) return;
 
-      if (!partnerEmail) {
-        chatBox.innerHTML = '<div style="text-align: center; color: #888; margin-top: 100px;">Izaberite partnera iz padajućeg menija iznad za početak chata.</div>';
-        return;
-      }
-
-      const { data: messages } = await _supabase
-        .from('PORUKE')
-        .select('*')
+      const { data: messages } = await _supabase.from('PORUKE').select('*')
         .or(`and(posiljalac_email.eq.${currentUser.email},primalac_email.eq.${partnerEmail}),and(posiljalac_email.eq.${partnerEmail},primalac_email.eq.${currentUser.email})`)
         .order('created_at', { ascending: true });
 
       chatBox.innerHTML = '';
-
       if (messages && messages.length > 0) {
         messages.forEach(msg => {
           const isSent = msg.posiljalac_email === currentUser.email;
-          const msgDiv = document.createElement('div');
-          msgDiv.className = `message ${isSent ? 'sent' : 'received'}`;
-          
-          msgDiv.innerHTML = `
-            <div>${msg.originalni_tekst}</div>
-            ${msg.prevedeni_tekst ? `<div class="translation">🌐 Prevod: ${msg.prevedeni_tekst}</div>` : ''}
-          `;
-          chatBox.appendChild(msgDiv);
+          chatBox.innerHTML += `
+            <div class="message ${isSent ? 'sent' : 'received'}">
+              <div>${msg.originalni_tekst}</div>
+              ${msg.prevedeni_tekst ? `<div class="translation">🌐 ${msg.prevedeni_tekst}</div>` : ''}
+            </div>`;
         });
-        chatBox.scrollTop = chatBox.scrollHeight;
-      } else {
-        chatBox.innerHTML = '<div style="text-align: center; color: #888; margin-top: 100px;">Nema prethodnih poruka. Započnite razgovor!</div>';
       }
     }
 
-    // 6. Slanje poruke sa Edge funkcijom GROQ_POZIVANR
     async function sendMessage() {
       const input = document.getElementById('msgInput');
       const partnerEmail = document.getElementById('partnerSelect').value;
-      const targetLang = document.getElementById('targetLang').value;
+      const langSelect = document.getElementById('targetLang');
+      const customLang = document.getElementById('customLangInput').value.trim();
       const sendBtn = document.getElementById('sendBtn');
       const text = input.value.trim();
 
-      if (!partnerEmail) {
-        alert("Molimo prvo izaberite partnera sa liste!");
-        return;
-      }
+      let targetLang = (langSelect.value === 'CUSTOM') ? (customLang || 'English') : langSelect.value;
 
-      if (!text) return;
+      if (!partnerEmail || !text) return;
 
       input.value = '';
       sendBtn.disabled = true;
 
-      let translatedText = '';
+      let translatedText = text;
 
       try {
         const { data, error } = await _supabase.functions.invoke('GROQ_POZIVANR', {
           body: { text: text, targetLang: targetLang }
         });
-
         if (!error && data && (data.translation || data.response)) {
           translatedText = data.translation || data.response;
-        } else {
-          translatedText = text;
         }
       } catch (err) {
-        console.warn("Prevod nije uspio, šaljem original:", err);
-        translatedText = text;
+        console.warn("Prevod greška:", err);
       }
 
-      await _supabase.from('PORUKE').insert([
-        {
-          posiljalac_email: currentUser.email,
-          primalac_email: partnerEmail,
-          originalni_tekst: text,
-          prevedeni_tekst: translatedText
-        }
-      ]);
+      await _supabase.from('PORUKE').insert([{
+        posiljalac_email: currentUser.email,
+        primalac_email: partnerEmail,
+        originalni_tekst: text,
+        prevedeni_tekst: translatedText
+      }]);
 
       sendBtn.disabled = false;
       loadMessages();
