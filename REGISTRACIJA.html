@@ -61,6 +61,12 @@
           <input type="password" id="password" placeholder="Najmanje 6 znakova" required minlength="6">
         </div>
 
+        <!-- DODANO POLJE ZA SLIKU -->
+        <div class="form-group">
+          <label>URL Slike profila (Opcionalno):</label>
+          <input type="url" id="slikaUrl" placeholder="https://domena.com/slika.jpg">
+        </div>
+
         <button type="button" class="btn-submit" id="regBtn" onclick="handleRegister()">REGISTRUJ SE</button>
       </div>
 
@@ -86,6 +92,7 @@
       const ime = document.getElementById('ime').value.trim();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
+      const slikaUrl = document.getElementById('slikaUrl').value.trim();
 
       const statusDiv = document.getElementById('statusMessage');
       const regBtn = document.getElementById('regBtn');
@@ -118,7 +125,7 @@
 
         statusDiv.textContent = 'Spremanje podataka profila...';
 
-        // 2. Upis u tabelu UPOZNAVANJ_KORISNICI (uskladjene kolone: USER, MAIL, IME, SIFRA)
+        // 2. Upis u tabelu UPOZNAVANJ_KORISNICI sa poljem SLIKE_URL
         const { error: dbError } = await _supabase
           .from('UPOZNAVANJ_KORISNICI')
           .insert([
@@ -126,7 +133,8 @@
               USER: authData.user ? authData.user.id : null,
               MAIL: email,
               IME: ime,
-              SIFRA: password
+              SIFRA: password,
+              SLIKE_URL: slikaUrl || null
             }
           ]);
 
