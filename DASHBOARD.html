@@ -204,8 +204,8 @@
       let translatedText = '';
 
       try {
-        // Poziv tvoje Edge funkcije GROQ_POZIVANJE
-        const { data, error } = await _supabase.functions.invoke('GROQ_POZIVANJE', {
+        // Poziv tvoje Edge funkcije GROQ_POZIVANJr
+        const { data, error } = await _supabase.functions.invoke('GROQ_POZIVANJR', {
           body: { text: text, targetLang: targetLang }
         });
 
