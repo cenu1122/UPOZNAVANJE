@@ -90,13 +90,13 @@
   </footer>
 
   <script>
-    // Supabase Inicijalizacija
+    // POPRAVLJEN TAČAN SUPABASE URL (uduwpvdjmanrgpumdrfh):
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Funkcija za smanjivanje slike ako je veća od 10MB
+    // Funkcija za automatsko smanjivanje slike ako je veća od 10MB
     function compressImage(file, maxWidth = 1600, maxHeight = 1600, quality = 0.75) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -182,7 +182,7 @@
 
         statusDiv.textContent = 'Kreiranje korisničkog naloga...';
 
-        // 1. Auth SignUp
+        // 1. Supabase Auth SignUp
         const { data: authData, error: authError } = await _supabase.auth.signUp({
           email: email,
           password: password
@@ -192,7 +192,7 @@
 
         statusDiv.textContent = 'Spremanje profilne slike...';
 
-        // 2. Storage Upload
+        // 2. Upload slike u Storage bucket 'galerija'
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
         const filePath = `profili/${fileName}`;
@@ -203,7 +203,7 @@
 
         if (uploadError) throw uploadError;
 
-        // 3. Get Public URL
+        // 3. Preuzimanje Public URL-a profilne slike
         const { data: urlData } = _supabase.storage
           .from('galerija')
           .getPublicUrl(filePath);
@@ -212,7 +212,7 @@
 
         statusDiv.textContent = 'Spremanje podataka profila...';
 
-        // 4. Baza Insert
+        // 4. Upis u tabelu UPOZNAVANJ_KORISNICI
         const { error: dbError } = await _supabase
           .from('UPOZNAVANJ_KORISNICI')
           .insert([
