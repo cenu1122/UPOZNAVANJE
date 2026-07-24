@@ -86,22 +86,23 @@
   </footer>
 
 <script>
-  // Inicijalizacija Supabase-a
-  const SUPABASE_URL = 'TVOJ_SUPABASE_URL';
-  const SUPABASE_KEY = 'TVOJ_SUPABASE_ANON_KEY';
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  // Tvoji Supabase parametri preuzeti iz forme za registraciju
+  const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+  
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let currentUser = null;
 
   async function ucitajProfil() {
     const statusMsg = document.getElementById('statusMessage');
 
-    // 1. Provjera prijave
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // 1. Provjera da li je korisnik prijavljen
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
 
     if (authError || !user) {
       console.error("Korisnik nije prijavljen:", authError);
-      window.location.href = "index.html";
+      window.location.href = "LOGIN.html";
       return;
     }
 
@@ -110,41 +111,38 @@
 
     try {
       // 2. Dohvatanje podataka iz UPOZNAVANJ_KORISNICI
-      const { data: profilData, error: profilError } = await supabase
+      const { data: profilData, error: profilError } = await supabaseClient
         .from('UPOZNAVANJ_KORISNICI')
         .select('*')
-        .eq('id', user.id)
-        .single();
+        .eq('USER', user.id)
+        .maybeSingle();
 
-      if (profilError && profilError.code !== 'PGRST116') {
+      if (profilError) {
         throw profilError;
       }
 
       if (profilData) {
-        const nadimak = profilData.nadimak || profilData.prikazano_ime || 'Korisnik';
+        const nadimak = profilData.IME || profilData.nadimak || 'Korisnik';
         document.getElementById('displayName').innerText = nadimak;
         document.getElementById('nameInput').value = nadimak;
+
+        // Ako u tabeli UPOZNAVANJ_KORISNICI postoji SLIKE_URL, postavi sliku
+        if (profilData.SLIKE_URL) {
+          document.getElementById('profileImg').src = profilData.SLIKE_URL;
+        }
       } else {
         document.getElementById('displayName').innerText = 'Unesite nadimak';
       }
 
-      // 3. Dohvatanje slike iz tabele SLIKE
-      const { data: slikaData, error: slikaError } = await supabase
+      // 3. Provjera u tabeli SLIKE (ako postoji posebna slika u toj tabeli)
+      const { data: slikaData, error: slikaError } = await supabaseClient
         .from('SLIKE')
         .select('url')
         .eq('korisnik_id', user.id)
         .maybeSingle();
 
-      if (slikaError) {
-        console.warn("Greška pri dohvatanju slike:", slikaError.message);
-      }
-
-      // 4. Prikaz slike
-      const profileImg = document.getElementById('profileImg');
-      if (slikaData && slikaData.url) {
-        profileImg.src = slikaData.url;
-      } else {
-        profileImg.src = 'https://via.placeholder.com/130?text=Bez+Slike';
+      if (!slikaError && slikaData && slikaData.url) {
+        document.getElementById('profileImg').src = slikaData.url;
       }
 
     } catch (err) {
@@ -168,9 +166,13 @@
     statusMsg.style.color = "#2b2d42";
     statusMsg.innerText = "Spremanje...";
 
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('UPOZNAVANJ_KORISNICI')
-      .upsert({ id: currentUser.id, nadimak: noviNadimak });
+      .upsert({ 
+        USER: currentUser.id, 
+        IME: noviNadimak,
+        nadimak: noviNadimak 
+      }, { onConflict: 'USER' });
 
     if (error) {
       statusMsg.style.color = "red";
@@ -184,8 +186,8 @@
 
   // Funkcija za odjavu
   async function logout() {
-    await supabase.auth.signOut();
-    window.location.href = "index.html";
+    await supabaseClient.auth.signOut();
+    window.location.href = "LOGIN.html";
   }
 
   document.addEventListener('DOMContentLoaded', ucitajProfil);
