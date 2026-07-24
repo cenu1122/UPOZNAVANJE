@@ -192,20 +192,20 @@
 
         statusDiv.textContent = 'Spremanje profilne slike...';
 
-        // 2. Upload slike u Storage bucket 'galerija'
+        // 2. Upload slike u Storage bucket 'GALERIJA'
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
         const filePath = `profili/${fileName}`;
 
         const { error: uploadError } = await _supabase.storage
-          .from('galerija')
+          .from('GALERIJA')
           .upload(filePath, file);
 
         if (uploadError) throw uploadError;
 
         // 3. Preuzimanje Public URL-a profilne slike
         const { data: urlData } = _supabase.storage
-          .from('galerija')
+          .from('GALERIJA')
           .getPublicUrl(filePath);
 
         const imageUrl = urlData.publicUrl;
