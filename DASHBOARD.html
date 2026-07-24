@@ -5,291 +5,287 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard, Pretraga & Chat | LjubavNaPrviKlik</title>
 
+  <!-- Supabase JS Library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
     
-    header { background-color: #d90429; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
-    .logo { font-size: 1.5rem; font-weight: bold; color: #fff; text-decoration: none; }
-    .btn-logout { background: #2b2d42; color: #fff; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; }
-
-    .main-container { flex: 1; max-width: 1000px; width: 100%; margin: 20px auto; padding: 0 15px; display: flex; flex-direction: column; gap: 20px; }
-    .card { background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; }
     
-    .partner-selector { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; background: #ffe5ec; padding: 15px; border-radius: 12px; }
-    select, input { padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+    .btn-profile { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; }
+    .btn-profile:hover { background: #ef233c; }
+    .btn-logout { background: #4a4e69; color: #fff; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
+    .btn-logout:hover { background: #6c757d; }
 
-    .search-box { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-    .search-box input { flex: 1; min-width: 200px; }
-    .btn-search { background-color: #d90429; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-    .btn-search:hover { background-color: #ef233c; }
+    .main-container { flex: 1; max-width: 900px; width: 100%; margin: 20px auto; padding: 0 15px; display: flex; flex-direction: column; gap: 20px; }
+    
+    .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
-    .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
-    .user-card { border: 1px solid #eee; padding: 12px; border-radius: 10px; text-align: center; background: #fafafa; }
-    .user-card img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; border: 2px solid #d90429; }
+    /* Top bar info */
+    .user-info-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .select-group { display: flex; gap: 10px; align-items: center; }
+    .select-group select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; outline: none; }
 
-    .chat-box { height: 380px; overflow-y: auto; border: 1px solid #eee; padding: 15px; border-radius: 10px; background: #fafafa; display: flex; flex-direction: column; gap: 15px; }
-    .message { max-width: 80%; padding: 12px 16px; border-radius: 15px; font-size: 0.95rem; line-height: 1.4; word-break: break-word; position: relative; }
-    .message.sent { background: #d90429; color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
-    .message.received { background: #e9ecef; color: #2b2d42; align-self: flex-start; border-bottom-left-radius: 2px; }
-    .message .translation { font-size: 0.85rem; opacity: 0.9; margin-top: 6px; border-top: 1px dashed rgba(255,255,255,0.4); padding-top: 6px; font-style: italic; }
-    .message.received .translation { border-top-color: #ccc; }
+    /* Pretraga */
+    .search-box { display: flex; gap: 10px; margin-top: 10px; }
+    .search-box input { flex: 1; padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px; outline: none; }
+    .btn-search { background: #2b2d42; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-search:hover { background: #3d405b; }
 
-    /* Dugmići ispod poruke */
-    .msg-actions { display: flex; gap: 6px; margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.2); }
-    .message.received .msg-actions { border-top-color: #ddd; }
-    .btn-action { background: rgba(255,255,255,0.2); border: none; color: inherit; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
-    .message.received .btn-action { background: #fff; border: 1px solid #ccc; }
-    .btn-action:hover { opacity: 0.85; }
+    /* Rezultati pretrage */
+    .search-results { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; max-height: 200px; overflow-y: auto; }
+    .user-result-card { display: flex; align-items: center; justify-content: space-between; padding: 10px; border: 1px solid #eee; border-radius: 8px; background: #fafafa; }
+    .user-result-info { display: flex; align-items: center; gap: 12px; }
+    .user-result-info img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+    .btn-select-partner { background: #d90429; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
 
-    .chat-input-area { display: flex; gap: 10px; margin-top: 15px; }
-    .chat-input-area input { flex: 1; }
-    .btn-send { background: #d90429; color: white; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-    .btn-send:hover { background-color: #ef233c; }
+    /* Chat sekcija */
+    .chat-box { height: 250px; border: 1px solid #eee; border-radius: 8px; padding: 15px; background: #fdfdfd; overflow-y: auto; display: flex; justify-content: center; align-items: center; color: #888; }
+    .chat-input-area { display: flex; gap: 10px; margin-top: 12px; }
+    .chat-input-area input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; outline: none; }
+    .btn-send { background: #2b2d42; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 15px 0; margin-top: auto; }
+    /* Pozivnice / Social Share */
+    .invite-section h3 { margin-bottom: 8px; font-size: 1.1rem; color: #800020; }
+    .invite-box { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
+    .invite-msg-preview { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; font-size: 0.9rem; color: #4a5568; }
+    
+    .invite-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px; }
+    .btn-share { text-decoration: none; color: #fff; padding: 10px 16px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer; transition: opacity 0.2s; }
+    .btn-share:hover { opacity: 0.9; }
+    .btn-copy { background-color: #2b2d42; }
+    .btn-facebook { background-color: #1877F2; }
+    .btn-instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+    .btn-linkedin { background-color: #0A66C2; }
+
+    #statusMsg { font-size: 0.9rem; margin-top: 5px; }
+
+    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
   </style>
 </head>
 <body>
 
   <header>
-    <a href="PROFIL.html" class="logo">❤️ LjubavNaPrviKlik</a>
-    <button class="btn-logout" onclick="logout()">Odjava</button>
+    <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
+    <div class="nav-actions">
+      <a href="PROFIL.html" class="btn-profile">👤 Moj Profil</a>
+      <button class="btn-logout" onclick="logout()">Odjava</button>
+    </div>
   </header>
 
   <div class="main-container">
-    
-    <div class="card partner-selector">
-      <div>
-        <label><strong>Prijavljeni ste kao:</strong></label>
-        <div id="currentUserEmail" style="font-weight: bold; color: #d90429;">Učitavanje...</div>
-      </div>
 
-      <div style="margin-left: auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <label><strong>Izaberi partnera:</strong></label>
-        <select id="partnerSelect" onchange="loadMessages()">
+    <!-- Top Bar -->
+    <div class="card user-info-bar">
+      <div>
+        <strong>Prijavljeni ste kao:</strong>
+        <span id="currentEmail">Učitavanje...</span>
+      </div>
+      <div class="select-group">
+        <label for="partnerSelect">Izaberi partnera:</label>
+        <select id="partnerSelect">
           <option value="">-- Izaberite partnera --</option>
         </select>
-
-        <label><strong>Jezik prevoda:</strong></label>
-        <select id="targetLang" onchange="toggleCustomLangInput()">
-          <option value="English">English 🇬🇧</option>
-          <option value="German">Deutsch 🇩🇪</option>
-          <option value="Turkish">Türkçe 🇹🇷</option>
-          <option value="Spanish">Español 🇪🇸</option>
-          <option value="French">Français 🇫🇷</option>
-          <option value="Italian">Italiano 🇮🇹</option>
-          <option value="Russian">Русский 🇷🇺</option>
-          <option value="Arabic">العربية 🇸🇦</option>
-          <option value="Chinese">中文 🇨🇳</option>
-          <option value="Bosnian">Bosanski / Hrvatski / Srpski 🇧🇦</option>
-          <option value="CUSTOM">--- Upiši drugi jezik ---</option>
-        </select>
-        <input type="text" id="customLangInput" placeholder="Npr. Holandski..." style="display: none; width: 130px;">
       </div>
     </div>
 
+    <!-- Pretraga partnera -->
     <div class="card">
-      <h3 style="color: #800020;">🔍 Pretraga partnera</h3>
+      <h3>🔍 Pretraga partnera</h3>
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="Unesite ime ili email korisnika...">
-        <button class="btn-search" onclick="searchPartners()">Pretraži bazu</button>
+        <button class="btn-search" onclick="searchUsers()">Pretraži bazu</button>
       </div>
-      <div id="searchResults" class="results-grid"></div>
+      <div id="statusMsg"></div>
+      <div id="searchResults" class="search-results"></div>
     </div>
 
+    <!-- Chat Sekcija -->
     <div class="card">
-      <h3 style="margin-bottom: 15px; color: #800020;">💬 Dopisivanje uz AI Prevodilac</h3>
-      
+      <h3>💬 Dopisivanje uz AI Prevodilac</h3>
       <div class="chat-box" id="chatBox">
-        <div style="text-align: center; color: #888; margin-top: 130px;">Izaberite partnera iz menija iznad.</div>
+        Izaberite partnera iz menija ili pretrage iznad za početak razgovora.
       </div>
-
       <div class="chat-input-area">
-        <input type="text" id="msgInput" placeholder="Napišite poruku..." onkeydown="if(event.key==='Enter') sendMessage()">
-        <button class="btn-send" onclick="sendMessage()" id="sendBtn">POŠALJI</button>
+        <input type="text" id="chatMsg" placeholder="Napišite poruku...">
+        <button class="btn-send">POŠALJI</button>
+      </div>
+    </div>
+
+    <!-- Pozivnice za društvene mreže sa kopiranjem poruke -->
+    <div class="card invite-section">
+      <h3>📢 Pozovite prijatelje na LjubavNaPrviKlik</h3>
+      <p style="font-size: 0.9rem; color: #666;">Kopirajte poruku i pozovite prijatelje putem društvenih mreža:</p>
+
+      <div class="invite-box">
+        <!-- Pregled tekstualne poruke koja će se kopirati -->
+        <div class="invite-msg-preview" id="inviteMsgText">
+          Pridruži mi se na sajtu LjubavNaPrviKlik i pronađi nekog posebnog! Registruj se ovdje: https://cenu1122.github.io/UPOZNAVANJE/LOGIN.html
+        </div>
+
+        <div class="invite-buttons">
+          <!-- Dugme za ručno kopiranje -->
+          <button class="btn-share btn-copy" onclick="copyInviteMessage()">📋 Kopiraj Poruku & Link</button>
+          
+          <!-- Pozivnice preko društvenih mreža -->
+          <button class="btn-share btn-facebook" onclick="shareWithCopy('facebook')">f Facebook (Kopiraj & Otvori)</button>
+          <button class="btn-share btn-instagram" onclick="shareWithCopy('instagram')">📸 Instagram (Kopiraj & Otvori)</button>
+          <button class="btn-share btn-linkedin" onclick="shareWithCopy('linkedin')">in LinkedIn (Kopiraj & Otvori)</button>
+        </div>
       </div>
     </div>
 
   </div>
 
   <footer>
-    <p>© 2026 LjubavNaPrviKlik. Pokreće Groq AI & Supabase.</p>
+    <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
   </footer>
 
-  <script>
-    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+<script>
+  const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
 
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    let currentUser = null;
+  const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  let currentUser = null;
 
-    function toggleCustomLangInput() {
-      const select = document.getElementById('targetLang');
-      const customInput = document.getElementById('customLangInput');
-      customInput.style.display = (select.value === 'CUSTOM') ? 'inline-block' : 'none';
+  // Stvarni link za registraciju na GitHub Pages
+  const inviteLink = "https://cenu1122.github.io/UPOZNAVANJE/LOGIN.html";
+  const inviteText = `Pridruži mi se na sajtu LjubavNaPrviKlik i pronađi nekog posebnog! Registruj se ovdje: ${inviteLink}`;
+
+  async function initDashboard() {
+    const { data: { user }, error } = await _supabase.auth.getUser();
+
+    if (error || !user) {
+      window.location.href = "LOGIN.html";
+      return;
     }
 
-    async function initDashboard() {
-      const { data: { session } } = await _supabase.auth.getSession();
-      if (!session) { window.location.href = 'LOGIN.html'; return; }
+    currentUser = user;
+    document.getElementById('currentEmail').innerText = user.email;
+  }
 
-      currentUser = session.user;
-      document.getElementById('currentUserEmail').textContent = currentUser.email;
-      await loadPartners();
+  // Pretraga korisnika u bazi
+  async function searchUsers() {
+    const query = document.getElementById('searchInput').value.trim();
+    const resultsContainer = document.getElementById('searchResults');
+    const statusMsg = document.getElementById('statusMsg');
+
+    resultsContainer.innerHTML = '';
+
+    if (!query) {
+      statusMsg.style.color = 'red';
+      statusMsg.innerText = 'Unesite pojam za pretragu.';
+      return;
     }
 
-    async function logout() {
-      await _supabase.auth.signOut();
-      window.location.href = 'LOGIN.html';
-    }
+    statusMsg.style.color = '#0056b3';
+    statusMsg.innerText = 'Pretraživanje...';
 
-    async function loadPartners() {
-      const { data: partners } = await _supabase
+    try {
+      const { data: users, error } = await _supabase
         .from('UPOZNAVANJ_KORISNICI')
-        .select('MAIL, IME, USER, SLIKE_URL');
+        .select('*')
+        .or(`IME.ilike.%${query}%,MAIL.ilike.%${query}%,nadimak.ilike.%${query}%`)
+        .neq('USER', currentUser.id);
 
-      const partnerSelect = document.getElementById('partnerSelect');
-      partnerSelect.innerHTML = '<option value="">-- Izaberite partnera --</option>';
+      if (error) throw error;
 
-      if (partners) {
-        partners.forEach(p => {
-          const partnerEmail = p.MAIL || '';
-          if (partnerEmail.toLowerCase() !== currentUser.email.toLowerCase() && p.USER !== currentUser.id) {
-            const opt = document.createElement('option');
-            opt.value = partnerEmail;
-            opt.textContent = `${p.IME || 'Korisnik'} (${partnerEmail})`;
-            partnerSelect.appendChild(opt);
-          }
-        });
+      if (!users || users.length === 0) {
+        statusMsg.style.color = '#666';
+        statusMsg.innerText = 'Nije pronađen nijedan korisnik sa tim pojmom.';
+        return;
       }
-    }
 
-    async function searchPartners() {
-      const query = document.getElementById('searchInput').value.trim();
-      const resultsDiv = document.getElementById('searchResults');
-      resultsDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center;">Pretraživanje baze...</div>';
+      statusMsg.innerText = `Pronađeno korisnika: ${users.length}`;
 
-      let req = _supabase.from('UPOZNAVANJ_KORISNICI').select('*');
-      if (query) req = req.or(`IME.ilike.%${query}%,MAIL.ilike.%${query}%`);
+      users.forEach(u => {
+        const name = u.IME || u.nadimak || 'Korisnik';
+        const imgUrl = u.SLIKE_URL || 'https://via.placeholder.com/40?text=U';
 
-      const { data: results } = await req;
-
-      resultsDiv.innerHTML = '';
-      if (results && results.length > 0) {
-        results.forEach(u => {
-          const userMail = u.MAIL || '';
-          if (userMail.toLowerCase() !== currentUser.email.toLowerCase() && u.USER !== currentUser.id) {
-            const imgSrc = u.SLIKE_URL || 'https://via.placeholder.com/80';
-            resultsDiv.innerHTML += `
-              <div class="user-card">
-                <img src="${imgSrc}" alt="Slika">
-                <h4>${u.IME || 'Korisnik'}</h4>
-                <p style="font-size:0.8rem; color:#666; margin-bottom: 8px;">${userMail}</p>
-                <button class="btn-send" style="padding:6px 12px; font-size:0.85rem;" onclick="selectPartnerForChat('${userMail}')">Otvori Chat</button>
-              </div>`;
-          }
-        });
-      } else {
-        resultsDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color:#666;">Nema pronađenih korisnika u bazi.</div>';
-      }
-    }
-
-    function selectPartnerForChat(email) {
-      document.getElementById('partnerSelect').value = email;
-      loadMessages();
-    }
-
-    // Funkcija za kopiranje poruke na klik
-    function copyMessageText(tekst) {
-      navigator.clipboard.writeText(tekst).then(() => {
-        alert("Poruka je kopirana u clipboard!");
-      }).catch(err => {
-        console.error("Greška pri kopiranju:", err);
+        const userCard = document.createElement('div');
+        userCard.className = 'user-result-card';
+        userCard.innerHTML = `
+          <div class="user-result-info">
+            <img src="${imgUrl}" alt="${name}">
+            <div>
+              <strong>${name}</strong><br>
+              <small style="color:#777;">${u.MAIL || ''}</small>
+            </div>
+          </div>
+          <button class="btn-select-partner" onclick="selectPartner('${u.USER}', '${name}')">Izaberi za chat</button>
+        `;
+        resultsContainer.appendChild(userCard);
       });
+
+    } catch (err) {
+      statusMsg.style.color = 'red';
+      statusMsg.innerText = 'Greška: ' + err.message;
     }
+  }
 
-    async function loadMessages() {
-      const partnerEmail = document.getElementById('partnerSelect').value;
-      const chatBox = document.getElementById('chatBox');
-      if (!partnerEmail) return;
-
-      const { data: messages } = await _supabase.from('PORUKE').select('*')
-        .or(`and(posiljalac_email.eq.${currentUser.email},primalac_email.eq.${partnerEmail}),and(posiljalac_email.eq.${partnerEmail},primalac_email.eq.${currentUser.email})`)
-        .order('created_at', { ascending: true });
-
-      chatBox.innerHTML = '';
-      if (messages && messages.length > 0) {
-        messages.forEach(msg => {
-          const isSent = msg.posiljalac_email === currentUser.email;
-          const puniTekst = msg.prevedeni_tekst 
-            ? `${msg.originalni_tekst}\n(Prevod: ${msg.prevedeni_tekst})` 
-            : msg.originalni_tekst;
-
-          // Escaping navodnika za JS funkciju
-          const safeTekst = puniTekst.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-
-          chatBox.innerHTML += `
-            <div class="message ${isSent ? 'sent' : 'received'}">
-              <div>${msg.originalni_tekst}</div>
-              ${msg.prevedeni_tekst ? `<div class="translation">🌐 ${msg.prevedeni_tekst}</div>` : ''}
-              
-              <div class="msg-actions">
-                <button class="btn-action" onclick="copyMessageText('${safeTekst}')" title="Kopiraj poruku">📋 Kopiraj</button>
-                <a class="btn-action" href="https://www.facebook.com" target="_blank" title="Otvori Facebook">🔵 Facebook</a>
-                <a class="btn-action" href="https://www.instagram.com" target="_blank" title="Otvori Instagram">🔴 Instagram</a>
-              </div>
-            </div>`;
-        });
-        chatBox.scrollTop = chatBox.scrollHeight;
-      } else {
-        chatBox.innerHTML = '<div style="text-align: center; color: #888; margin-top: 130px;">Nema prethodnih poruka. Započnite razgovor!</div>';
+  // Odabir partnera za chat
+  function selectPartner(userId, name) {
+    const select = document.getElementById('partnerSelect');
+    
+    let exists = false;
+    for (let i = 0; i < select.options.length; i++) {
+      if (select.options[i].value === userId) {
+        exists = true;
+        select.selectedIndex = i;
+        break;
       }
     }
 
-    async function sendMessage() {
-      const input = document.getElementById('msgInput');
-      const partnerEmail = document.getElementById('partnerSelect').value;
-      const langSelect = document.getElementById('targetLang');
-      const customLang = document.getElementById('customLangInput').value.trim();
-      const sendBtn = document.getElementById('sendBtn');
-      const text = input.value.trim();
-
-      let targetLang = (langSelect.value === 'CUSTOM') ? (customLang || 'English') : langSelect.value;
-
-      if (!partnerEmail || !text) return;
-
-      input.value = '';
-      sendBtn.disabled = true;
-
-      let translatedText = text;
-
-      try {
-        const { data, error } = await _supabase.functions.invoke('GROQ_POZIVANR', {
-          body: { text: text, targetLang: targetLang }
-        });
-        if (!error && data && (data.translation || data.response)) {
-          translatedText = data.translation || data.response;
-        }
-      } catch (err) {
-        console.warn("Prevod greška:", err);
-      }
-
-      await _supabase.from('PORUKE').insert([{
-        posiljalac_email: currentUser.email,
-        primalac_email: partnerEmail,
-        originalni_tekst: text,
-        prevedeni_tekst: translatedText
-      }]);
-
-      sendBtn.disabled = false;
-      loadMessages();
+    if (!exists) {
+      const opt = document.createElement('option');
+      opt.value = userId;
+      opt.innerText = name;
+      opt.selected = true;
+      select.appendChild(opt);
     }
 
-    initDashboard();
-  </script>
+    document.getElementById('chatBox').innerHTML = `Započeli ste razgovor sa korisnikom: <strong>${name}</strong>`;
+  }
+
+  // 1. Funkcija za samo kopiranje poruke
+  function copyInviteMessage() {
+    navigator.clipboard.writeText(inviteText).then(() => {
+      alert("Poruka sa linkom je kopirana u vaš clipboard!");
+    }).catch(err => {
+      console.error("Greška pri kopiranju:", err);
+    });
+  }
+
+  // 2. Funkcija koja kopira poruku I otvara odabranu društvenu mrežu
+  function shareWithCopy(platform) {
+    navigator.clipboard.writeText(inviteText);
+
+    if (platform === 'facebook') {
+      alert("Poruka i link su KOPIRANI! Sada zalijepite poruku u objavu ili privatnu poruku na Facebooku.");
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(inviteLink)}`, '_blank');
+    } 
+    else if (platform === 'instagram') {
+      alert("Poruka i link su KOPIRANI! Otvara se Instagram – zalijepite poruku u DM prijatelju.");
+      window.open('https://www.instagram.com/direct/inbox/', '_blank');
+    } 
+    else if (platform === 'linkedin') {
+      alert("Poruka i link su KOPIRANI! Sada zalijepite poruku na LinkedIn.");
+      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(inviteLink)}`, '_blank');
+    }
+  }
+
+  // Odjava
+  async function logout() {
+    await _supabase.auth.signOut();
+    window.location.href = "LOGIN.html";
+  }
+
+  document.addEventListener('DOMContentLoaded', initDashboard);
+</script>
 
 </body>
 </html>
