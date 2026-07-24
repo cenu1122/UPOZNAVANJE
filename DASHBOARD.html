@@ -27,20 +27,42 @@
     /* Top bar info sa izborom jezika i partnera */
     .user-info-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
     .partner-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    .partner-controls input, .partner-controls select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; outline: none; }
+    .partner-controls input, .partner-controls select, .filter-controls select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; outline: none; }
 
-    /* Pretraga */
-    .search-box { display: flex; gap: 10px; margin-top: 10px; }
+    /* Pretraga i Filteri */
+    .search-filters { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .search-box { display: flex; gap: 10px; margin-top: 10px; width: 100%; }
     .search-box input { flex: 1; padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px; outline: none; }
     .btn-search { background: #2b2d42; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     .btn-search:hover { background: #3d405b; }
 
     /* Rezultati pretrage */
-    .search-results { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; max-height: 200px; overflow-y: auto; }
-    .user-result-card { display: flex; align-items: center; justify-content: space-between; padding: 10px; border: 1px solid #eee; border-radius: 8px; background: #fafafa; }
+    .search-results { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; }
+    .user-result-card { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border: 1px solid #eee; border-radius: 8px; background: #fafafa; }
     .user-result-info { display: flex; align-items: center; gap: 12px; }
-    .user-result-info img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+    .user-result-info img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
+    
+    .action-buttons { display: flex; gap: 6px; }
+    .btn-view-profile { background: #4a4e69; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
+    .btn-view-profile:hover { background: #2b2d42; }
     .btn-select-partner { background: #d90429; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
+    .btn-select-partner:hover { background: #ef233c; }
+
+    /* Online / Offline Oznake */
+    .status-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; }
+    .status-online { background-color: #e6f4ea; color: #137333; }
+    .status-offline { background-color: #f1f3f4; color: #5f6368; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+    .dot-online { background-color: #34a853; }
+    .dot-offline { background-color: #80868b; }
+
+    /* Modal za profil korisnika */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
+    .modal-card { background: #fff; border-radius: 12px; width: 90%; max-width: 400px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; position: relative; }
+    .modal-close { position: absolute; top: 12px; right: 15px; font-size: 1.5rem; background: none; border: none; cursor: pointer; color: #888; }
+    .modal-profile-img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; margin-bottom: 12px; border: 3px solid #d90429; }
+    .profile-details { text-align: left; margin: 15px 0; background: #f8f9fa; padding: 12px; border-radius: 8px; font-size: 0.95rem; }
+    .profile-details div { margin-bottom: 6px; }
 
     /* Chat sekcija sa profilnom slikom partnera */
     .chat-header { display: flex; align-items: center; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid #eee; margin-bottom: 10px; }
@@ -117,10 +139,30 @@
       </div>
     </div>
 
+    <!-- Napredna pretraga korisnika -->
     <div class="card">
-      <h3>🔍 Pretraga partnera po nadimku</h3>
+      <h3>🔍 Pretraga partnera</h3>
+      
+      <div class="search-filters">
+        <select id="genderSelect" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc;">
+          <option value="">-- Svi spolovi --</option>
+          <option value="Musko">Muško</option>
+          <option value="Zensko">Žensko</option>
+        </select>
+
+        <select id="countrySelect" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc;">
+          <option value="">-- Sve države --</option>
+          <option value="Bosna i Hercegovina">Bosna i Hercegovina</option>
+          <option value="Srbija">Srbija</option>
+          <option value="Hrvatska">Hrvatska</option>
+          <option value="Njemačka">Njemačka</option>
+          <option value="Austrija">Austrija</option>
+          <option value="Švicarska">Švicarska</option>
+        </select>
+      </div>
+
       <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Unesite tačan nadimak ili ime osobe...">
+        <input type="text" id="searchInput" placeholder="Unesite nadimak, ime ili ostavite prazno za pretragu po filterima...">
         <button class="btn-search" onclick="searchUsers()">Pretraži</button>
       </div>
       <div id="statusMsg"></div>
@@ -134,7 +176,7 @@
         <img id="chatPartnerImg" src="https://via.placeholder.com/45?text=U" alt="Partner Slika">
         <div class="chat-header-info">
           <strong id="chatPartnerName" style="font-size: 1.1rem;">-</strong>
-          <small style="color: green;">● Aktivan/na u chatu</small>
+          <small id="chatPartnerStatus" style="color: green;">● Aktivan/na u chatu</small>
         </div>
       </div>
 
@@ -169,6 +211,26 @@
 
   </div>
 
+  <!-- MODAL ZA PREGLED PROFILA -->
+  <div id="profileModal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeProfileModal()">&times;</button>
+      <img id="modalImg" class="modal-profile-img" src="" alt="Profil Slika">
+      <h3 id="modalName" style="color: #2b2d42;">-</h3>
+      <div id="modalStatus"></div>
+
+      <div class="profile-details">
+        <div><strong>Email:</strong> <span id="modalEmail">-</span></div>
+        <div><strong>Spol:</strong> <span id="modalGender">-</span></div>
+        <div><strong>Država:</strong> <span id="modalCountry">-</span></div>
+      </div>
+
+      <button id="modalChatBtn" class="btn-select-partner" style="width: 100%; padding: 10px; font-size: 1rem;">
+        💬 Započni Chat
+      </button>
+    </div>
+  </div>
+
   <footer>
     <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
   </footer>
@@ -180,6 +242,8 @@
   const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   let currentUser = null;
   let currentPartnerEmail = null;
+  let onlineUsersMap = new Map();
+  let currentSearchResults = [];
 
   const inviteLink = "https://cenu1122.github.io/UPOZNAVANJE/LOGIN.html";
   const inviteText = `Pridruži mi se na sajtu LjubavNaPrviKlik i pronađi nekog posebnog! Registruj se ovdje: ${inviteLink}`;
@@ -194,10 +258,42 @@
 
     currentUser = user;
     document.getElementById('currentEmail').innerText = user.email;
+    
+    initPresenceSystem();
     await loadPartnerSelectMenu();
   }
 
-  // Učitava sve partnere u padajući meni
+  function initPresenceSystem() {
+    const channel = _supabase.channel('online-users');
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        onlineUsersMap.clear();
+        
+        Object.keys(state).forEach(key => {
+          state[key].forEach(presence => {
+            if (presence.user_email) {
+              onlineUsersMap.set(presence.user_email.toLowerCase(), true);
+            }
+          });
+        });
+
+        const resultsContainer = document.getElementById('searchResults');
+        if (resultsContainer.innerHTML !== '') {
+          renderSearchResults();
+        }
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({
+            user_email: currentUser.email,
+            online_at: new Date().toISOString()
+          });
+        }
+      });
+  }
+
   async function loadPartnerSelectMenu() {
     const { data: users } = await _supabase
       .from('UPOZNAVANJ_KORISNICI')
@@ -243,7 +339,6 @@
     const targetLang = langSelect ? langSelect.value : 'Bosnian';
     let translatedText = text;
 
-    // Prevođenje preko Groq Edge funkcije
     try {
       const { data: edgeData, error: edgeError } = await _supabase.functions.invoke('GROQ_POZIVANR', {
         body: { text: text, targetLang: targetLang }
@@ -256,7 +351,6 @@
       console.warn("AI prevod nije dostupan, šalje se samo izvorni tekst:", e);
     }
 
-    // Upis u bazu
     const { data, error: insertError } = await _supabase
       .from('PORUKE')
       .insert([
@@ -358,62 +452,112 @@
 
   async function searchUsers() {
     const query = document.getElementById('searchInput').value.trim();
-    const resultsContainer = document.getElementById('searchResults');
+    const selectedGender = document.getElementById('genderSelect').value;
+    const selectedCountry = document.getElementById('countrySelect').value;
+    
     const statusMsg = document.getElementById('statusMsg');
-
-    resultsContainer.innerHTML = '';
-
-    if (!query || query.length < 2) {
-      statusMsg.style.color = 'red';
-      statusMsg.innerText = 'Unesite najmanje 2 slova za pretragu.';
-      return;
-    }
 
     statusMsg.style.color = '#0056b3';
     statusMsg.innerText = 'Pretraživanje...';
 
     try {
-      const { data: users, error } = await _supabase
-        .from('UPOZNAVANJ_KORISNICI')
-        .select('*')
-        .or(`IME.ilike.%${query}%,MAIL.ilike.%${query}%`)
-        .neq('USER', currentUser.id)
-        .limit(5);
+      let queryBuilder = _supabase.from('UPOZNAVANJ_KORISNICI').select('*');
+
+      if (query && query.length >= 2) {
+        queryBuilder = queryBuilder.or(`IME.ilike.%${query}%,MAIL.ilike.%${query}%`);
+      }
+
+      if (selectedGender) {
+        queryBuilder = queryBuilder.eq('SPOL', selectedGender);
+      }
+
+      if (selectedCountry) {
+        queryBuilder = queryBuilder.eq('DRZAVA', selectedCountry);
+      }
+
+      queryBuilder = queryBuilder.neq('USER', currentUser.id).limit(10);
+
+      const { data: users, error } = await queryBuilder;
 
       if (error) throw error;
 
-      if (!users || users.length === 0) {
-        statusMsg.style.color = '#666';
-        statusMsg.innerText = 'Nije pronađena nijedna osoba.';
-        return;
-      }
-
-      statusMsg.innerText = `Pronađeno: ${users.length} rezultat(a)`;
-
-      users.forEach(u => {
-        const name = u.IME || 'Korisnik';
-        const userEmail = u.MAIL || u.USER;
-        const imgUrl = u.SLIKE_URL || 'https://via.placeholder.com/40?text=' + name.charAt(0).toUpperCase();
-
-        const userCard = document.createElement('div');
-        userCard.className = 'user-result-card';
-        userCard.innerHTML = `
-          <div class="user-result-info">
-            <img src="${imgUrl}" alt="${name}">
-            <div>
-              <strong>${name}</strong><br>
-              <small style="color:#777;">${userEmail}</small>
-            </div>
-          </div>
-          <button class="btn-select-partner" onclick="selectPartner('${u.USER}', '${name}', '${imgUrl}', '${userEmail}')">Izaberi za chat</button>
-        `;
-        resultsContainer.appendChild(userCard);
-      });
+      currentSearchResults = users || [];
+      renderSearchResults();
 
     } catch (err) {
       statusMsg.style.color = 'red';
       statusMsg.innerText = 'Greška: ' + err.message;
     }
+  }
+
+  function renderSearchResults() {
+    const resultsContainer = document.getElementById('searchResults');
+    const statusMsg = document.getElementById('statusMsg');
+    
+    resultsContainer.innerHTML = '';
+
+    if (!currentSearchResults || currentSearchResults.length === 0) {
+      statusMsg.style.color = '#666';
+      statusMsg.innerText = 'Nije pronađena nijedna osoba sa zadanim kriterijima.';
+      return;
+    }
+
+    statusMsg.innerText = `Pronađeno: ${currentSearchResults.length} rezultat(a)`;
+
+    currentSearchResults.forEach(u => {
+      const name = u.IME || 'Korisnik';
+      const userEmail = u.MAIL || u.USER;
+      const imgUrl = u.SLIKE_URL || 'https://via.placeholder.com/40?text=' + name.charAt(0).toUpperCase();
+      const country = u.DRZAVA ? `📍 ${u.DRZAVA}` : '';
+
+      const isOnline = onlineUsersMap.has(userEmail.toLowerCase());
+      const statusBadgeHTML = isOnline 
+        ? `<span class="status-badge status-online"><span class="dot dot-online"></span> Online</span>`
+        : `<span class="status-badge status-offline"><span class="dot dot-offline"></span> Offline</span>`;
+
+      const userCard = document.createElement('div');
+      userCard.className = 'user-result-card';
+      userCard.innerHTML = `
+        <div class="user-result-info">
+          <img src="${imgUrl}" alt="${name}">
+          <div>
+            <strong>${name}</strong> ${statusBadgeHTML}<br>
+            <small style="color:#777;">${userEmail} ${country}</small>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button class="btn-view-profile" onclick="openProfileModal('${u.USER}', '${name}', '${imgUrl}', '${userEmail}', '${u.SPOL || 'Nije navedeno'}', '${u.DRZAVA || 'Nije navedeno'}')">👤 Profil</button>
+          <button class="btn-select-partner" onclick="selectPartner('${u.USER}', '${name}', '${imgUrl}', '${userEmail}')">Chat</button>
+        </div>
+      `;
+      resultsContainer.appendChild(userCard);
+    });
+  }
+
+  /* Funkcije za Pregled Profila (Modal) */
+  function openProfileModal(userId, name, imgUrl, userEmail, gender, country) {
+    document.getElementById('modalImg').src = imgUrl;
+    document.getElementById('modalName').innerText = name;
+    document.getElementById('modalEmail').innerText = userEmail;
+    document.getElementById('modalGender').innerText = gender;
+    document.getElementById('modalCountry').innerText = country;
+
+    const isOnline = onlineUsersMap.has(userEmail.toLowerCase());
+    document.getElementById('modalStatus').innerHTML = isOnline 
+      ? `<span class="status-badge status-online"><span class="dot dot-online"></span> Online</span>`
+      : `<span class="status-badge status-offline"><span class="dot dot-offline"></span> Offline</span>`;
+
+    const chatBtn = document.getElementById('modalChatBtn');
+    chatBtn.onclick = function() {
+      selectPartner(userId, name, imgUrl, userEmail);
+      closeProfileModal();
+    };
+
+    document.getElementById('profileModal').style.display = 'flex';
+  }
+
+  function closeProfileModal() {
+    document.getElementById('profileModal').style.display = 'none';
   }
 
   function selectPartner(userId, name, imgUrl, userEmail) {
