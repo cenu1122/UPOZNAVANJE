@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moj Profil | LjubavNaPrviKlik</title>
+
+  <!-- Supabase JS Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
+    
+    header { background-color: #d90429; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    .logo { font-size: 1.5rem; font-weight: bold; color: #fff; text-decoration: none; }
+    .btn-logout { background: #2b2d42; color: #fff; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+
+    .main-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
+    .profile-card { background: #fff; width: 100%; max-width: 480px; padding: 35px; border-radius: 20px; box-shadow: 0 10px 25px rgba(217, 4, 41, 0.1); border-top: 5px solid #d90429; text-align: center; }
+    
+    .avatar-container { position: relative; width: 130px; height: 130px; margin: 0 auto 20px; }
+    .avatar-container img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid #d90429; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .btn-change-photo { position: absolute; bottom: 0; right: 0; background: #d90429; color: white; border: none; padding: 8px; border-radius: 50%; cursor: pointer; text-decoration: none; font-size: 1.1rem; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+    .profile-card h2 { color: #800020; margin-bottom: 5px; font-size: 1.8rem; }
+    .email-text { color: #666; font-size: 0.95rem; margin-bottom: 25px; }
+
+    .form-group { text-align: left; margin-bottom: 20px; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #2b2d42; }
+    .form-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; outline: none; }
+    .form-group input:focus { border-color: #d90429; }
+
+    .btn-save { width: 100%; background-color: #d90429; color: #fff; padding: 12px; border: none; border-radius: 10px; font-size: 1.05rem; font-weight: bold; cursor: pointer; transition: background 0.3s; }
+    .btn-save:hover { background-color: #ef233c; }
+
+    .action-links { margin-top: 25px; display: flex; flex-direction: column; gap: 12px; }
+    .btn-secondary { background: #ffe5ec; color: #d90429; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: bold; transition: background 0.2s; }
+    .btn-secondary:hover { background: #ffccd5; }
+
+    #statusMessage { margin-top: 15px; font-weight: bold; word-break: break-word; }
+
+    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html" class="logo">❤️ LjubavNaPrviKlik</a>
+    <button class="btn-logout" onclick="logout()">Odjava</button>
+  </header>
+
+  <div class="main-container">
+    <div class="profile-card">
+      
+      <!-- Profilna slika -->
+      <div class="avatar-container">
+        <img id="profileImg" src="https://via.placeholder.com/130" alt="Profilna slika">
+        <a href="DODAJ_SLIKU.html" class="btn-change-photo" title="Promijeni sliku">📷</a>
+      </div>
+
+      <h2 id="displayName">Učitavanje...</h2>
+      <p class="email-text" id="displayEmail">ucitavanje@email.com</p>
+
+      <!-- Forma za izmjenu podataka -->
+      <div class="form-group">
+        <label>Prikazano ime / Nadimak:</label>
+        <input type="text" id="nameInput" placeholder="Unesite vaše ime">
+      </div>
+
+      <button class="btn-save" id="saveBtn" onclick="updateProfile()">Sačuvaj izmjene</button>
+
+      <div id="statusMessage"></div>
+
+      <!-- Akcijski linkovi -->
+      <div class="action-links">
+        <a href="DODAJ_SLIKU.html" class="btn-secondary">📷 Promijeni / Ubaci novu sliku</a>
+        <a href="index.html" class="btn-secondary" style="background:#f8f9fa; color:#2b2d42; border: 1px solid #ddd;">💬 Idi na Chat & Pretragu</a>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
+  </footer>
+
+  <script>
+    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentUser = null;
+
+    // 1. Inicijalizacija i učitavanje profila
+    async function loadProfile() {
+      const { data: { session } } = await _supabase.auth.getSession();
+      
+      if (!session) {
+        window.location.href = 'LOGIN.html';
+        return;
+      }
+
+      currentUser = session.user;
+      document.getElementById('displayEmail').textContent = currentUser.email;
+
+      // Povlačenje podataka iz tabele UPOZNAVANJ_KORISNICI
+      const { data, error } = await _supabase
+        .from('UPOZNAVANJ_KORISNICI')
+        .select('IME, SLIKE_URL')
+        .eq('EMAIL', currentUser.email)
+        .single();
+
+      if (data) {
+        document.getElementById('displayName').textContent = data.IME || 'Korisnik';
+        document.getElementById('nameInput').value = data.IME || '';
+        
+        if (data.SLIKE_URL) {
+          document.getElementById('profileImg').src = data.SLIKE_URL;
+        }
+      }
+    }
+
+    // 2. Ažuriranje imena na profilu
+    async function updateProfile() {
+      const newName = document.getElementById('nameInput').value.trim();
+      const statusDiv = document.getElementById('statusMessage');
+      const saveBtn = document.getElementById('saveBtn');
+
+      if (!newName) {
+        statusDiv.style.color = 'red';
+        statusDiv.textContent = 'Ime ne može biti prazno!';
+        return;
+      }
+
+      saveBtn.disabled = true;
+      statusDiv.style.color = '#0056b3';
+      statusDiv.textContent = 'Spremanje...';
+
+      const { error } = await _supabase
+        .from('UPOZNAVANJ_KORISNICI')
+        .update({ IME: newName })
+        .eq('EMAIL', currentUser.email);
+
+      saveBtn.disabled = false;
+
+      if (error) {
+        statusDiv.style.color = 'red';
+        statusDiv.textContent = 'Greška: ' + error.message;
+      } else {
+        statusDiv.style.color = 'green';
+        statusDiv.textContent = 'Profil je uspješno ažuriran!';
+        document.getElementById('displayName').textContent = newName;
+      }
+    }
+
+    // 3. Odjava
+    async function logout() {
+      await _supabase.auth.signOut();
+      window.location.href = 'LOGIN.html';
+    }
+
+    loadProfile();
+  </script>
+
+</body>
+</html>
