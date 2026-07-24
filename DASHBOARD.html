@@ -95,10 +95,10 @@
 
     <!-- Pretraga partnera -->
     <div class="card">
-      <h3>🔍 Pretraga partnera</h3>
+      <h3>🔍 Pretraga partnera po nadimku</h3>
       <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Unesite ime ili email korisnika...">
-        <button class="btn-search" onclick="searchUsers()">Pretraži bazu</button>
+        <input type="text" id="searchInput" placeholder="Unesite tačan nadimak ili ime osobe...">
+        <button class="btn-search" onclick="searchUsers()">Pretraži</button>
       </div>
       <div id="statusMsg"></div>
       <div id="searchResults" class="search-results"></div>
@@ -116,22 +116,18 @@
       </div>
     </div>
 
-    <!-- Pozivnice za društvene mreže sa kopiranjem poruke -->
+    <!-- Pozivnice za društvene mreže -->
     <div class="card invite-section">
       <h3>📢 Pozovite prijatelje na LjubavNaPrviKlik</h3>
       <p style="font-size: 0.9rem; color: #666;">Kopirajte poruku i pozovite prijatelje putem društvenih mreža:</p>
 
       <div class="invite-box">
-        <!-- Pregled tekstualne poruke koja će se kopirati -->
         <div class="invite-msg-preview" id="inviteMsgText">
           Pridruži mi se na sajtu LjubavNaPrviKlik i pronađi nekog posebnog! Registruj se ovdje: https://cenu1122.github.io/UPOZNAVANJE/LOGIN.html
         </div>
 
         <div class="invite-buttons">
-          <!-- Dugme za ručno kopiranje -->
           <button class="btn-share btn-copy" onclick="copyInviteMessage()">📋 Kopiraj Poruku & Link</button>
-          
-          <!-- Pozivnice preko društvenih mreža -->
           <button class="btn-share btn-facebook" onclick="shareWithCopy('facebook')">f Facebook (Kopiraj & Otvori)</button>
           <button class="btn-share btn-instagram" onclick="shareWithCopy('instagram')">📸 Instagram (Kopiraj & Otvori)</button>
           <button class="btn-share btn-linkedin" onclick="shareWithCopy('linkedin')">in LinkedIn (Kopiraj & Otvori)</button>
@@ -152,7 +148,6 @@
   const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   let currentUser = null;
 
-  // Stvarni link za registraciju na GitHub Pages
   const inviteLink = "https://cenu1122.github.io/UPOZNAVANJE/LOGIN.html";
   const inviteText = `Pridruži mi se na sajtu LjubavNaPrviKlik i pronađi nekog posebnog! Registruj se ovdje: ${inviteLink}`;
 
@@ -168,7 +163,7 @@
     document.getElementById('currentEmail').innerText = user.email;
   }
 
-  // Pretraga korisnika u bazi
+  // Skeniranje i skraćena pretraga korisnika
   async function searchUsers() {
     const query = document.getElementById('searchInput').value.trim();
     const resultsContainer = document.getElementById('searchResults');
@@ -176,9 +171,10 @@
 
     resultsContainer.innerHTML = '';
 
-    if (!query) {
+    // Uslov: mora unijeti bar 3 slova
+    if (!query || query.length < 3) {
       statusMsg.style.color = 'red';
-      statusMsg.innerText = 'Unesite pojam za pretragu.';
+      statusMsg.innerText = 'Unesite najmanje 3 slova za pretragu.';
       return;
     }
 
@@ -189,18 +185,19 @@
       const { data: users, error } = await _supabase
         .from('UPOZNAVANJ_KORISNICI')
         .select('*')
-        .or(`IME.ilike.%${query}%,MAIL.ilike.%${query}%,nadimak.ilike.%${query}%`)
-        .neq('USER', currentUser.id);
+        .or(`IME.ilike.%${query}%,nadimak.ilike.%${query}%`)
+        .neq('USER', currentUser.id)
+        .limit(5); // Skraćivanje rezultata na max 5 osoba
 
       if (error) throw error;
 
       if (!users || users.length === 0) {
         statusMsg.style.color = '#666';
-        statusMsg.innerText = 'Nije pronađen nijedan korisnik sa tim pojmom.';
+        statusMsg.innerText = 'Nije pronađena nijedna osoba sa tim nadimkom.';
         return;
       }
 
-      statusMsg.innerText = `Pronađeno korisnika: ${users.length}`;
+      statusMsg.innerText = `Pronađeno: ${users.length} rezultat(a)`;
 
       users.forEach(u => {
         const name = u.IME || u.nadimak || 'Korisnik';
@@ -212,8 +209,7 @@
           <div class="user-result-info">
             <img src="${imgUrl}" alt="${name}">
             <div>
-              <strong>${name}</strong><br>
-              <small style="color:#777;">${u.MAIL || ''}</small>
+              <strong>${name}</strong>
             </div>
           </div>
           <button class="btn-select-partner" onclick="selectPartner('${u.USER}', '${name}')">Izaberi za chat</button>
@@ -227,7 +223,6 @@
     }
   }
 
-  // Odabir partnera za chat
   function selectPartner(userId, name) {
     const select = document.getElementById('partnerSelect');
     
@@ -251,16 +246,12 @@
     document.getElementById('chatBox').innerHTML = `Započeli ste razgovor sa korisnikom: <strong>${name}</strong>`;
   }
 
-  // 1. Funkcija za samo kopiranje poruke
   function copyInviteMessage() {
     navigator.clipboard.writeText(inviteText).then(() => {
       alert("Poruka sa linkom je kopirana u vaš clipboard!");
-    }).catch(err => {
-      console.error("Greška pri kopiranju:", err);
     });
   }
 
-  // 2. Funkcija koja kopira poruku I otvara odabranu društvenu mrežu
   function shareWithCopy(platform) {
     navigator.clipboard.writeText(inviteText);
 
@@ -278,7 +269,6 @@
     }
   }
 
-  // Odjava
   async function logout() {
     await _supabase.auth.signOut();
     window.location.href = "LOGIN.html";
