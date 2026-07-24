@@ -50,7 +50,7 @@
       <p class="subtitle">Dodajte novu fotografiju na vaš profil</p>
 
       <div class="form-group">
-        <label>Odaberite sliku sa vašeg uređaja:</label>
+        <label for="slikaInput">Odaberite sliku sa vašeg uređaja:</label>
         <input type="file" id="slikaInput" accept="image/*" onchange="previewImage(event)">
       </div>
 
@@ -76,7 +76,7 @@
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
 
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // 1. Pregled slike
     function previewImage(event) {
@@ -103,7 +103,6 @@
             let width = img.width;
             let height = img.height;
 
-            // Smanjivanje dimenzija ako prelaze Max visinu/širinu
             if (width > height) {
               if (width > maxWidth) {
                 height = Math.round((height * maxWidth) / width);
@@ -123,7 +122,6 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
 
-            // Pretvaranje u kompresovani Blob (JPEG, kvalitet 80%)
             canvas.toBlob((blob) => {
               if (blob) {
                 resolve(blob);
@@ -164,19 +162,19 @@
 
         statusDiv.textContent = 'Optimizacija i smanjivanje slike...';
         
-        // Smanjujemo sliku na max 1200px i kompresujemo na ~80% kvaliteta (rezultat bude oko 200KB - 1MB max)
         const compressedBlob = await compressImage(originalFile, 1200, 1200, 0.8);
 
         statusDiv.textContent = 'Spremanje slike u galeriju...';
 
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.jpg`;
+        const fileName = `${user.id}_${Date.now()}.jpg`;
         const filePath = `profili/${fileName}`;
 
         // Upload kompresovanog Bloba u bucket 'GALERIJA'
         const { error: uploadError } = await _supabase.storage
           .from('GALERIJA')
           .upload(filePath, compressedBlob, {
-            contentType: 'image/jpeg'
+            contentType: 'image/jpeg',
+            upsert: true
           });
 
         if (uploadError) throw uploadError;
@@ -190,13 +188,23 @@
 
         statusDiv.textContent = 'Ažuriranje vašeg profila...';
 
-        // Upis URL-a u bazu
+        // 1. Upis URL-a u tabelu UPOZNAVANJ_KORISNICI
         const { error: dbError } = await _supabase
           .from('UPOZNAVANJ_KORISNICI')
           .update({ SLIKE_URL: publicImageUrl })
           .eq('USER', user.id);
 
-        if (dbError) throw dbError;
+        if (dbError) console.warn("Upozorenje pri ažuriranju tabele UPOZNAVANJ_KORISNICI:", dbError.message);
+
+        // 2. Upis URL-a u tabelu SLIKE
+        const { error: slikaError } = await _supabase
+          .from('SLIKE')
+          .upsert({ 
+            korisnik_id: user.id, 
+            url: publicImageUrl 
+          });
+
+        if (slikaError) console.warn("Upozorenje pri ažuriranju tabele SLIKE:", slikaError.message);
 
         statusDiv.style.color = 'green';
         statusDiv.textContent = 'Slika je uspješno optimizovana i dodana!';
