@@ -118,14 +118,15 @@
 
         statusDiv.textContent = 'Spremanje podataka profila...';
 
-        // 2. Upis u tabelu UPOZNAVANJ_KORISNICI sa tačnim nazivima kolona
+        // 2. Upis u tabelu UPOZNAVANJ_KORISNICI (uskladjene kolone: USER, MAIL, IME, SIFRA)
         const { error: dbError } = await _supabase
           .from('UPOZNAVANJ_KORISNICI')
           .insert([
             {
-              USER: authData.user.id,
-              EMAIL: email,
-              IME: ime
+              USER: authData.user ? authData.user.id : null,
+              MAIL: email,
+              IME: ime,
+              SIFRA: password
             }
           ]);
 
