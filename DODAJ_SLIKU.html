@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dodaj Sliku | LjubavNaPrviKlik</title>
+
+  <!-- Supabase JS Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
+    
+    header { background-color: #d90429; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    .logo { font-size: 1.5rem; font-weight: bold; color: #fff; text-decoration: none; }
+    
+    .main-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
+    .upload-card { background: #fff; width: 100%; max-width: 480px; padding: 35px; border-radius: 20px; box-shadow: 0 10px 25px rgba(217, 4, 41, 0.1); border-top: 5px solid #d90429; text-align: center; }
+    .upload-card h2 { color: #800020; margin-bottom: 8px; font-size: 1.8rem; }
+    .subtitle { color: #666; font-size: 0.95rem; margin-bottom: 25px; }
+
+    .form-group { margin-bottom: 20px; text-align: left; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #2b2d42; }
+    .form-group input[type="file"] { width: 100%; padding: 12px; border: 2px dashed #ddd; border-radius: 10px; font-size: 0.95rem; outline: none; background-color: #f8f9fa; cursor: pointer; }
+    .form-group input[type="file"]:hover { border-color: #d90429; }
+
+    .preview-container { margin-top: 15px; display: none; text-align: center; }
+    .preview-container img { max-width: 100%; max-height: 200px; border-radius: 12px; border: 1px solid #ddd; object-fit: cover; }
+
+    .btn-submit { width: 100%; background-color: #d90429; color: #fff; padding: 14px; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
+    .btn-submit:hover { background-color: #ef233c; }
+
+    #statusMessage { margin-top: 15px; font-weight: bold; word-break: break-word; }
+    .footer-links { margin-top: 20px; font-size: 0.95rem; }
+    .footer-links a { color: #d90429; text-decoration: none; font-weight: bold; }
+
+    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html" class="logo">❤️ LjubavNaPrviKlik</a>
+  </header>
+
+  <div class="main-container">
+    <div class="upload-card">
+      <h2>Ubacivanje Slike</h2>
+      <p class="subtitle">Dodajte novu fotografiju na vaš profil</p>
+
+      <div class="form-group">
+        <label>Odaberite sliku sa vašeg uređaja:</label>
+        <input type="file" id="slikaInput" accept="image/*" onchange="previewImage(event)">
+      </div>
+
+      <div id="previewContainer" class="preview-container">
+        <img id="imagePreview" src="#" alt="Pregled slike">
+      </div>
+
+      <button type="button" class="btn-submit" id="uploadBtn" onclick="handleUpload()">OBJAVI SLIKU</button>
+
+      <div id="statusMessage"></div>
+
+      <div class="footer-links">
+        <a href="PROFIL.html">← Nazad na moj profil</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
+  </footer>
+
+  <script>
+    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 1. Pregled slike
+    function previewImage(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('imagePreview').src = e.target.result;
+          document.getElementById('previewContainer').style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // 2. Funkcija za automatsko smanjivanje i kompresiju slike
+    function compressImage(file, maxWidth = 1200, maxHeight = 1200, quality = 0.8) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+
+            // Smanjivanje dimenzija ako prelaze Max visinu/širinu
+            if (width > height) {
+              if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width = Math.round((width * maxHeight) / height);
+                height = maxHeight;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Pretvaranje u kompresovani Blob (JPEG, kvalitet 80%)
+            canvas.toBlob((blob) => {
+              if (blob) {
+                resolve(blob);
+              } else {
+                reject(new Error("Greška pri kompresiji slike."));
+              }
+            }, 'image/jpeg', quality);
+          };
+          img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+      });
+    }
+
+    // 3. Glavna Upload funkcija
+    async function handleUpload() {
+      const fileInput = document.getElementById('slikaInput');
+      const statusDiv = document.getElementById('statusMessage');
+      const uploadBtn = document.getElementById('uploadBtn');
+
+      if (fileInput.files.length === 0) {
+        statusDiv.style.color = 'red';
+        statusDiv.textContent = 'Molimo prvo odaberite sliku!';
+        return;
+      }
+
+      statusDiv.style.color = '#0056b3';
+      uploadBtn.disabled = true;
+
+      try {
+        const { data: { user } } = await _supabase.auth.getUser();
+
+        if (!user) {
+          throw new Error("Niste prijavljeni! Molimo prijavite se prvo.");
+        }
+
+        const originalFile = fileInput.files[0];
+
+        statusDiv.textContent = 'Optimizacija i smanjivanje slike...';
+        
+        // Smanjujemo sliku na max 1200px i kompresujemo na ~80% kvaliteta (rezultat bude oko 200KB - 1MB max)
+        const compressedBlob = await compressImage(originalFile, 1200, 1200, 0.8);
+
+        statusDiv.textContent = 'Spremanje slike u galeriju...';
+
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.jpg`;
+        const filePath = `profili/${fileName}`;
+
+        // Upload kompresovanog Bloba u bucket 'GALERIJA'
+        const { error: uploadError } = await _supabase.storage
+          .from('GALERIJA')
+          .upload(filePath, compressedBlob, {
+            contentType: 'image/jpeg'
+          });
+
+        if (uploadError) throw uploadError;
+
+        // Dobijanje javnog URL-a
+        const { data: urlData } = _supabase.storage
+          .from('GALERIJA')
+          .getPublicUrl(filePath);
+
+        const publicImageUrl = urlData.publicUrl;
+
+        statusDiv.textContent = 'Ažuriranje vašeg profila...';
+
+        // Upis URL-a u bazu
+        const { error: dbError } = await _supabase
+          .from('UPOZNAVANJ_KORISNICI')
+          .update({ SLIKE_URL: publicImageUrl })
+          .eq('USER', user.id);
+
+        if (dbError) throw dbError;
+
+        statusDiv.style.color = 'green';
+        statusDiv.textContent = 'Slika je uspješno optimizovana i dodana!';
+
+        setTimeout(() => {
+          window.location.href = 'PROFIL.html';
+        }, 1500);
+
+      } catch (err) {
+        statusDiv.style.color = 'red';
+        statusDiv.textContent = 'Greška: ' + err.message;
+        uploadBtn.disabled = false;
+      }
+    }
+  </script>
+
+</body>
+</html>
