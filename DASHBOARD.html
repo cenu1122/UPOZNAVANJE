@@ -25,7 +25,7 @@
     
     .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
-    /* Top bar info sa poljem za unos partnera */
+    /* Top bar info sa izborom jezika i partnera */
     .user-info-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
     .partner-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
     .partner-controls input, .partner-controls select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; outline: none; }
@@ -43,7 +43,7 @@
     .user-result-info img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
     .btn-select-partner { background: #d90429; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
 
-    /* Chat sekcija sa prikazom slike partnera */
+    /* Chat sekcija sa profilnom slikom partnera */
     .chat-header { display: flex; align-items: center; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid #eee; margin-bottom: 10px; }
     .chat-header img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #d90429; }
     .chat-header-info { display: flex; flex-direction: column; }
@@ -88,7 +88,7 @@
 
   <div class="main-container">
 
-    <!-- Top Bar Sa Poljem Za Unos Partnera -->
+    <!-- Top Bar Sa Izborom Partnera I Jezika Prevoda -->
     <div class="card user-info-bar">
       <div>
         <strong>Prijavljeni ste kao:</strong><br>
@@ -96,11 +96,22 @@
       </div>
       
       <div class="partner-controls">
-        <label for="directPartnerInput"><strong>Izaberi partnera:</strong></label>
-        <input type="text" id="directPartnerInput" placeholder="Ukucajte nadimak..." oninput="updateChatPartnerFromInput()">
+        <label for="directPartnerInput"><strong>Partner:</strong></label>
+        <input type="text" id="directPartnerInput" placeholder="Nadimak partnera..." oninput="updateChatPartnerFromInput()">
         
         <select id="partnerSelect" onchange="updateChatPartnerFromSelect()">
-          <option value="">-- Meni partnera --</option>
+          <option value="">-- Meni --</option>
+        </select>
+
+        <label for="languageSelect"><strong>Jezik prevoda:</strong></label>
+        <select id="languageSelect">
+          <option value="en">English (GB)</option>
+          <option value="de">Deutsch (DE)</option>
+          <option value="bs" selected>Bosanski / Hrvatski / Srpski</option>
+          <option value="fr">Français (FR)</option>
+          <option value="es">Español (ES)</option>
+          <option value="it">Italiano (IT)</option>
+          <option value="tr">Türkçe (TR)</option>
         </select>
       </div>
     </div>
@@ -116,11 +127,10 @@
       <div id="searchResults" class="search-results"></div>
     </div>
 
-    <!-- Chat Sekcija Sa Profilnom Slikom Partnera -->
+    <!-- Chat Sekcija -->
     <div class="card">
       <h3>💬 Dopisivanje uz AI Prevodilac</h3>
       
-      <!-- Prikaz profila izabranog partnera -->
       <div id="chatPartnerHeader" style="display: none;" class="chat-header">
         <img id="chatPartnerImg" src="https://via.placeholder.com/45?text=U" alt="Partner Slika">
         <div class="chat-header-info">
@@ -135,7 +145,7 @@
         </div>
       </div>
       <div class="chat-input-area">
-        <input type="text" id="chatMsg" placeholder="Napišite poruku..." onkeypress="handleKeyPress(event)">
+        <input type="text" id="chatMsg" placeholder="Napišite poruku na svom jeziku..." onkeypress="handleKeyPress(event)">
         <button class="btn-send" onclick="sendMessage()">POŠALJI</button>
       </div>
     </div>
@@ -171,6 +181,7 @@
 
   const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   let currentUser = null;
+  let currentPartnerEmail = null;
 
   const inviteLink = "https://cenu1122.github.io/UPOZNAVANJE/LOGIN.html";
   const inviteText = `Pridruži mi se na sajtu LjubavNaPrviKlik i pronađi nekog posebnog! Registruj se ovdje: ${inviteLink}`;
@@ -187,11 +198,12 @@
     document.getElementById('currentEmail').innerText = user.email;
   }
 
-  function sendMessage() {
+  async function sendMessage() {
     const input = document.getElementById('chatMsg');
     const msgText = input.value.trim();
     const chatBox = document.getElementById('chatBox');
     const placeholder = document.getElementById('chatPlaceholder');
+    const selectedLang = document.getElementById('languageSelect').value;
 
     if (!msgText) return;
 
@@ -199,14 +211,34 @@
       placeholder.style.display = 'none';
     }
 
+    // Prikaz u tvom chatu
     const msgDiv = document.createElement('div');
     msgDiv.className = 'message-bubble message-sent';
     msgDiv.innerText = msgText;
-    
     chatBox.appendChild(msgDiv);
-    
+
     input.value = '';
     chatBox.scrollTop = chatBox.scrollHeight;
+
+    // Upis poruke u Supabase bazu sa tačnim nazivom kolona sa tvoje slike
+    try {
+      const { error } = await _supabase.from('PORUKE').insert([
+        {
+          posiljalac_email: currentUser.email,
+          primalac_email: currentPartnerEmail || 'nepoznato@email.com',
+          originalni_tekst: msgText,
+          izvorni_jezik: selectedLang
+        }
+      ]);
+
+      if (error) {
+        console.error("Greška pri čuvanju u bazi:", error.message);
+      } else {
+        console.log("Poruka uspješno sačuvana u bazi!");
+      }
+    } catch (err) {
+      console.error("Greška:", err.message);
+    }
   }
 
   function handleKeyPress(event) {
@@ -226,13 +258,12 @@
 
   function updateChatPartnerFromSelect() {
     const select = document.getElementById('partnerSelect');
-    const selectedText = select.options[select.selectedIndex].text;
+    const selectedOption = select.options[select.selectedIndex];
+    const selectedText = selectedOption.text;
 
     if (select.value) {
+      currentPartnerEmail = select.getAttribute('data-email') || select.value;
       document.getElementById('directPartnerInput').value = selectedText;
-      
-      // Pokušavamo izvući sliku iz opcije ako postoji data-img atribut
-      const selectedOption = select.options[select.selectedIndex];
       const imgUrl = selectedOption.getAttribute('data-img') || ('https://via.placeholder.com/45?text=' + selectedText.charAt(0).toUpperCase());
 
       setPartnerInChat(selectedText, imgUrl);
@@ -296,6 +327,7 @@
 
       users.forEach(u => {
         const name = u.IME || u.nadimak || 'Korisnik';
+        const userEmail = u.MAIL || u.USER;
         const imgUrl = u.SLIKE_URL || 'https://via.placeholder.com/40?text=' + name.charAt(0).toUpperCase();
 
         const userCard = document.createElement('div');
@@ -307,7 +339,7 @@
               <strong>${name}</strong>
             </div>
           </div>
-          <button class="btn-select-partner" onclick="selectPartner('${u.USER}', '${name}', '${imgUrl}')">Izaberi za chat</button>
+          <button class="btn-select-partner" onclick="selectPartner('${u.USER}', '${name}', '${imgUrl}', '${userEmail}')">Izaberi za chat</button>
         `;
         resultsContainer.appendChild(userCard);
       });
@@ -318,7 +350,8 @@
     }
   }
 
-  function selectPartner(userId, name, imgUrl) {
+  function selectPartner(userId, name, imgUrl, userEmail) {
+    currentPartnerEmail = userEmail;
     document.getElementById('directPartnerInput').value = name;
     
     const select = document.getElementById('partnerSelect');
@@ -337,6 +370,7 @@
       opt.value = userId;
       opt.innerText = name;
       opt.setAttribute('data-img', imgUrl);
+      opt.setAttribute('data-email', userEmail);
       opt.selected = true;
       select.appendChild(opt);
     }
