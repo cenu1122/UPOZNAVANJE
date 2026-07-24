@@ -1,9 +1,30 @@
+Evo kompletnog i pripremljenog koda za DASHBOARD.html.
+
+U ovaj kôd su ugrađene sve funkcionalnosti:
+
+    Open Graph (OG) meta tagovi u <head> sekciji – tako da Facebook prilikom objave na zidu automatski prikaže sliku, naslov i opis aplikacije.
+
+    Razdvojene opcije za dijeljenje – dugme za Javni Post na Facebook Zidu, dugme za Direktne Poruke (sa unaprijed unesenim tekstom i linkom), WhatsApp i Kopiranje linka.
+
+    Pretraga partnera po imenu i e-mailu.
+
+    Chat sa prevodiocem (Groq AI & Supabase).
+
+Zmijeni sav sadržaj u datoteci DASHBOARD.html ovim kodom:
+HTML
+
 <!DOCTYPE html>
 <html lang="bs">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard, Pretraga & Chat | LjubavNaPrviKlik</title>
+
+  <meta property="og:title" content="❤️ LjubavNaPrviKlik | Pronađi partnera uz AI Prevodilac">
+  <meta property="og:description" content="Razgovarajte s partnerima širom svijeta uz uživo Groq AI prevodilac poruka!">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1200&q=80">
+  <meta property="og:url" content="https://cenu1122.github.io/UPOZNAVANJE/REGISTRACIJA.html">
+  <meta property="og:type" content="website">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -93,14 +114,18 @@
       </div>
 
       <div style="background: #fff0f3; padding: 15px; border-radius: 10px; border: 1px solid #ffb3c1; margin-top: 15px;">
-        <h4 style="color: #800020; margin-bottom: 8px;">📩 Pošalji gotovu pozivnicu prijatelju</h4>
+        <h4 style="color: #800020; margin-bottom: 8px;">📢 Podijeli aplikaciju (Javni Post ili Poruka)</h4>
         <p style="font-size: 0.85rem; color: #555; margin-bottom: 12px;">
-          Klikom na dugme otvara se poruka sa već napisanim tekstom i linkom. Samo izaberite prijatelja i pošaljite!
+          Objavite post na svom profilu ili pošaljite spremnu poruku sa linkom prijateljima:
         </p>
 
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button onclick="postToFacebookFeed()" style="background: #1877f2; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer;">
+            Objavi na Facebook Zidu 🌐
+          </button>
+
           <button onclick="shareSmartInvite()" style="background: #d90429; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-            📲 Pošalji spremnu poruku sa linkom
+            Pošalji u Poruci 💬
           </button>
 
           <button onclick="shareViaWhatsApp()" style="background: #25d366; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer;">
@@ -195,7 +220,7 @@
       }
     }
 
-    // 3. Pretraga partnera (Traži po imenu i emailu)
+    // 3. Pretraga partnera u bazi
     async function searchPartners() {
       const query = document.getElementById('searchInput').value.trim();
       const platform = document.getElementById('platformSelect').value;
@@ -234,7 +259,7 @@
           });
 
           if (count === 0) {
-            resultsDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #888;">Nema drugih korisnika u bazi. Pozovite ih preko dugmeta iznad!</div>';
+            resultsDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #888;">Nema drugih korisnika u bazi. Pozovite ih preko dugmadi iznad!</div>';
           }
         } else {
           resultsDiv.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #888;">Nema pronađenih korisnika u bazi.</div>';
@@ -256,7 +281,15 @@
       loadMessages();
     }
 
-    // 4. Pametno Slanje Pozivnica (Tekst + Link skupa)
+    // 4. DIJELJENJE & POZIVNICE
+
+    // A) Objava JAVNOG POSTA na Facebook Zidu
+    function postToFacebookFeed() {
+      const fbSharerUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(REGISTRATION_URL)}`;
+      window.open(fbSharerUrl, 'facebook-share-dialog', 'width=626,height=436');
+    }
+
+    // B) Slanje gotove poruke sa unesenim tekstom i linkom
     async function shareSmartInvite() {
       const shareData = {
         title: 'LjubavNaPrviKlik',
@@ -273,19 +306,21 @@
       } else {
         const puniTekst = `${shareData.text} ${shareData.url}`;
         navigator.clipboard.writeText(puniTekst);
-        alert('Tekst i link su kopirani skupa! Otvorite chat i zalijepite (CTRL+V).');
+        alert('Tekst i link su automatski kopirani skupa! Otvorite chat i zalijepite (CTRL+V).');
       }
     }
 
+    // C) Slanje preko WhatsAppa
     function shareViaWhatsApp() {
       const gotovaPoruka = `Ćao! Pridruži mi se na aplikaciji LjubavNaPrviKlik da se dopisujemo uz uživo AI prevodilac: ${REGISTRATION_URL}`;
       const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(gotovaPoruka)}`;
       window.open(waUrl, '_blank');
     }
 
+    // D) Kopiranje samog linka
     function copyInviteLink() {
       navigator.clipboard.writeText(REGISTRATION_URL).then(() => {
-        alert("Pozivni link je kopiran! Možeš ga poslati u privatnoj poruci.");
+        alert("Pozivni link je kopiran u međuspremnik!");
       }).catch(err => {
         console.error("Greška pri kopiranju:", err);
       });
