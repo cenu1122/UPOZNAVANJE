@@ -43,11 +43,20 @@
     .user-result-info img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
     .btn-select-partner { background: #d90429; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
 
-    /* Chat sekcija */
-    .chat-box { height: 250px; border: 1px solid #eee; border-radius: 8px; padding: 15px; background: #fdfdfd; overflow-y: auto; display: flex; justify-content: center; align-items: center; color: #888; }
+    /* Chat sekcija sa prikazom slike partnera */
+    .chat-header { display: flex; align-items: center; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid #eee; margin-bottom: 10px; }
+    .chat-header img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #d90429; }
+    .chat-header-info { display: flex; flex-direction: column; }
+    
+    .chat-box { height: 260px; border: 1px solid #eee; border-radius: 8px; padding: 15px; background: #fdfdfd; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .chat-placeholder { text-align: center; color: #888; margin: auto; }
+    .message-bubble { max-width: 75%; padding: 10px 14px; border-radius: 12px; font-size: 0.95rem; word-break: break-word; }
+    .message-sent { background-color: #d90429; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+
     .chat-input-area { display: flex; gap: 10px; margin-top: 12px; }
     .chat-input-area input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; outline: none; }
     .btn-send { background: #2b2d42; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-send:hover { background: #3d405b; }
 
     /* Pozivnice / Social Share */
     .invite-section h3 { margin-bottom: 8px; font-size: 1.1rem; color: #800020; }
@@ -88,10 +97,8 @@
       
       <div class="partner-controls">
         <label for="directPartnerInput"><strong>Izaberi partnera:</strong></label>
-        <!-- POLJE ZA DIREKTAN UNOS NADIAMKA -->
         <input type="text" id="directPartnerInput" placeholder="Ukucajte nadimak..." oninput="updateChatPartnerFromInput()">
         
-        <!-- PADAJUĆI MENI ZA ODABIR -->
         <select id="partnerSelect" onchange="updateChatPartnerFromSelect()">
           <option value="">-- Meni partnera --</option>
         </select>
@@ -109,15 +116,27 @@
       <div id="searchResults" class="search-results"></div>
     </div>
 
-    <!-- Chat Sekcija -->
+    <!-- Chat Sekcija Sa Profilnom Slikom Partnera -->
     <div class="card">
       <h3>💬 Dopisivanje uz AI Prevodilac</h3>
+      
+      <!-- Prikaz profila izabranog partnera -->
+      <div id="chatPartnerHeader" style="display: none;" class="chat-header">
+        <img id="chatPartnerImg" src="https://via.placeholder.com/45?text=U" alt="Partner Slika">
+        <div class="chat-header-info">
+          <strong id="chatPartnerName" style="font-size: 1.1rem;">-</strong>
+          <small style="color: green;">● Aktivan/na u chatu</small>
+        </div>
+      </div>
+
       <div class="chat-box" id="chatBox">
-        Izaberite partnera ili ukucajte njegov nadimak u polje iznad za početak razgovora.
+        <div class="chat-placeholder" id="chatPlaceholder">
+          Izaberite partnera iz pretrage ili menija iznad za početak razgovora.
+        </div>
       </div>
       <div class="chat-input-area">
-        <input type="text" id="chatMsg" placeholder="Napišite poruku...">
-        <button class="btn-send">POŠALJI</button>
+        <input type="text" id="chatMsg" placeholder="Napišite poruku..." onkeypress="handleKeyPress(event)">
+        <button class="btn-send" onclick="sendMessage()">POŠALJI</button>
       </div>
     </div>
 
@@ -168,31 +187,79 @@
     document.getElementById('currentEmail').innerText = user.email;
   }
 
-  // Ažuriranje partnera iz direktnog unosa
-  function updateChatPartnerFromInput() {
-    const partnerName = document.getElementById('directPartnerInput').value.trim();
+  function sendMessage() {
+    const input = document.getElementById('chatMsg');
+    const msgText = input.value.trim();
     const chatBox = document.getElementById('chatBox');
+    const placeholder = document.getElementById('chatPlaceholder');
 
-    if (partnerName.length > 0) {
-      chatBox.innerHTML = `Započeli ste razgovor sa korisnikom: <strong>${partnerName}</strong>`;
-    } else {
-      chatBox.innerHTML = `Izaberite partnera ili ukucajte njegov nadimak u polje iznad za početak razgovora.`;
+    if (!msgText) return;
+
+    if (placeholder) {
+      placeholder.style.display = 'none';
+    }
+
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'message-bubble message-sent';
+    msgDiv.innerText = msgText;
+    
+    chatBox.appendChild(msgDiv);
+    
+    input.value = '';
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function handleKeyPress(event) {
+    if (event.key === 'Enter') {
+      sendMessage();
     }
   }
 
-  // Ažuriranje partnera iz padajućeg menija
+  function updateChatPartnerFromInput() {
+    const partnerName = document.getElementById('directPartnerInput').value.trim();
+    if (partnerName) {
+      setPartnerInChat(partnerName, 'https://via.placeholder.com/45?text=' + partnerName.charAt(0).toUpperCase());
+    } else {
+      resetChatHeader();
+    }
+  }
+
   function updateChatPartnerFromSelect() {
     const select = document.getElementById('partnerSelect');
     const selectedText = select.options[select.selectedIndex].text;
-    const chatBox = document.getElementById('chatBox');
 
     if (select.value) {
       document.getElementById('directPartnerInput').value = selectedText;
-      chatBox.innerHTML = `Započeli ste razgovor sa korisnikom: <strong>${selectedText}</strong>`;
+      
+      // Pokušavamo izvući sliku iz opcije ako postoji data-img atribut
+      const selectedOption = select.options[select.selectedIndex];
+      const imgUrl = selectedOption.getAttribute('data-img') || ('https://via.placeholder.com/45?text=' + selectedText.charAt(0).toUpperCase());
+
+      setPartnerInChat(selectedText, imgUrl);
+    } else {
+      resetChatHeader();
     }
   }
 
-  // Skeniranje i skraćena pretraga korisnika
+  function setPartnerInChat(name, imgUrl) {
+    const header = document.getElementById('chatPartnerHeader');
+    const nameEl = document.getElementById('chatPartnerName');
+    const imgEl = document.getElementById('chatPartnerImg');
+    const placeholder = document.getElementById('chatPlaceholder');
+
+    nameEl.innerText = name;
+    imgEl.src = imgUrl || 'https://via.placeholder.com/45?text=U';
+    header.style.display = 'flex';
+
+    if (placeholder) {
+      placeholder.style.display = 'none';
+    }
+  }
+
+  function resetChatHeader() {
+    document.getElementById('chatPartnerHeader').style.display = 'none';
+  }
+
   async function searchUsers() {
     const query = document.getElementById('searchInput').value.trim();
     const resultsContainer = document.getElementById('searchResults');
@@ -229,7 +296,7 @@
 
       users.forEach(u => {
         const name = u.IME || u.nadimak || 'Korisnik';
-        const imgUrl = u.SLIKE_URL || 'https://via.placeholder.com/40?text=U';
+        const imgUrl = u.SLIKE_URL || 'https://via.placeholder.com/40?text=' + name.charAt(0).toUpperCase();
 
         const userCard = document.createElement('div');
         userCard.className = 'user-result-card';
@@ -240,7 +307,7 @@
               <strong>${name}</strong>
             </div>
           </div>
-          <button class="btn-select-partner" onclick="selectPartner('${u.USER}', '${name}')">Izaberi za chat</button>
+          <button class="btn-select-partner" onclick="selectPartner('${u.USER}', '${name}', '${imgUrl}')">Izaberi za chat</button>
         `;
         resultsContainer.appendChild(userCard);
       });
@@ -251,7 +318,7 @@
     }
   }
 
-  function selectPartner(userId, name) {
+  function selectPartner(userId, name, imgUrl) {
     document.getElementById('directPartnerInput').value = name;
     
     const select = document.getElementById('partnerSelect');
@@ -269,11 +336,12 @@
       const opt = document.createElement('option');
       opt.value = userId;
       opt.innerText = name;
+      opt.setAttribute('data-img', imgUrl);
       opt.selected = true;
       select.appendChild(opt);
     }
 
-    document.getElementById('chatBox').innerHTML = `Započeli ste razgovor sa korisnikom: <strong>${name}</strong>`;
+    setPartnerInChat(name, imgUrl);
   }
 
   function copyInviteMessage() {
