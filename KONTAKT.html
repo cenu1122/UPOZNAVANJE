@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kontakt & Sugestije | LjubavNaPrviKlik</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
+    
+    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; }
+    .btn-dash { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+    .btn-dash:hover { background: #ef233c; }
+
+    .main-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
+    .contact-card { background: #fff; width: 100%; max-width: 550px; padding: 35px; border-radius: 20px; box-shadow: 0 10px 25px rgba(217, 4, 41, 0.1); border-top: 5px solid #d90429; }
+    .contact-card h2 { text-align: center; color: #800020; margin-bottom: 8px; font-size: 1.8rem; }
+    .subtitle { text-align: center; color: #666; font-size: 0.95rem; margin-bottom: 25px; }
+
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #2b2d42; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; outline: none; font-family: inherit; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #d90429; }
+    .form-group textarea { resize: vertical; min-height: 120px; }
+
+    .btn-submit { width: 100%; background-color: #d90429; color: #fff; padding: 14px; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
+    .btn-submit:hover { background-color: #ef233c; }
+
+    #statusMessage { margin-top: 15px; text-align: center; font-weight: bold; word-break: break-word; }
+
+    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
+    <a href="DASHBOARD.html" class="btn-dash">🏠 Dashboard</a>
+  </header>
+
+  <div class="main-container">
+    <div class="contact-card">
+      <h2>📩 Kontakt & Podrška</h2>
+      <p class="subtitle">Imate pitanje, sugestiju ili problem? Napišite nam poruku!</p>
+
+      <form id="contactForm" onsubmit="handleSendContact(event)">
+        <div class="form-group">
+          <label>Vaše Ime i Prezime / Nadimak *</label>
+          <input type="text" id="cIme" placeholder="Npr. Marko Marković" required>
+        </div>
+
+        <div class="form-group">
+          <label>E-mail Adresa *</label>
+          <input type="email" id="cEmail" placeholder="vas@email.com" required>
+        </div>
+
+        <div class="form-group">
+          <label>Vrsta upita *</label>
+          <select id="cTip" required>
+            <option value="Pitanje" selected>❓ Pitanje</option>
+            <option value="Sugestija">💡 Sugestija / Prijedlog</option>
+            <option value="Problem">⚠️ Prijava problema</option>
+            <option value="Ostalo">📝 Ostalo</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Vaša Poruka *</label>
+          <textarea id="cPoruka" placeholder="Napišite vaše pitanje ili sugestiju detaljno..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit" id="sendBtn">POŠALJI PORUKU</button>
+      </form>
+
+      <div id="statusMessage"></div>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
+  </footer>
+
+  <script>
+    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function handleSendContact(e) {
+      e.preventDefault();
+
+      const ime = document.getElementById('cIme').value.trim();
+      const email = document.getElementById('cEmail').value.trim();
+      const tip = document.getElementById('cTip').value;
+      const poruka = document.getElementById('cPoruka').value.trim();
+
+      const statusDiv = document.getElementById('statusMessage');
+      const sendBtn = document.getElementById('sendBtn');
+
+      if (!ime || !email || !poruka) {
+        statusDiv.style.color = 'red';
+        statusDiv.textContent = 'Molimo popunite sva polja!';
+        return;
+      }
+
+      statusDiv.style.color = '#0056b3';
+      statusDiv.textContent = 'Slanje poruke...';
+      sendBtn.disabled = true;
+
+      try {
+        // Upis u tabelu KONTAKT_PORUKE
+        const { error } = await _supabase
+          .from('KONTAKT_PORUKE')
+          .insert([
+            {
+              ime: ime,
+              email: email,
+              tip: tip,
+              poruka: poruka
+            }
+          ]);
+
+        if (error) throw error;
+
+        statusDiv.style.color = 'green';
+        statusDiv.textContent = 'Hvala vam! Vaša poruka je uspješno poslana.';
+        document.getElementById('contactForm').reset();
+
+      } catch (err) {
+        statusDiv.style.color = 'red';
+        statusDiv.textContent = 'Greška pri slanju: ' + err.message;
+      } finally {
+        sendBtn.disabled = false;
+      }
+    }
+  </script>
+
+</body>
+</html>
