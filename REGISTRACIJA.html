@@ -68,6 +68,17 @@
         </div>
 
         <div class="form-group">
+          <label>Vjera *</label>
+          <select id="vjera" required>
+            <option value="" disabled selected>Izaberite vjeru...</option>
+            <option value="Islam">Islam</option>
+            <option value="Krscanstvo">Kršćanstvo</option>
+            <option value="Pravoslavlje">Pravoslavlje</option>
+            <option value="Ostalo">Ostalo / Neizjašnjen</option>
+          </select>
+        </div>
+
+        <div class="form-group">
           <label>O meni (Ja) *</label>
           <textarea id="ja" placeholder="Napišite nešto ukratko o sebi..." required></textarea>
         </div>
@@ -108,6 +119,7 @@
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const telefon = document.getElementById('telefon').value.trim();
+      const vjera = document.getElementById('vjera').value;
       const ja = document.getElementById('ja').value.trim();
       const trazim = document.getElementById('trazim').value.trim();
       const slikaUrl = document.getElementById('slikaUrl').value.trim();
@@ -116,7 +128,7 @@
       const regBtn = document.getElementById('regBtn');
 
       // Validacija da su SVA polja popunjena
-      if (!ime || !email || !password || !telefon || !ja || !trazim || !slikaUrl) {
+      if (!ime || !email || !password || !telefon || !vjera || !ja || !trazim || !slikaUrl) {
         statusDiv.style.color = 'red';
         statusDiv.textContent = 'Molimo popunite sva obavezna polja!';
         return;
@@ -154,6 +166,7 @@
               IME: ime,
               SIFRA: password,
               TELEFON: telefon,
+              VJERA: vjera,
               JA: ja,
               TRAZIM: trazim,
               SLIKE_URL: slikaUrl
