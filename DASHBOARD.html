@@ -11,8 +11,11 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
     
-    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
     .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; }
+    
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+    .lang-select { padding: 6px 10px; border-radius: 20px; border: 1px solid #d90429; background: #fff; font-weight: bold; font-size: 0.85rem; color: #2b2d42; outline: none; cursor: pointer; }
     .btn-dash { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
     .btn-dash:hover { background: #ef233c; }
 
@@ -40,42 +43,51 @@
 
   <header>
     <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
-    <a href="DASHBOARD.html" class="btn-dash">🏠 Dashboard</a>
+    
+    <div class="nav-actions">
+      <select id="langSelect" class="lang-select" onchange="promijeniJezik(this.value)">
+        <option value="BS" selected>🌐 Bosanski (BS)</option>
+        <option value="EN">🌐 English (EN)</option>
+        <option value="DE">🌐 Deutsch (DE)</option>
+      </select>
+
+      <a href="DASHBOARD.html" class="btn-dash" id="txtBtnDash">🏠 Dashboard</a>
+    </div>
   </header>
 
   <div class="main-container">
     <div class="contact-card">
-      <h2>📩 Kontakt & Podrška</h2>
-      <p class="subtitle">Vaši podaci su automatski učitani. Napišite nam pitanje ili sugestiju!</p>
+      <h2 id="txtMainTitle">📩 Kontakt & Podrška</h2>
+      <p class="subtitle" id="txtSubtitle">Vaši podaci su automatski učitani. Napišite nam pitanje ili sugestiju!</p>
 
       <form id="contactForm" onsubmit="handleSendContact(event)">
         <div class="form-group">
-          <label>Vaše Ime / Nadimak (Automatski)</label>
+          <label id="lblIme">Vaše Ime / Nadimak (Automatski)</label>
           <input type="text" id="cIme" placeholder="Učitavanje..." required readonly>
         </div>
 
         <div class="form-group">
-          <label>E-mail Adresa (Automatski)</label>
+          <label id="lblEmail">E-mail Adresa (Automatski)</label>
           <input type="email" id="cEmail" placeholder="Učitavanje..." required readonly>
         </div>
 
         <div class="form-group">
-          <label>Vrsta upita *</label>
+          <label id="lblTip">Vrsta upita *</label>
           <select id="cTip" required>
-            <option value="Pitanje" selected>❓ Pitanje</option>
-            <option value="Sugestija">💡 Sugestija / Prijedlog</option>
-            <option value="Problem">⚠️ Prijava problema</option>
-            <option value="Ostalo">📝 Ostalo</option>
+            <option value="Pitanje" id="optTipPitanje" selected>❓ Pitanje</option>
+            <option value="Sugestija" id="optTipSugestija">💡 Sugestija / Prijedlog</option>
+            <option value="Problem" id="optTipProblem">⚠️ Prijava problema</option>
+            <option value="Ostalo" id="optTipOstalo">📝 Ostalo</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label>Vaša Poruka / Pitanje *</label>
+          <label id="lblPoruka">Vaša Poruka / Pitanje *</label>
           <textarea id="cPoruka" placeholder="Napišite vaše pitanje ili sugestiju..." required></textarea>
         </div>
 
         <div class="form-group">
-          <label>Željeni način odgovora ili dodatna napomena (Opcionalno)</label>
+          <label id="lblNapomena">Željeni način odgovora ili dodatna napomena (Opcionalno)</label>
           <input type="text" id="cOdgovorNapomena" placeholder="Npr. Odgovorite mi na Viber, e-mail ili ovdje u chatu...">
         </div>
 
@@ -87,7 +99,7 @@
   </div>
 
   <footer>
-    <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
+    <p>© 2026 LjubavNaPrviKlik. <span id="txtRights">Sva prava zadržana.</span></p>
   </footer>
 
   <script>
@@ -95,8 +107,94 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let trenutniJezik = 'BS';
 
-    // AUTOMATSKO UČITAVANJE PODATAKA PRIJAVOljENOG KORISNIKA
+    // PRIJEVODI ZA SVA 3 JEZIKA
+    const prevodi = {
+      BS: {
+        btnDash: "🏠 Dashboard",
+        mainTitle: "📩 Kontakt & Podrška",
+        subtitle: "Vaši podaci su automatski učitani. Napišite nam pitanje ili sugestiju!",
+        lblIme: "Vaše Ime / Nadimak (Automatski)",
+        lblEmail: "E-mail Adresa (Automatski)",
+        lblTip: "Vrsta upita *",
+        optTipPitanje: "❓ Pitanje",
+        optTipSugestija: "💡 Sugestija / Prijedlog",
+        optTipProblem: "⚠️ Prijava problema",
+        optTipOstalo: "📝 Ostalo",
+        lblPoruka: "Vaša Poruka / Pitanje *",
+        placeholderPoruka: "Napišite vaše pitanje ili sugestiju...",
+        lblNapomena: "Željeni način odgovora ili dodatna napomena (Opcionalno)",
+        placeholderNapomena: "Npr. Odgovorite mi na Viber, e-mail ili ovdje u chatu...",
+        btnSend: "POŠALJI PORUKU",
+        sending: "Slanje poruke...",
+        success: "Hvala vam! Vaša poruka je uspješno poslana.",
+        rights: "Sva prava zadržana."
+      },
+      EN: {
+        btnDash: "🏠 Dashboard",
+        mainTitle: "📩 Contact & Support",
+        subtitle: "Your details are loaded automatically. Send us your question or suggestion!",
+        lblIme: "Your Name / Nickname (Auto)",
+        lblEmail: "E-mail Address (Auto)",
+        lblTip: "Inquiry Type *",
+        optTipPitanje: "❓ Question",
+        optTipSugestija: "💡 Suggestion / Idea",
+        optTipProblem: "⚠️ Issue / Bug Report",
+        optTipOstalo: "📝 Other",
+        lblPoruka: "Your Message / Question *",
+        placeholderPoruka: "Type your question or suggestion here...",
+        lblNapomena: "Preferred reply method or extra note (Optional)",
+        placeholderNapomena: "E.g. Reply via email, phone or chat...",
+        btnSend: "SEND MESSAGE",
+        sending: "Sending message...",
+        success: "Thank you! Your message has been sent successfully.",
+        rights: "All rights reserved."
+      },
+      DE: {
+        btnDash: "🏠 Dashboard",
+        mainTitle: "📩 Kontakt & Support",
+        subtitle: "Ihre Daten wurden automatisch geladen. Schreiben Sie uns eine Frage oder ein Feedback!",
+        lblIme: "Ihr Name / Spitzname (Auto)",
+        lblEmail: "E-Mail-Adresse (Auto)",
+        lblTip: "Anfrageart *",
+        optTipPitanje: "❓ Frage",
+        optTipSugestija: "💡 Vorschlag / Idee",
+        optTipProblem: "⚠️ Problem melden",
+        optTipOstalo: "📝 Sonstiges",
+        lblPoruka: "Ihre Nachricht / Frage *",
+        placeholderPoruka: "Schreiben Sie hier Ihre Frage oder Ihren Vorschlag...",
+        lblNapomena: "Bevorzugte Antwortmethode oder Anmerkung (Optional)",
+        placeholderNapomena: "Z.B. Antworten Sie per E-Mail oder Chat...",
+        btnSend: "NACHRICHT SENDEN",
+        sending: "Nachricht wird gesendet...",
+        success: "Vielen Dank! Ihre Nachricht wurde erfolgreich gesendet.",
+        rights: "Alle Rechte vorbehalten."
+      }
+    };
+
+    function promijeniJezik(lang) {
+      trenutniJezik = lang;
+      const t = prevodi[lang];
+
+      document.getElementById('txtBtnDash').innerText = t.btnDash;
+      document.getElementById('txtMainTitle').innerText = t.mainTitle;
+      document.getElementById('txtSubtitle').innerText = t.subtitle;
+      document.getElementById('lblIme').innerText = t.lblIme;
+      document.getElementById('lblEmail').innerText = t.lblEmail;
+      document.getElementById('lblTip').innerText = t.lblTip;
+      document.getElementById('optTipPitanje').innerText = t.optTipPitanje;
+      document.getElementById('optTipSugestija').innerText = t.optTipSugestija;
+      document.getElementById('optTipProblem').innerText = t.optTipProblem;
+      document.getElementById('optTipOstalo').innerText = t.optTipOstalo;
+      document.getElementById('lblPoruka').innerText = t.lblPoruka;
+      document.getElementById('cPoruka').placeholder = t.placeholderPoruka;
+      document.getElementById('lblNapomena').innerText = t.lblNapomena;
+      document.getElementById('cOdgovorNapomena').placeholder = t.placeholderNapomena;
+      document.getElementById('sendBtn').innerText = t.btnSend;
+      document.getElementById('txtRights').innerText = t.rights;
+    }
+
     async function ucitajProfilKorisnika() {
       const inputIme = document.getElementById('cIme');
       const inputEmail = document.getElementById('cEmail');
@@ -107,7 +205,6 @@
         if (user && user.email) {
           inputEmail.value = user.email;
 
-          // Pokušavamo naći ime u tabeli UPOZNAVANJ_KORISNICI
           const { data: profile } = await _supabase
             .from('UPOZNAVANJ_KORISNICI')
             .select('IME')
@@ -117,18 +214,16 @@
           if (profile && profile.IME) {
             inputIme.value = profile.IME;
           } else {
-            // Ako nema imena, uzimamo dio emaila prije @
             inputIme.value = user.email.split('@')[0];
           }
         } else {
-          // Ako korisnik nije prijavljen, otključavamo polja za ručni unos
           inputIme.removeAttribute('readonly');
           inputEmail.removeAttribute('readonly');
-          inputIme.placeholder = "Unesite vaše ime";
-          inputEmail.placeholder = "vas@email.com";
+          inputIme.placeholder = "Name";
+          inputEmail.placeholder = "email@domain.com";
         }
       } catch (e) {
-        console.warn("Nije moguće učitati korisničku sesiju:", e);
+        console.warn("Sesija nije učitana:", e);
         inputIme.removeAttribute('readonly');
         inputEmail.removeAttribute('readonly');
       }
@@ -136,6 +231,7 @@
 
     async function handleSendContact(e) {
       e.preventDefault();
+      const t = prevodi[trenutniJezik];
 
       const ime = document.getElementById('cIme').value.trim();
       const email = document.getElementById('cEmail').value.trim();
@@ -153,7 +249,7 @@
       }
 
       statusDiv.style.color = '#0056b3';
-      statusDiv.textContent = 'Slanje poruke...';
+      statusDiv.textContent = t.sending;
       sendBtn.disabled = true;
 
       try {
@@ -165,20 +261,20 @@
               email: email,
               tip: tip,
               poruka: poruka,
-              odgovor: napomenaOdgovor ? `[Napomena korisnika]: ${napomenaOdgovor}` : 'Na čekanju...'
+              odgovor: napomenaOdgovor ? `[Napomena]: ${napomenaOdgovor}` : 'Na čekanju...'
             }
           ]);
 
         if (error) throw error;
 
         statusDiv.style.color = 'green';
-        statusDiv.textContent = 'Hvala vam! Vaša poruka je uspješno poslana.';
+        statusDiv.textContent = t.success;
         document.getElementById('cPoruka').value = '';
         document.getElementById('cOdgovorNapomena').value = '';
 
       } catch (err) {
         statusDiv.style.color = 'red';
-        statusDiv.textContent = 'Greška pri slanju: ' + err.message;
+        statusDiv.textContent = 'Error: ' + err.message;
       } finally {
         sendBtn.disabled = false;
       }
