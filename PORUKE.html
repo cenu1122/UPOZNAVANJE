@@ -1,4 +1,268 @@
-if (error || !poruke || poruke.length === 0) {
+</head>
+<body>
+
+  <header>
+    <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
+
+    <div class="nav-actions">
+      <select id="langSelect" class="lang-select" onchange="promijeniJezik(this.value)">
+        <option value="BS" selected>🌐 BS</option>
+        <option value="EN">🌐 EN</option>
+        <option value="DE">🌐 DE</option>
+      </select>
+
+      <a href="DASHBOARD.html" class="btn-nav">🏠 Dashboard</a>
+      <a href="KONTAKT.html" class="btn-nav">📩 Podrška</a>
+    </div>
+  </header>
+
+  <div class="chat-container">
+    
+    <div class="users-sidebar">
+      <div class="sidebar-header">
+        <span>👥 Članovi (<span id="onlineCount">0</span> online)</span>
+        <button onclick="ucitajSve()" style="background:none; border:none; color:#fff; cursor:pointer; font-size:1.1rem;">🔄</button>
+      </div>
+      <div class="user-list" id="userList">
+        <div style="padding:15px; text-align:center; color:#888;">Učitavanje članova...</div>
+      </div>
+    </div>
+
+    <div class="chat-window">
+      
+      <div class="chat-header">
+        <div class="chat-header-info">
+          <div class="avatar-wrapper">
+            <div class="user-avatar" id="activeAvatar">💬</div>
+          </div>
+          <div>
+            <h3 id="chatWithTitle">Odaberite člana s lijeve strane</h3>
+            <span id="chatUserStatusText" class="status-badge offline">STATUS NEPOZNAT</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-toolbar">
+        <span>🤖 <strong>AI Prevodilac:</strong> Prevedi dolazne poruke na moj jezik:</span>
+        <select id="aiTargetLang">
+          <option value="Bosanski" selected>Bosanski / Hrvatski / Srpski</option>
+          <option value="Engleski">Engleski (English)</option>
+          <option value="Nemački">Njemački (Deutsch)</option>
+        </select>
+      </div>
+
+      <div class="messages-box" id="messagesBox">
+        <div class="message received">
+          👋 Dobrodošli! Odaberite člana iz liste s lijeve strane za početak razgovora.
+          <div class="time">Sada</div>
+        </div>
+      </div>
+
+      <div class="chat-input-container">
+        <div class="input-row">
+          <input type="text" id="msgInput" placeholder="Napišite poruku..." onkeypress="provjeriEnter(event)">
+          <button class="btn-ai-translate" onclick="prevediTekstPrijeSlanja()">🤖 Prevedi AI</button>
+          <button class="btn-send" onclick="posaljiPoruku()">Pošalji 🚀</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+
+    let _supabase;
+    if (typeof supabase !== 'undefined') {
+      _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+
+    let trenutniKorisnik = null;
+    let primateljId = null;
+    let primateljIme = '';
+    
+    let onlineUserIds = new Set();
+    let porukeBrojMap = {};
+
+    async function ucitajSve() {
+      if (!_supabase) return;
+
+      const { data: { user } } = await _supabase.auth.getUser();
+      if (user) {
+        trenutniKorisnik = user;
+      }
+
+      pratiOnlinePresence();
+      await izracunajStatistikuPoruka();
+      await ucitajListuKorisnika();
+      slusajPorukeRealtime();
+    }
+
+    function pratiOnlinePresence() {
+      if (!_supabase || !trenutniKorisnik) return;
+
+      const room = _supabase.channel('online-users', {
+        config: { presence: { key: trenutniKorisnik.id } }
+      });
+
+      room.on('presence', { event: 'sync' }, () => {
+        const state = room.presenceState();
+        onlineUserIds.clear();
+        Object.keys(state).forEach(id => onlineUserIds.add(id));
+        document.getElementById('onlineCount').innerText = onlineUserIds.size;
+        osvjeziListuKorisnikaPrikaz();
+      });
+
+      room.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await room.track({ online_at: new Date().toISOString() });
+        }
+      });
+    }
+
+    async function izracunajStatistikuPoruka() {
+      if (!trenutniKorisnik) return;
+      try {
+        const mojId = String(trenutniKorisnik.id);
+        const { data: poruke } = await _supabase
+          .from('PRIVATNE_PORUKE')
+          .select('posiljalac, primalac')
+          .or(`posiljalac.eq.${mojId},primalac.eq.${mojId}`);
+
+        porukeBrojMap = {};
+        if (poruke) {
+          poruke.forEach(p => {
+            const partner = String(p.posiljalac) === mojId ? String(p.primalac) : String(p.posiljalac);
+            porukeBrojMap[partner] = (porukeBrojMap[partner] || 0) + 1;
+          });
+        }
+      } catch (e) {
+        console.warn("Nema tabele poruka ili je prazna:", e);
+      }
+    }
+
+    let sviKorisniciBaza = [];
+
+    async function ucitajListuKorisnika() {
+      if (!_supabase) return;
+
+      try {
+        const { data: korisnici, error } = await _supabase
+          .from('UPOZNAVANJ_KORISNICI')
+          .select('*');
+
+        if (error || !korisnici) {
+          sviKorisniciBaza = [];
+        } else {
+          sviKorisniciBaza = korisnici;
+        }
+
+        osvjeziListuKorisnikaPrikaz();
+      } catch (e) {
+        console.warn("Greška pri dohvaćanju baze:", e);
+      }
+    }
+
+    function osvjeziListuKorisnikaPrikaz() {
+      const listEl = document.getElementById('userList');
+      listEl.innerHTML = '';
+
+      let lista = sviKorisniciBaza.filter(k => {
+        const kId = String(k.USER || k.id);
+        return !trenutniKorisnik || kId !== String(trenutniKorisnik.id);
+      });
+
+      if (lista.length === 0) {
+        listEl.innerHTML = '<div style="padding:15px; text-align:center; color:#888;">Nema registrovanih drugih članova u bazi.</div>';
+        return;
+      }
+
+      lista.sort((a, b) => {
+        const aId = String(a.USER || a.id);
+        const bId = String(b.USER || b.id);
+
+        const aOnline = onlineUserIds.has(aId) ? 1 : 0;
+        const bOnline = onlineUserIds.has(bId) ? 1 : 0;
+
+        if (aOnline !== bOnline) return bOnline - aOnline;
+
+        const aCount = porukeBrojMap[aId] || 0;
+        const bCount = porukeBrojMap[bId] || 0;
+        return bCount - aCount;
+      });
+
+      lista.forEach(k => {
+        const uId = String(k.USER || k.id);
+        const isOnline = onlineUserIds.has(uId);
+        const totalMsgs = porukeBrojMap[uId] || 0;
+
+        const item = document.createElement('div');
+        item.className = `user-item ${primateljId === uId ? 'active' : ''}`;
+        item.onclick = () => odaberiKorisnikaZaChat(uId, k.IME || k.MAIL || 'Član', isOnline);
+
+        const inicijal = (k.IME || k.MAIL || 'C')[0].toUpperCase();
+
+        item.innerHTML = `
+          <div class="avatar-wrapper">
+            <div class="user-avatar">${inicijal}</div>
+          </div>
+          <div class="user-info">
+            <h4>
+              <span>${k.IME || k.MAIL || 'Član'}</span>
+              ${totalMsgs > 0 ? `<span class="msg-count-badge">💬 ${totalMsgs}</span>` : ''}
+            </h4>
+            <p>
+              ${isOnline 
+                ? '<span class="status-badge online">🟢 SADA ONLINE</span>' 
+                : '<span class="status-badge offline">⚪ NEAKTIVAN</span>'}
+            </p>
+          </div>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+
+    function odaberiKorisnikaZaChat(userId, ime, isOnline) {
+      primateljId = String(userId);
+      primateljIme = ime;
+
+      document.getElementById('chatWithTitle').innerText = `Dopisivanje sa: ${ime}`;
+      document.getElementById('activeAvatar').innerText = ime[0].toUpperCase();
+
+      const statusBadge = document.getElementById('chatUserStatusText');
+      if (isOnline) {
+        statusBadge.className = 'status-badge online';
+        statusBadge.innerText = '🟢 SADA ONLINE';
+      } else {
+        statusBadge.className = 'status-badge offline';
+        statusBadge.innerText = '⚪ TRENUTNO NEAKTIVAN';
+      }
+
+      osvjeziListuKorisnikaPrikaz();
+      ucitajPorukeRazgovora();
+    }
+
+    async function ucitajPorukeRazgovora() {
+      if (!trenutniKorisnik || !primateljId) return;
+
+      const box = document.getElementById('messagesBox');
+      box.innerHTML = '<div style="text-align:center; color:#888;">Učitavanje poruka...</div>';
+
+      try {
+        const mojId = String(trenutniKorisnik.id);
+        const pId = String(primateljId);
+
+        const { data: poruke, error } = await _supabase
+          .from('PRIVATNE_PORUKE')
+          .select('*')
+          .or(`and(posiljalac.eq.${mojId},primalac.eq.${pId}),and(posiljalac.eq.${pId},primalac.eq.${mojId})`)
+          .order('created_at', { ascending: true });
+
+        box.innerHTML = '';
+
+        if (error || !poruke || poruke.length === 0) {
           box.innerHTML = `<div style="text-align:center; color:#888; margin-top:20px;">Započnite razgovor sa <strong>${primateljIme}</strong>!</div>`;
           return;
         }
