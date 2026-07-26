@@ -1,59 +1,4 @@
-</div>
-
-  <footer>
-    <p>© 2026 LjubavNaPrviKlik. <span id="txtRights">Sva prava zadržana.</span></p>
-  </footer>
-
-  <script>
-    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
-
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    let trenutniJezik = 'BS';
-
-    const prevodi = {
-      BS: {
-        btnContact: "📩 Podrška & Kontakt", btnLogout: "🚪 Odjava", welcome: "Dobrodošli nazad! 👋",
-        subWelcome: "Pronađite srodnu dušu i započnite novi razgovor već danas.",
-        tProfileTitle: "Moj Profil", tProfileDesc: "Uredite svoje podatke, fotografije i postavke privatnosti.",
-        tSearchTitle: "Pretraga Profila", tSearchDesc: "Pronađite članove prema godinama, lokaciji i interesovanjima.",
-        tChatTitle: "Poruke & Dopisivanje", tChatDesc: "Pregledajte vaše aktivne razgovore i nove poruke.",
-        tSupportTitle: "Korisnička Podrška", tSupportDesc: "Imate pitanje ili problem? Javite se našem timu.",
-        rights: "Sva prava zadržana."
-      },
-      EN: {
-        btnContact: "📩 Support & Contact", btnLogout: "🚪 Logout", welcome: "Welcome back! 👋",
-        subWelcome: "Find your soulmate and start a conversation today.",
-        tProfileTitle: "My Profile", tProfileDesc: "Edit your details, photos, and privacy settings.",
-        tSearchTitle: "Search Profiles", tSearchDesc: "Find members by age, location, and interests.",
-        tChatTitle: "Messages & Chat", tChatDesc: "Check your active chats and new messages.",
-        tSupportTitle: "Customer Support", tSupportDesc: "Have a question or issue? Contact our team.",
-        rights: "All rights reserved."
-      },
-      DE: {
-        btnContact: "📩 Support & Kontakt", btnLogout: "🚪 Abmelden", welcome: "Willkommen zurück! 👋",
-        subWelcome: "Finden Sie Ihren Seelenverwandten noch heute.",
-        tProfileTitle: "Mein Profil", tProfileDesc: "Bearbeiten Sie Ihre Daten, Fotos und Einstellungen.",
-        tSearchTitle: "Mitglieder Suchen", tSearchDesc: "Finden Sie Mitglieder nach Alter, Ort und Interessen.",
-        tChatTitle: "Nachrichten & Chat", tChatDesc: "Überprüfen Sie Ihre aktiven Chats und Nachrichten.",
-        tSupportTitle: "Kundensupport", tSupportDesc: "Haben Sie eine Frage? Kontaktieren Sie uns.",
-        rights: "Alle Rechte vorbehalten."
-      }
-    };
-
-    function promijeniJezik(lang) {
-      trenutniJezik = lang;
-      const t = prevodi[lang];
-      document.getElementById('txtBtnContact').innerText = t.btnContact;
-      document.getElementById('txtBtnLogout').innerText = t.btnLogout;
-      document.getElementById('txtWelcome').innerText = t.welcome;
-      document.getElementById('txtSubWelcome').innerText = t.subWelcome;
-      document.getElementById('tileProfileTitle').innerText = t.tProfileTitle;
-      document.getElementById('tileProfileDesc').innerText = t.tProfileDesc;
-      document.getElementById('tileSearchTitle').innerText = t.tSearchTitle;
-      document.getElementById('tileSearchDesc').innerText = t.tSearchDesc;
-      document.getElementById('tileChatTitle').innerText = t.tChatTitle;
+ElementById('tileChatTitle').innerText = t.tChatTitle;
       document.getElementById('tileChatDesc').innerText = t.tChatDesc;
       document.getElementById('tileSupportTitle').innerText = t.tSupportTitle;
       document.getElementById('tileSupportDesc').innerText = t.tSupportDesc;
@@ -61,6 +6,7 @@
     }
 
     async function ucitajProfilKorisnika() {
+      if (!_supabase) return;
       try {
         const { data: { user } } = await _supabase.auth.getUser();
 
@@ -85,7 +31,7 @@
     }
 
     async function odjava() {
-      await _supabase.auth.signOut();
+      if (_supabase) await _supabase.auth.signOut();
       window.location.href = 'index.html';
     }
 
