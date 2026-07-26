@@ -1,7 +1,3 @@
-Evo kompletnog koda u kojem su izbačene sve komplikovane unutrašnje pretrage i umjesto njih dodano jasno dugme koje vodi direktno na PRETRAGA.html.
-Kompletan kôd za DASHBOARD.html:
-HTML
-
 <!DOCTYPE html>
 <html lang="bs">
 <head>
@@ -36,6 +32,17 @@ HTML
     .search-redirect-card { text-align: center; padding: 30px 20px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
     .btn-open-search { background: #d90429; color: #fff; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: bold; font-size: 1.1rem; display: inline-flex; align-items: center; gap: 10px; transition: background 0.2s, transform 0.1s; }
     .btn-open-search:hover { background: #ef233c; transform: translateY(-2px); }
+
+    /* DODAN STIL ZA KONTAKT KARTICU I MIGAJUĆI TEKST */
+    .contact-redirect-card { text-align: center; padding: 25px 20px; background: #fff0f3; border: 2px dashed #d90429; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .blinking-text { font-size: 1.3rem; font-weight: bold; color: #d90429; animation: blinker 1s linear infinite; }
+    
+    @keyframes blinker {
+      50% { opacity: 0; }
+    }
+
+    .btn-contact { background: #2b2d42; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 10px; font-weight: bold; font-size: 1rem; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s; }
+    .btn-contact:hover { background: #d90429; }
 
     .chat-header { display: flex; align-items: center; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid #eee; margin-bottom: 10px; }
     .chat-header img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #d90429; background-color: #e2e8f0; cursor: pointer; }
@@ -123,6 +130,14 @@ HTML
           <option value="Turkish">Türkçe (TR)</option>
         </select>
       </div>
+    </div>
+
+    <div class="card contact-redirect-card">
+      <div class="blinking-text">✨ Kontaktiraj me ✨</div>
+      <p style="color: #555; font-size: 0.9rem;">Imate pitanja, sugestije ili vam je potrebna podrška?</p>
+      <a href="KONTAKT.html" class="btn-contact">
+        📩 Otvori Kontakt & Podrška
+      </a>
     </div>
 
     <div class="card search-redirect-card">
