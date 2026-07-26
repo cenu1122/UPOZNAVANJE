@@ -1,3 +1,14 @@
+Evo kompletno ažuriranog koda za DASHBOARD.html.
+
+Sada pretraga radi dvodijelno:
+
+    Prvi dio: Pretražuje i prikazuje rezultate iz tabele SLIKE.
+
+    Drugi dio: Odmah ispod traži i prikazuje rezultate iz tabele upoznavanje_korisnici (sa posebnim karticama gdje su istaknuti ime, godine, grad, spol i opis profila).
+
+Kompletan kôd za DASHBOARD.html:
+HTML
+
 <!DOCTYPE html>
 <html lang="bs">
 <head>
@@ -29,12 +40,13 @@
     .partner-controls input, .partner-controls select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; outline: none; }
 
     .search-box { display: flex; gap: 10px; margin-top: 10px; width: 100%; flex-wrap: wrap; }
-    .search-box input { flex: 2; min-width: 200px; padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px; outline: none; }
-    .search-box select { flex: 1; min-width: 150px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-weight: 500; }
+    .search-box input { flex: 2; min-width: 180px; padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px; outline: none; }
+    .search-box select { flex: 1; min-width: 120px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-weight: 500; }
     .btn-search { background: #2b2d42; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     .btn-search:hover { background: #3d405b; }
 
-    .search-results { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow-y: auto; }
+    .section-title { font-size: 1rem; font-weight: bold; color: #d90429; margin-top: 15px; margin-bottom: 8px; border-bottom: 2px solid #eee; padding-bottom: 4px; }
+    .search-results { display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; }
     .user-result-card { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border: 1px solid #eee; border-radius: 8px; background: #fafafa; flex-wrap: wrap; gap: 10px; }
     .user-result-info { display: flex; align-items: center; gap: 12px; }
     .user-result-info img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; background-color: #e2e8f0; border: 1px solid #ddd; cursor: pointer; }
@@ -53,6 +65,7 @@
     .dot-offline { background-color: #80868b; }
 
     .platform-badge { font-size: 0.75rem; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: #4a5568; margin-left: 5px; }
+    .meta-badge { font-size: 0.75rem; background: #fff0f3; color: #d90429; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 5px; border: 1px solid #ffccd5; }
 
     /* Modal sa galerijom slika */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
@@ -154,13 +167,27 @@
     </div>
 
     <div class="card">
-      <h3>🔍 Pretraga korisnika i platformi</h3>
+      <h3>🔍 Pretraga korisnika po filterima</h3>
 
       <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Unesite korisnik_id ili pojam za pretragu...">
+        <input type="text" id="searchInput" placeholder="Unesite ime, grad, id ili pojam...">
         
+        <select id="genderSelect" onchange="searchUsers()">
+          <option value="ALL">Svi spolovi</option>
+          <option value="female">👩 Žensko</option>
+          <option value="male">👨 Muško</option>
+        </select>
+
+        <select id="ageSelect" onchange="searchUsers()">
+          <option value="ALL">Sve godine</option>
+          <option value="18-25">18 - 25 god.</option>
+          <option value="26-35">26 - 35 god.</option>
+          <option value="36-50">36 - 50 god.</option>
+          <option value="50+">50+ god.</option>
+        </select>
+
         <select id="platformSelect" onchange="searchUsers()">
-          <option value="ALL">Sve platforme</option>
+          <option value="ALL" selected>Sve platforme</option>
           <option value="LangLove">LangLove Native</option>
           <option value="Facebook">Facebook</option>
           <option value="LinkedIn">LinkedIn</option>
@@ -173,7 +200,12 @@
         <button class="btn-search" onclick="searchUsers()">Pretraži</button>
       </div>
       <div id="statusMsg"></div>
-      <div id="searchResults" class="search-results"></div>
+
+      <div class="section-title">🖼️ Profilne Slike (Tabela SLIKE)</div>
+      <div id="imagesResults" class="search-results"></div>
+
+      <div class="section-title">👥 Korisnički Profili (Tabela UPOZNAVANJE_KORISNICI)</div>
+      <div id="usersResults" class="search-results"></div>
     </div>
 
     <div class="card">
@@ -250,7 +282,6 @@
   let currentUser = null;
   let currentPartnerEmail = null;
   let onlineUsersMap = new Map();
-  let currentSearchResults = [];
   let recognition = null;
   let isRecording = false;
 
@@ -356,10 +387,7 @@
           });
         });
 
-        const resultsContainer = document.getElementById('searchResults');
-        if (resultsContainer.innerHTML !== '') {
-          renderSearchResults();
-        }
+        searchUsers();
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
@@ -533,108 +561,130 @@
     currentPartnerEmail = null;
   }
 
-  /* PRETRAGA PO TABELI 'SLIKE' I PLATFORMAMA BEZ DUPLIKATA */
+  /* PRETRAGA: DUPLA PRETRAGA (SLIKE + UPOZNAVANJE_KORISNICI) */
   async function searchUsers() {
     const query = document.getElementById('searchInput').value.trim();
-    const selectedPlatform = document.getElementById('platformSelect').value;
+    const selectedGender = document.getElementById('genderSelect') ? document.getElementById('genderSelect').value : 'ALL';
+    const selectedAge = document.getElementById('ageSelect') ? document.getElementById('ageSelect').value : 'ALL';
+    const selectedPlatform = document.getElementById('platformSelect') ? document.getElementById('platformSelect').value : 'ALL';
     const statusMsg = document.getElementById('statusMsg');
 
     statusMsg.style.color = '#0056b3';
-    statusMsg.innerText = 'Pretraživanje...';
+    statusMsg.innerText = 'Pretraživanje baza podataka...';
 
+    // 1. PRETRAGA TABELE 'SLIKE'
     try {
-      let queryBuilder = _supabase.from('SLIKE').select('*').order('created_at', { ascending: false });
-
+      let querySLIKE = _supabase.from('SLIKE').select('*').order('created_at', { ascending: false });
       if (query.length > 0) {
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(query);
-        if (isUuid) {
-          queryBuilder = queryBuilder.eq('korisnik_id', query);
-        } else {
-          queryBuilder = queryBuilder.ilike('url', `%${query}%`);
-        }
+        if (isUuid) { querySLIKE = querySLIKE.eq('korisnik_id', query); } 
+        else { querySLIKE = querySLIKE.ilike('url', `%${query}%`); }
       }
+      if (currentUser) { querySLIKE = querySLIKE.neq('korisnik_id', currentUser.id); }
 
-      if (currentUser) {
-        queryBuilder = queryBuilder.neq('korisnik_id', currentUser.id);
-      }
+      const { data: imagesData } = await querySLIKE.limit(50);
+      
+      const uniqueImages = [];
+      const seenImageUsers = new Set();
 
-      const { data: images, error } = await queryBuilder.limit(100);
-
-      if (error) throw error;
-
-      // ELIMINACIJA DUPLIKATA I FILTRIRANJE PO PLATFORMAMA
-      const uniqueResults = [];
-      const seenUserIds = new Set();
-
-      if (images) {
-        images.forEach(img => {
-          // Provera platforme (preko kolone 'platforma' ako postoji, ili po nazivu u url-u)
+      if (imagesData) {
+        imagesData.forEach(img => {
           const imgPlatform = (img.platforma || '').toLowerCase();
-          const imgUrlLower = (img.url || '').toLowerCase();
-          const targetPlatform = selectedPlatform.toLowerCase();
+          const imgGender = (img.spol || '').toLowerCase();
+          const imgAge = parseInt(img.godine || 0);
 
-          let matchesPlatform = (selectedPlatform === 'ALL');
-          if (!matchesPlatform) {
-            if (imgPlatform.includes(targetPlatform) || imgUrlLower.includes(targetPlatform)) {
-              matchesPlatform = true;
-            }
+          let matchesPlatform = (selectedPlatform === 'ALL') || (selectedPlatform === 'LangLove' && (!img.platforma || imgPlatform.includes('langlove'))) || imgPlatform.includes(selectedPlatform.toLowerCase());
+          let matchesGender = (selectedGender === 'ALL') || (imgGender === selectedGender.toLowerCase());
+          let matchesAge = (selectedAge === 'ALL');
+          if (!matchesAge && imgAge > 0) {
+            if (selectedAge === '18-25') matchesAge = (imgAge >= 18 && imgAge <= 25);
+            else if (selectedAge === '26-35') matchesAge = (imgAge >= 26 && imgAge <= 35);
+            else if (selectedAge === '36-50') matchesAge = (imgAge >= 36 && imgAge <= 50);
+            else if (selectedAge === '50+') matchesAge = (imgAge > 50);
           }
 
-          if (matchesPlatform && img.korisnik_id && !seenUserIds.has(img.korisnik_id)) {
-            seenUserIds.add(img.korisnik_id);
-            // Dodajemo podatak o platformi ako ga nema
-            if (!img.platforma) {
-              img.platforma = selectedPlatform !== 'ALL' ? selectedPlatform : 'LangLove';
-            }
-            uniqueResults.push(img);
+          if (matchesPlatform && matchesGender && matchesAge && img.korisnik_id && !seenImageUsers.has(img.korisnik_id)) {
+            seenImageUsers.add(img.korisnik_id);
+            if (!img.platforma) img.platforma = 'LangLove';
+            uniqueImages.push(img);
           }
         });
       }
-
-      currentSearchResults = uniqueResults;
-      renderSearchResults();
+      renderImageResults(uniqueImages);
 
     } catch (err) {
-      statusMsg.style.color = 'red';
-      statusMsg.innerText = 'Greška pri pretrazi: ' + err.message;
-      console.error("Supabase Error:", err);
+      console.error("Greška pri pretrazi SLIKE:", err);
+    }
+
+    // 2. PRETRAGA TABELE 'UPOZNAVANJE_KORISNICI'
+    try {
+      let queryUK = _supabase.from('upoznavanje_korisnici').select('*').order('created_at', { ascending: false });
+
+      if (query.length > 0) {
+        queryUK = queryUK.or(`ime.ilike.%${query}%,grad.ilike.%${query}%,email.ilike.%${query}%`);
+      }
+      if (currentUser) {
+        queryUK = queryUK.neq('email', currentUser.email);
+      }
+
+      const { data: usersData } = await queryUK.limit(50);
+
+      const filteredUsers = [];
+      if (usersData) {
+        usersData.forEach(u => {
+          const uGender = (u.spol || u.gender || '').toLowerCase();
+          const uAge = parseInt(u.godine || u.age || 0);
+
+          let matchesGender = (selectedGender === 'ALL') || (uGender === selectedGender.toLowerCase());
+          let matchesAge = (selectedAge === 'ALL');
+          if (!matchesAge && uAge > 0) {
+            if (selectedAge === '18-25') matchesAge = (uAge >= 18 && uAge <= 25);
+            else if (selectedAge === '26-35') matchesAge = (uAge >= 26 && uAge <= 35);
+            else if (selectedAge === '36-50') matchesAge = (uAge >= 36 && uAge <= 50);
+            else if (selectedAge === '50+') matchesAge = (uAge > 50);
+          }
+
+          if (matchesGender && matchesAge) {
+            filteredUsers.push(u);
+          }
+        });
+      }
+      renderUserResults(filteredUsers);
+      statusMsg.innerText = 'Pretraga završena.';
+
+    } catch (err) {
+      console.warn("Tabela 'upoznavanje_korisnici' ne postoji ili ima drugu strukturu:", err);
+      document.getElementById('usersResults').innerHTML = '<p style="color:#888; font-size:0.85rem;">Nema pronađenih korisnika u bazi profilnih zapisa.</p>';
+      statusMsg.innerText = 'Pretraga slika završena.';
     }
   }
 
-  function renderSearchResults() {
-    const resultsContainer = document.getElementById('searchResults');
-    const statusMsg = document.getElementById('statusMsg');
-    
-    resultsContainer.innerHTML = '';
+  function renderImageResults(list) {
+    const container = document.getElementById('imagesResults');
+    container.innerHTML = '';
 
-    if (!currentSearchResults || currentSearchResults.length === 0) {
-      statusMsg.style.color = '#666';
-      statusMsg.innerText = 'Nije pronađena nijedna slika / korisnik za izabrane kriterijume.';
+    if (!list || list.length === 0) {
+      container.innerHTML = '<p style="color:#888; font-size:0.85rem;">Nema slika koje odgovaraju uslovima.</p>';
       return;
     }
 
-    statusMsg.innerText = `Pronađeno: ${currentSearchResults.length} jedinstven(a) profil(a)`;
-
-    currentSearchResults.forEach(item => {
+    list.forEach(item => {
       const userId = item.korisnik_id || 'Nepoznat Korisnik';
       const imgUrl = item.url || getFallbackAvatar(userId);
       const platforma = item.platforma || 'LangLove';
-
-      const isOnline = onlineUsersMap.has(userId.toLowerCase());
-      const statusBadgeHTML = isOnline 
-        ? `<span class="status-badge status-online"><span class="dot dot-online"></span> Online</span>`
-        : `<span class="status-badge status-offline"><span class="dot dot-offline"></span> Offline</span>`;
-
       const safeUserId = userId.replace(/'/g, "\\'");
       const safeImg = imgUrl.replace(/'/g, "\\'");
 
-      const userCard = document.createElement('div');
-      userCard.className = 'user-result-card';
-      userCard.innerHTML = `
+      const isOnline = onlineUsersMap.has(userId.toLowerCase());
+      const statusBadge = isOnline ? `<span class="status-badge status-online"><span class="dot dot-online"></span> Online</span>` : `<span class="status-badge status-offline"><span class="dot dot-offline"></span> Offline</span>`;
+
+      const div = document.createElement('div');
+      div.className = 'user-result-card';
+      div.innerHTML = `
         <div class="user-result-info">
           <img src="${imgUrl}" alt="Profilna slika" onerror="this.onerror=null; this.src='${getFallbackAvatar(userId)}';" onclick="openProfileModal('${safeUserId}')">
           <div>
-            <strong style="cursor:pointer;" onclick="openProfileModal('${safeUserId}')">Korisnik: ${userId.substring(0, 12)}...</strong> ${statusBadgeHTML} <span class="platform-badge">${platforma}</span><br>
+            <strong style="cursor:pointer;" onclick="openProfileModal('${safeUserId}')">ID: ${userId.substring(0, 12)}...</strong> ${statusBadge} <span class="platform-badge">${platforma}</span><br>
             <small style="color:#777;">ID: ${userId}</small>
           </div>
         </div>
@@ -643,7 +693,49 @@
           <button class="btn-select-partner" onclick="selectPartner('${safeUserId}', '${safeUserId}', '${safeImg}', '${safeUserId}')">Chat</button>
         </div>
       `;
-      resultsContainer.appendChild(userCard);
+      container.appendChild(div);
+    });
+  }
+
+  function renderUserResults(list) {
+    const container = document.getElementById('usersResults');
+    container.innerHTML = '';
+
+    if (!list || list.length === 0) {
+      container.innerHTML = '<p style="color:#888; font-size:0.85rem;">Nema profilnih naloga koji odgovaraju uslovima.</p>';
+      return;
+    }
+
+    list.forEach(u => {
+      const uEmail = u.email || u.korisnik_id || 'Nepoznat Email';
+      const uIme = u.ime || u.name || uEmail.split('@')[0];
+      const uGrad = u.grad || u.city || '';
+      const uGodine = u.godine || u.age || '';
+      const uSpol = u.spol || u.gender || '';
+      const uSlika = u.slika_url || u.avatar || getFallbackAvatar(uIme);
+
+      const safeEmail = uEmail.replace(/'/g, "\\'");
+      const safeIme = uIme.replace(/'/g, "\\'");
+      const safeImg = uSlika.replace(/'/g, "\\'");
+
+      const isOnline = onlineUsersMap.has(uEmail.toLowerCase());
+      const statusBadge = isOnline ? `<span class="status-badge status-online"><span class="dot dot-online"></span> Online</span>` : `<span class="status-badge status-offline"><span class="dot dot-offline"></span> Offline</span>`;
+
+      const div = document.createElement('div');
+      div.className = 'user-result-card';
+      div.innerHTML = `
+        <div class="user-result-info">
+          <img src="${uSlika}" alt="Slika korisnika" onerror="this.onerror=null; this.src='${getFallbackAvatar(uIme)}';" onclick="selectPartner('${safeEmail}', '${safeIme}', '${safeImg}', '${safeEmail}')">
+          <div>
+            <strong>${uIme}</strong> ${statusBadge} ${uSpol ? `<span class="meta-badge">${uSpol}</span>` : ''} ${uGodine ? `<span class="meta-badge">${uGodine} god.</span>` : ''}<br>
+            <small style="color:#666;">${uGrad ? '📍 ' + uGrad + ' | ' : ''}Email: ${uEmail}</small>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button class="btn-select-partner" onclick="selectPartner('${safeEmail}', '${safeIme}', '${safeImg}', '${safeEmail}')">💬 Chat</button>
+        </div>
+      `;
+      container.appendChild(div);
     });
   }
 
@@ -660,7 +752,6 @@
 
     document.getElementById('profileModal').style.display = 'flex';
 
-    // Dohvati sve slike za ovog korisnika u galeriju
     const { data: userImages } = await _supabase
       .from('SLIKE')
       .select('url')
@@ -707,9 +798,9 @@
 
   function selectPartner(userId, name, imgUrl, userEmail) {
     currentPartnerEmail = userEmail;
-    document.getElementById('directPartnerInput').value = userId;
+    document.getElementById('directPartnerInput').value = name || userId;
     
-    setPartnerInChat(userId, imgUrl);
+    setPartnerInChat(name || userId, imgUrl);
     loadMessages();
   }
 
