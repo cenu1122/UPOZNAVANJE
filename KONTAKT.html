@@ -141,17 +141,17 @@ HTML
       <h2 id="txtMainTitle">📩 Kontakt & Podrška</h2>
       <p class="subtitle" id="txtSubtitle">Pošaljite nam pitanje ili nastavite razgovor sa administratorom!</p>
 
-      <div id="conversationContainer" style="display:none; margin-bottom: 20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
-          <label style="font-weight:bold; color:#800020;">💬 Historija razgovora sa podrškom:</label>
-          <div class="chat-action-btns">
-            <button type="button" class="btn-chat-action btn-new-topic" onclick="zapocniNoviUpit()">➕ Započni Novu Temu</button>
-            <button type="button" class="btn-chat-action btn-refresh-chat" onclick="ucitajHistorijuKorisnika()">🔄 Osvježi</button>
-          </div>
-        </div>
-        <div class="chat-box" id="chatHistoryBox"></div>
-      </div>
-
+    <div id="conversationContainer" style="display:none; margin-bottom: 20px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+    <label style="font-weight:bold; color:#800020;">💬 Historija razgovora sa podrškom:</label>
+    <div class="chat-action-btns">
+      <button type="button" class="btn-chat-action btn-new-topic" onclick="zapocniNoviUpit()">➕ Započni Novu Temu</button>
+      <button type="button" class="btn-chat-action btn-refresh-chat" onclick="ucitajHistorijuKorisnika()">🔄 Osvježi</button>
+    </div>
+  </div>
+  <div class="chat-box" id="chatHistoryBox"></div>
+</div>
+        
       <form id="contactForm" onsubmit="handleSendContact(event)">
         <div class="form-group">
           <label id="lblIme">Vaše Ime / Nadimak</label>
