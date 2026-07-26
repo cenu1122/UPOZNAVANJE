@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pretraga Korisnika | LjubavNaPrviKlik</title>
+  <title>Pretraga Profila & Platformi | LjubavNaPrviKlik</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -16,13 +16,14 @@
     .btn-dash { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
     .btn-dash:hover { background: #ef233c; }
 
-    .main-container { flex: 1; max-width: 800px; width: 100%; margin: 25px auto; padding: 0 15px; }
+    .main-container { flex: 1; max-width: 850px; width: 100%; margin: 25px auto; padding: 0 15px; }
     .card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
-    .search-bar { display: flex; gap: 10px; margin-top: 15px; }
-    .search-bar input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 1rem; }
-    .btn-search { background: #2b2d42; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
-    .btn-search:hover { background: #3d405b; }
+    .search-bar { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+    .search-bar input { flex: 2; min-width: 180px; padding: 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 1rem; }
+    .search-bar select { flex: 1; min-width: 150px; padding: 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-weight: 500; font-size: 0.95rem; }
+    .btn-search { background: #d90429; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+    .btn-search:hover { background: #ef233c; }
 
     .results-container { margin-top: 20px; display: flex; flex-direction: column; gap: 15px; }
     
@@ -30,14 +31,15 @@
     .user-avatar { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #d90429; background: #e2e8f0; }
     
     .user-details { flex: 1; min-width: 200px; }
-    .user-details h3 { color: #d90429; margin-bottom: 4px; font-size: 1.15rem; }
+    .user-details h3 { color: #d90429; margin-bottom: 4px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; }
     .user-info { font-size: 0.88rem; color: #555; margin-bottom: 6px; }
     
+    .platform-badge { font-size: 0.75rem; background: #2b2d42; color: #fff; padding: 2px 8px; border-radius: 12px; font-weight: bold; }
     .user-box { background: #fff; padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.9rem; margin-top: 5px; }
-    .user-box strong { color: #2b2d42; }
 
-    .btn-chat { background: #d90429; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; align-self: center; text-decoration: none; display: inline-block; }
-    .btn-chat:hover { background: #ef233c; }
+    .btn-action { background: #2b2d42; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; align-self: center; text-decoration: none; display: inline-block; }
+    .btn-action:hover { background: #3d405b; }
+    .btn-ext { background: #1877F2; } /* Facebook plava */
 
     #statusMsg { margin-top: 10px; font-size: 0.9rem; font-weight: 600; color: #666; }
 
@@ -53,15 +55,26 @@
 
   <div class="main-container">
     <div class="card">
-      <h2>🔍 Pretraga Profila</h2>
-      <p style="color: #666; font-size: 0.9rem; margin-top: 4px;">Unesite ime, e-mail ili pojam za pretragu:</p>
+      <h2>🔍 Pretraga Profila & Društvenih Mreža</h2>
+      <p style="color: #666; font-size: 0.9rem; margin-top: 4px;">Pretražite unutrašnju bazu ili direktno otvorite pretragu na vanjskim platformama:</p>
 
       <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Pretraži po imenu, opisu ili e-mailu..." onkeypress="handleKeyPress(event)">
+        <input type="text" id="searchInput" placeholder="Unesite ime, pojam ili grad..." onkeypress="handleKeyPress(event)">
+        
+        <select id="platformSelect" onchange="traziKorisnike()">
+          <option value="LangLove" selected>🌐 LangLove Native</option>
+          <option value="Facebook">f Facebook</option>
+          <option value="Instagram">📸 Instagram</option>
+          <option value="LinkedIn">in LinkedIn</option>
+          <option value="Tinder">🔥 Tinder</option>
+          <option value="Badoo">💜 Badoo</option>
+          <option value="Bumble">🐝 Bumble</option>
+        </select>
+
         <button class="btn-search" onclick="traziKorisnike()">Pretraži</button>
       </div>
 
-      <div id="statusMsg">Učitavanje korisnika...</div>
+      <div id="statusMsg">Učitavanje...</div>
       <div id="resultsList" class="results-container"></div>
     </div>
   </div>
@@ -82,12 +95,50 @@
 
   async function traziKorisnike() {
     const query = document.getElementById('searchInput').value.trim();
+    const platform = document.getElementById('platformSelect').value;
     const statusMsg = document.getElementById('statusMsg');
     const resultsList = document.getElementById('resultsList');
 
-    statusMsg.style.color = '#0056b3';
-    statusMsg.innerText = 'Pretraživanje u toku...';
     resultsList.innerHTML = '';
+
+    // AKO JE IZABRANA EKSTERNA PLATFORMA (Facebook, Instagram, LinkedIn, itd.)
+    if (platform !== 'LangLove') {
+      if (!query) {
+        statusMsg.style.color = '#d90429';
+        statusMsg.innerText = `Unesite pojam za pretragu na platformi ${platform}.`;
+        return;
+      }
+
+      statusMsg.style.color = '#0056b3';
+      statusMsg.innerText = `Generisan link za pretragu na platformi: ${platform}`;
+
+      let searchUrl = "";
+      if (platform === 'Facebook') searchUrl = `https://www.facebook.com/search/top?q=${encodeURIComponent(query)}`;
+      else if (platform === 'Instagram') searchUrl = `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(query)}`;
+      else if (platform === 'LinkedIn') searchUrl = `https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(query)}`;
+      else if (platform === 'Tinder') searchUrl = `https://tinder.com/`;
+      else if (platform === 'Badoo') searchUrl = `https://badoo.com/search?q=${encodeURIComponent(query)}`;
+      else if (platform === 'Bumble') searchUrl = `https://bumble.com/`;
+
+      const card = document.createElement('div');
+      card.className = 'user-card';
+      card.innerHTML = `
+        <div class="user-details">
+          <h3>Pretraga na mreži: ${platform} <span class="platform-badge">${platform}</span></h3>
+          <p style="margin-top:5px; font-size:0.95rem;">Kliknite na dugme ispod da otvorite službenu pretragu za pojam "<strong>${query}</strong>":</p>
+        </div>
+        <a href="${searchUrl}" target="_blank" class="btn-action btn-ext">🔗 Otvori pretragu na ${platform}</a>
+      `;
+      resultsList.appendChild(card);
+
+      // Automatsko otvaranje novog taba
+      window.open(searchUrl, '_blank');
+      return;
+    }
+
+    // AKO JE IZABRANA UNUTRAŠNJA BAZA (LangLove Native)
+    statusMsg.style.color = '#0056b3';
+    statusMsg.innerText = 'Pretraživanje unutrašnje baze...';
 
     try {
       let queryBuilder = _supabase.from('UPOZNAVANJ_KORISNICI').select('*').order('created_at', { ascending: false });
@@ -102,11 +153,11 @@
 
       if (!users || users.length === 0) {
         statusMsg.style.color = '#666';
-        statusMsg.innerText = 'Nije pronađen nijedan profil.';
+        statusMsg.innerText = 'Nije pronađen nijedan profil u bazi.';
         return;
       }
 
-      statusMsg.innerText = `Pronađeno korisnika: ${users.length}`;
+      statusMsg.innerText = `Pronađeno u bazi: ${users.length} profil(a)`;
 
       users.forEach(u => {
         const mail = u.MAIL || u.mail || 'Nepoznato';
@@ -122,18 +173,14 @@
           <img src="${slika}" class="user-avatar" alt="${ime}" onerror="this.onerror=null; this.src='${getFallbackAvatar(ime)}';">
           
           <div class="user-details">
-            <h3>${ime}</h3>
+            <h3>${ime} <span class="platform-badge">LangLove</span></h3>
             <div class="user-info">📧 <strong>Email:</strong> ${mail} | 📞 <strong>Tel:</strong> ${telefon}</div>
             
-            <div class="user-box">
-              <strong>O meni:</strong> ${ja}
-            </div>
-            <div class="user-box">
-              <strong>Tražim:</strong> ${trazim}
-            </div>
+            <div class="user-box"><strong>O meni:</strong> ${ja}</div>
+            <div class="user-box"><strong>Tražim:</strong> ${trazim}</div>
           </div>
 
-          <button class="btn-chat" onclick="pokreniChat('${mail}')">💬 Chat</button>
+          <button class="btn-action" onclick="pokreniChat('${mail}')">💬 Chat</button>
         `;
 
         resultsList.appendChild(card);
@@ -142,7 +189,6 @@
     } catch (err) {
       statusMsg.style.color = 'red';
       statusMsg.innerText = 'Greška pri pretrazi: ' + err.message;
-      console.error(err);
     }
   }
 
