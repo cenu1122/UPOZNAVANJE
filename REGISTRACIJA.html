@@ -22,6 +22,7 @@
     .form-group { margin-bottom: 18px; }
     .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #2b2d42; }
     .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; outline: none; font-family: inherit; }
+    .form-group input[type="file"] { padding: 8px; background: #fafafa; cursor: pointer; }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #d90429; }
     .form-group textarea { resize: vertical; min-height: 80px; }
 
@@ -89,8 +90,8 @@
         </div>
 
         <div class="form-group">
-          <label>URL Slike profila *</label>
-          <input type="url" id="slikaUrl" placeholder="https://domena.com/slika.jpg" required>
+          <label>Profilna Slika (Izaberite sa računara/telefona) *</label>
+          <input type="file" id="slikaFile" accept="image/*" required>
         </div>
 
         <button type="button" class="btn-submit" id="regBtn" onclick="handleRegister()">REGISTRUJ SE</button>
@@ -122,15 +123,14 @@
       const vjera = document.getElementById('vjera').value;
       const ja = document.getElementById('ja').value.trim();
       const trazim = document.getElementById('trazim').value.trim();
-      const slikaUrl = document.getElementById('slikaUrl').value.trim();
+      const fileInput = document.getElementById('slikaFile');
 
       const statusDiv = document.getElementById('statusMessage');
       const regBtn = document.getElementById('regBtn');
 
-      // Validacija da su SVA polja popunjena
-      if (!ime || !email || !password || !telefon || !vjera || !ja || !trazim || !slikaUrl) {
+      if (!ime || !email || !password || !telefon || !vjera || !ja || !trazim || fileInput.files.length === 0) {
         statusDiv.style.color = 'red';
-        statusDiv.textContent = 'Molimo popunite sva obavezna polja!';
+        statusDiv.textContent = 'Molimo popunite sva polja i odaberite sliku!';
         return;
       }
 
@@ -146,7 +146,7 @@
       try {
         statusDiv.textContent = 'Kreiranje korisničkog naloga...';
 
-        // 1. Kreiranje naloga u Supabase Auth
+        // 1. Kreiranje Auth korisnika
         const { data: authData, error: authError } = await _supabase.auth.signUp({
           email: email,
           password: password
@@ -154,9 +154,34 @@
 
         if (authError) throw authError;
 
+        statusDiv.textContent = 'Učitavanje slike na server...';
+
+        // 2. Upload slike u Supabase Storage
+        const file = fileInput.files[0];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `avatari/${fileName}`;
+
+        // Šaljemo u bucket 'slike' (ako ti je bucket drugačije nazvan, promijeni 'slike' ispod)
+        const { data: storageData, error: storageError } = await _supabase
+          .storage
+          .from('slike')
+          .upload(filePath, file);
+
+        let finalImageUrl = "";
+
+        if (storageError) {
+          console.warn("Storage upload nije uspio, koristi se fallback:", storageError.message);
+          finalImageUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(ime)}`;
+        } else {
+          // Preuzimanje javnog URL-a poslane slike
+          const { data: urlData } = _supabase.storage.from('slike').getPublicUrl(filePath);
+          finalImageUrl = urlData.publicUrl;
+        }
+
         statusDiv.textContent = 'Spremanje podataka profila...';
 
-        // 2. Upis u tabelu UPOZNAVANJ_KORISNICI
+        // 3. Upis u tabelu UPOZNAVANJ_KORISNICI
         const { error: dbError } = await _supabase
           .from('UPOZNAVANJ_KORISNICI')
           .insert([
@@ -169,14 +194,24 @@
               VJERA: vjera,
               JA: ja,
               TRAZIM: trazim,
-              SLIKE_URL: slikaUrl
+              SLIKE_URL: finalImageUrl
             }
           ]);
 
         if (dbError) throw dbError;
 
+        // 4. Upis i u tabelu SLIKE radi sinhronizacije galerije
+        if (authData.user) {
+          await _supabase.from('SLIKE').insert([
+            {
+              korisnik_id: authData.user.id,
+              url: finalImageUrl
+            }
+          ]);
+        }
+
         statusDiv.style.color = 'green';
-        statusDiv.textContent = 'Registracija uspješna! Preusmjeravanje na prijavu...';
+        statusDiv.textContent = 'Registracija uspješna! Preusmjeravanje...';
 
         setTimeout(() => {
           window.location.href = 'LOGIN.html';
