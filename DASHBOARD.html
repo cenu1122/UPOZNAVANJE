@@ -1,4 +1,157 @@
-ElementById('tileChatTitle').innerText = t.tChatTitle;
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | LjubavNaPrviKlik</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
+
+    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
+    .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+    .lang-select { padding: 6px 10px; border-radius: 20px; border: 1px solid #d90429; background: #fff; font-weight: bold; font-size: 0.85rem; color: #2b2d42; outline: none; cursor: pointer; }
+    .btn-nav { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
+    .btn-nav:hover { background: #ef233c; }
+    .btn-logout { background: #6c757d; }
+    .btn-logout:hover { background: #495057; }
+
+    .main-container { flex: 1; padding: 30px 20px; max-width: 1000px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
+
+    .welcome-card { background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(217, 4, 41, 0.08); border-left: 6px solid #d90429; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .welcome-text h1 { color: #800020; font-size: 1.8rem; margin-bottom: 5px; }
+    .welcome-text p { color: #666; font-size: 1rem; }
+    .user-badge { background: #ffe0e3; color: #d90429; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+    .dash-tile { background: #fff; padding: 25px; border-radius: 16px; text-decoration: none; color: #2b2d42; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #f0f0f0; }
+    .dash-tile:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(217, 4, 41, 0.15); border-color: #ffccd5; }
+    .dash-tile .icon { font-size: 2.5rem; }
+    .dash-tile h3 { color: #800020; font-size: 1.2rem; }
+    .dash-tile p { font-size: 0.85rem; color: #777; }
+
+    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
+
+    <div class="nav-actions">
+      <select id="langSelect" class="lang-select" onchange="promijeniJezik(this.value)">
+        <option value="BS" selected>🌐 Bosanski (BS)</option>
+        <option value="EN">🌐 English (EN)</option>
+        <option value="DE">🌐 Deutsch (DE)</option>
+      </select>
+
+      <a href="KONTAKT.html" class="btn-nav" id="txtBtnContact">📩 Podrška & Kontakt</a>
+      <button class="btn-nav btn-logout" onclick="odjava()" id="txtBtnLogout">🚪 Odjava</button>
+    </div>
+  </header>
+
+  <div class="main-container">
+
+    <div class="welcome-card">
+      <div class="welcome-text">
+        <h1 id="txtWelcome">Dobrodošli nazad! 👋</h1>
+        <p id="txtSubWelcome">Pronađite srodnu dušu i započnite novi razgovor već danas.</p>
+      </div>
+      <div class="user-badge" id="lblUserEmail">Učitavanje profila...</div>
+    </div>
+
+    <div class="dashboard-grid">
+      
+      <a href="PROFIL.html" class="dash-tile">
+        <div class="icon">👤</div>
+        <h3 id="tileProfileTitle">Moj Profil</h3>
+        <p id="tileProfileDesc">Uredite svoje podatke, fotografije i postavke privatnosti.</p>
+      </a>
+
+      <a href="PRETRAGA.html" class="dash-tile">
+        <div class="icon">🔍</div>
+        <h3 id="tileSearchTitle">Pretraga Profila</h3>
+        <p id="tileSearchDesc">Pronađite članove prema godinama, lokaciji i interesovanjima.</p>
+      </a>
+
+      <a href="PORUKE.html" class="dash-tile">
+        <div class="icon">💬</div>
+        <h3 id="tileChatTitle">Poruke & Dopisivanje</h3>
+        <p id="tileChatDesc">Pregledajte vaše aktivne razgovore i nove poruke.</p>
+      </a>
+
+      <a href="KONTAKT.html" class="dash-tile">
+        <div class="icon">📩</div>
+        <h3 id="tileSupportTitle">Korisnička Podrška</h3>
+        <p id="tileSupportDesc">Imate pitanje ili problem? Javite se našem timu.</p>
+      </a>
+
+    </div>
+
+  </div>
+
+  <footer>
+    <p>© 2026 LjubavNaPrviKlik. <span id="txtRights">Sva prava zadržana.</span></p>
+  </footer>
+
+  <script>
+    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+
+    let _supabase;
+    if (typeof supabase !== 'undefined') {
+      _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+
+    let trenutniJezik = 'BS';
+
+    const prevodi = {
+      BS: {
+        btnContact: "📩 Podrška & Kontakt", btnLogout: "🚪 Odjava", welcome: "Dobrodošli nazad! 👋",
+        subWelcome: "Pronađite srodnu dušu i započnite novi razgovor već danas.",
+        tProfileTitle: "Moj Profil", tProfileDesc: "Uredite svoje podatke, fotografije i postavke privatnosti.",
+        tSearchTitle: "Pretraga Profila", tSearchDesc: "Pronađite članove prema godinama, lokaciji i interesovanjima.",
+        tChatTitle: "Poruke & Dopisivanje", tChatDesc: "Pregledajte vaše aktivne razgovore i nove poruke.",
+        tSupportTitle: "Korisnička Podrška", tSupportDesc: "Imate pitanje ili problem? Javite se našem timu.",
+        rights: "Sva prava zadržana."
+      },
+      EN: {
+        btnContact: "📩 Support & Contact", btnLogout: "🚪 Logout", welcome: "Welcome back! 👋",
+        subWelcome: "Find your soulmate and start a conversation today.",
+        tProfileTitle: "My Profile", tProfileDesc: "Edit your details, photos, and privacy settings.",
+        tSearchTitle: "Search Profiles", tSearchDesc: "Find members by age, location, and interests.",
+        tChatTitle: "Messages & Chat", tChatDesc: "Check your active chats and new messages.",
+        tSupportTitle: "Customer Support", tSupportDesc: "Have a question or issue? Contact our team.",
+        rights: "All rights reserved."
+      },
+      DE: {
+        btnContact: "📩 Support & Kontakt", btnLogout: "🚪 Abmelden", welcome: "Willkommen zurück! 👋",
+        subWelcome: "Finden Sie Ihren Seelenverwandten noch heute.",
+        tProfileTitle: "Mein Profil", tProfileDesc: "Bearbeiten Sie Ihre Daten, Fotos und Einstellungen.",
+        tSearchTitle: "Mitglieder Suchen", tSearchDesc: "Finden Sie Mitglieder nach Alter, Ort und Interessen.",
+        tChatTitle: "Nachrichten & Chat", tChatDesc: "Überprüfen Sie Ihre aktiven Chats und Nachrichten.",
+        tSupportTitle: "Kundensupport", tSupportDesc: "Haben Sie eine Frage? Kontaktieren Sie uns.",
+        rights: "Alle Rechte vorbehalten."
+      }
+    };
+
+    function promijeniJezik(lang) {
+      trenutniJezik = lang;
+      const t = prevodi[lang];
+      document.getElementById('txtBtnContact').innerText = t.btnContact;
+      document.getElementById('txtBtnLogout').innerText = t.btnLogout;
+      document.getElementById('txtWelcome').innerText = t.welcome;
+      document.getElementById('txtSubWelcome').innerText = t.subWelcome;
+      document.getElementById('tileProfileTitle').innerText = t.tProfileTitle;
+      document.getElementById('tileProfileDesc').innerText = t.tProfileDesc;
+      document.getElementById('tileSearchTitle').innerText = t.tSearchTitle;
+      document.getElementById('tileSearchDesc').innerText = t.tSearchDesc;
+      document.getElementById('tileChatTitle').innerText = t.tChatTitle;
       document.getElementById('tileChatDesc').innerText = t.tChatDesc;
       document.getElementById('tileSupportTitle').innerText = t.tSupportTitle;
       document.getElementById('tileSupportDesc').innerText = t.tSupportDesc;
