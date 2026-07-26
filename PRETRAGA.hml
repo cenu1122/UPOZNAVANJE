@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pretraga Korisnika | LjubavNaPrviKlik</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
+    
+    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; }
+    .btn-dash { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+    .btn-dash:hover { background: #ef233c; }
+
+    .main-container { flex: 1; max-width: 800px; width: 100%; margin: 25px auto; padding: 0 15px; }
+    .card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+    .search-bar { display: flex; gap: 10px; margin-top: 15px; }
+    .search-bar input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 1rem; }
+    .btn-search { background: #2b2d42; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+    .btn-search:hover { background: #3d405b; }
+
+    .results-container { margin-top: 20px; display: flex; flex-direction: column; gap: 15px; }
+    
+    .user-card { display: flex; align-items: flex-start; gap: 15px; padding: 15px; border: 1px solid #eee; border-radius: 12px; background: #fafafa; flex-wrap: wrap; }
+    .user-avatar { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #d90429; background: #e2e8f0; }
+    
+    .user-details { flex: 1; min-width: 200px; }
+    .user-details h3 { color: #d90429; margin-bottom: 4px; font-size: 1.15rem; }
+    .user-info { font-size: 0.88rem; color: #555; margin-bottom: 6px; }
+    
+    .user-box { background: #fff; padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.9rem; margin-top: 5px; }
+    .user-box strong { color: #2b2d42; }
+
+    .btn-chat { background: #d90429; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; align-self: center; text-decoration: none; display: inline-block; }
+    .btn-chat:hover { background: #ef233c; }
+
+    #statusMsg { margin-top: 10px; font-size: 0.9rem; font-weight: 600; color: #666; }
+
+    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
+    <a href="DASHBOARD.html" class="btn-dash">🏠 Dashboard & Chat</a>
+  </header>
+
+  <div class="main-container">
+    <div class="card">
+      <h2>🔍 Pretraga Profila</h2>
+      <p style="color: #666; font-size: 0.9rem; margin-top: 4px;">Unesite ime, e-mail ili pojam za pretragu:</p>
+
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Pretraži po imenu, opisu ili e-mailu..." onkeypress="handleKeyPress(event)">
+        <button class="btn-search" onclick="traziKorisnike()">Pretraži</button>
+      </div>
+
+      <div id="statusMsg">Učitavanje korisnika...</div>
+      <div id="resultsList" class="results-container"></div>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
+  </footer>
+
+<script>
+  const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function getFallbackAvatar(name) {
+    return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name || 'User')}`;
+  }
+
+  async function traziKorisnike() {
+    const query = document.getElementById('searchInput').value.trim();
+    const statusMsg = document.getElementById('statusMsg');
+    const resultsList = document.getElementById('resultsList');
+
+    statusMsg.style.color = '#0056b3';
+    statusMsg.innerText = 'Pretraživanje u toku...';
+    resultsList.innerHTML = '';
+
+    try {
+      let queryBuilder = _supabase.from('UPOZNAVANJ_KORISNICI').select('*').order('created_at', { ascending: false });
+
+      if (query.length > 0) {
+        queryBuilder = queryBuilder.or(`IME.ilike.%${query}%,MAIL.ilike.%${query}%,JA.ilike.%${query}%,TRAZIM.ilike.%${query}%`);
+      }
+
+      const { data: users, error } = await queryBuilder.limit(50);
+
+      if (error) throw error;
+
+      if (!users || users.length === 0) {
+        statusMsg.style.color = '#666';
+        statusMsg.innerText = 'Nije pronađen nijedan profil.';
+        return;
+      }
+
+      statusMsg.innerText = `Pronađeno korisnika: ${users.length}`;
+
+      users.forEach(u => {
+        const mail = u.MAIL || u.mail || 'Nepoznato';
+        const ime = u.IME || u.ime || mail.split('@')[0];
+        const telefon = u.TELEFON || u.telefon || 'Nije navedeno';
+        const ja = u.JA || u.ja || 'Nije popunjeno.';
+        const trazim = u.TRAZIM || u.trazim || 'Nije popunjeno.';
+        const slika = u.SLIKE_URL || u.slike_url || getFallbackAvatar(ime);
+
+        const card = document.createElement('div');
+        card.className = 'user-card';
+        card.innerHTML = `
+          <img src="${slika}" class="user-avatar" alt="${ime}" onerror="this.onerror=null; this.src='${getFallbackAvatar(ime)}';">
+          
+          <div class="user-details">
+            <h3>${ime}</h3>
+            <div class="user-info">📧 <strong>Email:</strong> ${mail} | 📞 <strong>Tel:</strong> ${telefon}</div>
+            
+            <div class="user-box">
+              <strong>O meni:</strong> ${ja}
+            </div>
+            <div class="user-box">
+              <strong>Tražim:</strong> ${trazim}
+            </div>
+          </div>
+
+          <button class="btn-chat" onclick="pokreniChat('${mail}')">💬 Chat</button>
+        `;
+
+        resultsList.appendChild(card);
+      });
+
+    } catch (err) {
+      statusMsg.style.color = 'red';
+      statusMsg.innerText = 'Greška pri pretrazi: ' + err.message;
+      console.error(err);
+    }
+  }
+
+  function pokreniChat(partnerMail) {
+    window.location.href = `DASHBOARD.html?partner=${encodeURIComponent(partnerMail)}`;
+  }
+
+  function handleKeyPress(event) {
+    if (event.key === 'Enter') {
+      traziKorisnike();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', traziKorisnike);
+</script>
+
+</body>
+</html>
