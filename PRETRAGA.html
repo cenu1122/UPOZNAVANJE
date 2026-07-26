@@ -1,7 +1,7 @@
-Evo kompletno ažuriranog koda za PRETRAGA.html.
+U vašem kodu u skriptnom dijelu postoji sintaksna greška (nedostaje jedna zatvorena zagrada } za funkciju otvoriProfilModal), zbog čega JavaScript kompletno prestane raditi (stranica se "zamrzne" i ne reaguje na klikove ili pretragu).
 
-Dodana su dva nova jezika — English (EN) i Deutsch (DE) — preko padajućeg menija u zaglavlju (headeru). Klikom na izabrani jezik, svi elementi na stranici (naslovi, dugmad, filteri, poruke i modal) se u realnom vremenu automatski prevode na izabrani jezik!
-Kopiraj i sačuvaj u PRETRAGA.html:
+Takođe, u bazi u tabeli UPOZNAVANJ_KORISNICI imate naziv kolone TELEDON (sa slovom D), pa je kôd prilagođen da kupi podatke i iz TELEDON i iz TELEFON.
+Popravljen i kompletan kôd za PRETRAGA.html:
 HTML
 
 <!DOCTYPE html>
@@ -177,7 +177,6 @@ HTML
   let sviKorisniciCache = [];
   let trenutniJezik = 'BS';
 
-  // RJEČNIK ZA PRIJEVODE (BS, EN, DE)
   const prevodi = {
     BS: {
       btnDash: "🏠 Dashboard & Chat",
@@ -325,7 +324,6 @@ HTML
     slikeList.innerHTML = '';
 
     try {
-      // 1. PRETRAGA TABELE: UPOZNAVANJ_KORISNICI
       let qKorisnici = _supabase.from('UPOZNAVANJ_KORISNICI').select('*').order('created_at', { ascending: false });
 
       if (query.length > 0) {
@@ -350,7 +348,7 @@ HTML
         users.forEach((u, idx) => {
           const mail = u.MAIL || u.mail || 'N/A';
           const ime = u.IME || u.ime || mail.split('@')[0];
-          const telefon = u.TELEFON || u.telefon || 'N/A';
+          const telefon = u.TELEFON || u.TELEDON || u.telefon || u.teledon || 'N/A';
           const ja = u.JA || u.ja || '-';
           const trazim = u.TRAZIM || u.trazim || '-';
           const uSpol = u.SPOL || u.spol || 'N/A';
@@ -364,7 +362,7 @@ HTML
             <img src="${slika}" class="user-avatar" alt="${ime}" onerror="this.onerror=null; this.src='${getFallbackAvatar(ime)}';">
             
             <div class="user-details">
-              <h3>${ime} <span class="badge">${uSpol}</span> <span class="badge">${uGodine} yrs/god</span> <span class="badge">${uVjera}</span></h3>
+              <h3>${ime} <span class="badge">${uSpol}</span> <span class="badge">${uGodine} god.</span> <span class="badge">${uVjera}</span></h3>
               <div class="user-info">📧 <strong>Email:</strong> ${mail} | 📞 <strong>Tel:</strong> ${telefon}</div>
               
               <div class="user-box"><strong>${t.about}</strong> ${ja}</div>
@@ -382,7 +380,6 @@ HTML
         korisniciList.innerHTML = `<p style="color:#777; padding:10px;">${t.noUsers}</p>`;
       }
 
-      // 2. PRETRAGA TABELE: SLIKE (ELIMINACIJA DUPLIKATA)
       let qSlike = _supabase.from('SLIKE').select('*').order('created_at', { ascending: false });
 
       if (query.length > 0) {
@@ -444,7 +441,7 @@ HTML
 
     const mail = u.MAIL || u.mail || 'N/A';
     const ime = u.IME || u.ime || mail.split('@')[0];
-    const telefon = u.TELEFON || u.telefon || 'N/A';
+    const telefon = u.TELEFON || u.TELEDON || u.telefon || u.teledon || 'N/A';
     const ja = u.JA || u.ja || '-';
     const trazim = u.TRAZIM || u.trazim || '-';
     const uSpol = u.SPOL || u.spol || 'N/A';
@@ -457,7 +454,7 @@ HTML
     document.getElementById('mIme').innerText = ime;
     document.getElementById('mBadges').innerHTML = `
       <span class="badge">${uSpol}</span> 
-      <span class="badge">${uGodine} yrs/god</span> 
+      <span class="badge">${uGodine} god.</span> 
       <span class="badge">${uVjera}</span>
     `;
     document.getElementById('mInfo').innerHTML = `📧 <strong>Email:</strong> ${mail} | 📞 <strong>Tel:</strong> ${telefon}`;
@@ -471,14 +468,17 @@ HTML
     document.getElementById('profileModal').style.display = 'flex';
 
     try {
-      let q = _supabase.from('SLIKE').select('*');
-      if (userId) {
-        q = q.or(`korisnik_id.eq.${userId},USER.eq.${userId}`);
+      let querySlike = _supabase.from('SLIKE').select('*');
+
+      if (userId && mail) {
+        querySlike = querySlike.or(`korisnik_id.eq.${userId},korisnik_id.eq.${mail},url.eq.${slikaGl}`);
+      } else if (userId) {
+        querySlike = querySlike.or(`korisnik_id.eq.${userId},url.eq.${slikaGl}`);
       } else {
-        q = q.eq('url', slikaGl);
+        querySlike = querySlike.eq('url', slikaGl);
       }
 
-      const { data: gallery } = await q;
+      const { data: gallery } = await querySlike;
 
       mGallery.innerHTML = '';
 
