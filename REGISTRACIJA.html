@@ -15,14 +15,15 @@
     .logo { font-size: 1.5rem; font-weight: bold; color: #fff; text-decoration: none; }
     
     .main-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
-    .register-card { background: #fff; width: 100%; max-width: 480px; padding: 35px; border-radius: 20px; box-shadow: 0 10px 25px rgba(217, 4, 41, 0.1); border-top: 5px solid #d90429; }
+    .register-card { background: #fff; width: 100%; max-width: 520px; padding: 35px; border-radius: 20px; box-shadow: 0 10px 25px rgba(217, 4, 41, 0.1); border-top: 5px solid #d90429; }
     .register-card h2 { text-align: center; color: #800020; margin-bottom: 8px; font-size: 1.8rem; }
     .subtitle { text-align: center; color: #666; font-size: 0.95rem; margin-bottom: 25px; }
 
     .form-group { margin-bottom: 18px; }
     .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #2b2d42; }
-    .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; outline: none; }
-    .form-group input:focus, .form-group select:focus { border-color: #d90429; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; outline: none; font-family: inherit; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #d90429; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
 
     .btn-submit { width: 100%; background-color: #d90429; color: #fff; padding: 14px; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
     .btn-submit:hover { background-color: #ef233c; }
@@ -47,24 +48,38 @@
 
       <div id="registerForm">
         <div class="form-group">
-          <label>Nadimak / Ime za prikaz:</label>
+          <label>Nadimak / Ime za prikaz *</label>
           <input type="text" id="ime" placeholder="Npr. Ana Anić" required>
         </div>
 
         <div class="form-group">
-          <label>E-mail Adresa:</label>
+          <label>E-mail Adresa *</label>
           <input type="email" id="email" placeholder="vas@email.com" required>
         </div>
 
         <div class="form-group">
-          <label>Lozinka:</label>
+          <label>Lozinka *</label>
           <input type="password" id="password" placeholder="Najmanje 6 znakova" required minlength="6">
         </div>
 
-        <!-- DODANO POLJE ZA SLIKU -->
         <div class="form-group">
-          <label>URL Slike profila (Opcionalno):</label>
-          <input type="url" id="slikaUrl" placeholder="https://domena.com/slika.jpg">
+          <label>Broj Telefona *</label>
+          <input type="tel" id="telefon" placeholder="Npr. +387 61 123 456" required>
+        </div>
+
+        <div class="form-group">
+          <label>O meni (Ja) *</label>
+          <textarea id="ja" placeholder="Napišite nešto ukratko o sebi..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Šta tražim *</label>
+          <textarea id="trazim" placeholder="Opišite kakvu osobu ili partnera tražite..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>URL Slike profila *</label>
+          <input type="url" id="slikaUrl" placeholder="https://domena.com/slika.jpg" required>
         </div>
 
         <button type="button" class="btn-submit" id="regBtn" onclick="handleRegister()">REGISTRUJ SE</button>
@@ -92,12 +107,16 @@
       const ime = document.getElementById('ime').value.trim();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
+      const telefon = document.getElementById('telefon').value.trim();
+      const ja = document.getElementById('ja').value.trim();
+      const trazim = document.getElementById('trazim').value.trim();
       const slikaUrl = document.getElementById('slikaUrl').value.trim();
 
       const statusDiv = document.getElementById('statusMessage');
       const regBtn = document.getElementById('regBtn');
 
-      if (!ime || !email || !password) {
+      // Validacija da su SVA polja popunjena
+      if (!ime || !email || !password || !telefon || !ja || !trazim || !slikaUrl) {
         statusDiv.style.color = 'red';
         statusDiv.textContent = 'Molimo popunite sva obavezna polja!';
         return;
@@ -125,7 +144,7 @@
 
         statusDiv.textContent = 'Spremanje podataka profila...';
 
-        // 2. Upis u tabelu UPOZNAVANJ_KORISNICI sa poljem SLIKE_URL
+        // 2. Upis u tabelu UPOZNAVANJ_KORISNICI
         const { error: dbError } = await _supabase
           .from('UPOZNAVANJ_KORISNICI')
           .insert([
@@ -134,7 +153,10 @@
               MAIL: email,
               IME: ime,
               SIFRA: password,
-              SLIKE_URL: slikaUrl || null
+              TELEFON: telefon,
+              JA: ja,
+              TRAZIM: trazim,
+              SLIKE_URL: slikaUrl
             }
           ]);
 
