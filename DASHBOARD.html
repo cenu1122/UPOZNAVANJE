@@ -20,7 +20,7 @@
     .btn-dash:hover { background: #ef233c; }
 
     .main-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
-    .contact-card { background: #fff; width: 100%; max-width: 580px; padding: 35px; border-radius: 20px; box-shadow: 0 10px 25px rgba(217, 4, 41, 0.1); border-top: 5px solid #d90429; }
+    .contact-card { background: #fff; width: 100%; max-width: 580px; padding: 35px; border-radius: 20px; box-shadow: 0 10px 25px rgba(217, 4, 41, 0.1); border-top: 5px solid #d90429; position: relative; }
     .contact-card h2 { text-align: center; color: #800020; margin-bottom: 8px; font-size: 1.8rem; }
     .subtitle { text-align: center; color: #666; font-size: 0.95rem; margin-bottom: 25px; }
 
@@ -28,18 +28,37 @@
     .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #2b2d42; }
     .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; outline: none; font-family: inherit; }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #d90429; }
-    .form-group input[readonly] { background-color: #e9ecef; cursor: not-allowed; color: #495057; }
-    .form-group textarea { resize: vertical; min-height: 100px; }
+    .form-group input[readonly], .form-group textarea[readonly] { background-color: #f8f9fa; cursor: not-allowed; color: #495057; }
+    .form-group textarea { resize: vertical; min-height: 90px; }
+
+    /* STIL ZA POLJE ODGOVORA ADMINA */
+    .answer-group { background: #f0fff4; border: 2px dashed #28a745; padding: 15px; border-radius: 12px; margin-top: 20px; }
+    .answer-group label { color: #155724; font-weight: bold; display: flex; align-items: center; gap: 6px; }
 
     .btn-submit { width: 100%; background-color: #d90429; color: #fff; padding: 14px; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
     .btn-submit:hover { background-color: #ef233c; }
 
-    #statusMessage { margin-top: 15px; text-align: center; font-weight: bold; word-break: break-word; }
+    /* POP-UP NOTIFIKACIJA ZA DOBIJENI ODGOVOR */
+    .toast-notification {
+      position: fixed; top: 20px; right: 20px; background: #28a745; color: #fff;
+      padding: 16px 24px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+      display: none; align-items: center; gap: 12px; z-index: 9999; animation: slideIn 0.4s ease-out;
+    }
+    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
+    #statusMessage { margin-top: 15px; text-align: center; font-weight: bold; word-break: break-word; }
     footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
   </style>
 </head>
 <body>
+
+  <div id="toastNotif" class="toast-notification">
+    <span style="font-size: 1.5rem;">🔔</span>
+    <div>
+      <strong id="toastTitle">Stigao je odgovor!</strong>
+      <p id="toastBody" style="font-size:0.85rem; margin-top:2px;">Administrator je odgovorio na vaš upit.</p>
+    </div>
+  </div>
 
   <header>
     <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
@@ -50,7 +69,6 @@
         <option value="EN">🌐 English (EN)</option>
         <option value="DE">🌐 Deutsch (DE)</option>
       </select>
-
       <a href="DASHBOARD.html" class="btn-dash" id="txtBtnDash">🏠 Dashboard</a>
     </div>
   </header>
@@ -62,12 +80,12 @@
 
       <form id="contactForm" onsubmit="handleSendContact(event)">
         <div class="form-group">
-          <label id="lblIme">Vaše Ime / Nadimak (Automatski)</label>
+          <label id="lblIme">Vaše Ime / Nadimak</label>
           <input type="text" id="cIme" placeholder="Učitavanje..." required readonly>
         </div>
 
         <div class="form-group">
-          <label id="lblEmail">E-mail Adresa (Automatski)</label>
+          <label id="lblEmail">E-mail Adresa</label>
           <input type="email" id="cEmail" placeholder="Učitavanje..." required readonly>
         </div>
 
@@ -83,12 +101,12 @@
 
         <div class="form-group">
           <label id="lblPoruka">Vaša Poruka / Pitanje *</label>
-          <textarea id="cPoruka" placeholder="Napišite vaše pitanje ili sugestiju..." required></textarea>
+          <textarea id="cPoruka" placeholder="Napišite vaše pitanje..." required></textarea>
         </div>
 
-        <div class="form-group">
-          <label id="lblNapomena">Željeni način odgovora ili dodatna napomena (Opcionalno)</label>
-          <input type="text" id="cOdgovorNapomena" placeholder="Npr. Odgovorite mi na Viber, e-mail ili ovdje u chatu...">
+        <div class="form-group answer-group" id="answerContainer">
+          <label id="lblOdgovor">💬 Odgovor Administratora:</label>
+          <textarea id="cOdgovorAdmina" readonly style="margin-top:8px; font-weight:600; color:#155724;">⏳ Nemate novih odgovora ili je vaš upit u obradi...</textarea>
         </div>
 
         <button type="submit" class="btn-submit" id="sendBtn">POŠALJI PORUKU</button>
@@ -107,76 +125,44 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
     let trenutniJezik = 'BS';
+    let userEmail = null;
+    let trazeniPorukaId = null;
 
-    // PRIJEVODI ZA SVA 3 JEZIKA
     const prevodi = {
       BS: {
-        btnDash: "🏠 Dashboard",
-        mainTitle: "📩 Kontakt & Podrška",
+        btnDash: "🏠 Dashboard", mainTitle: "📩 Kontakt & Podrška",
         subtitle: "Vaši podaci su automatski učitani. Napišite nam pitanje ili sugestiju!",
-        lblIme: "Vaše Ime / Nadimak (Automatski)",
-        lblEmail: "E-mail Adresa (Automatski)",
-        lblTip: "Vrsta upita *",
-        optTipPitanje: "❓ Pitanje",
-        optTipSugestija: "💡 Sugestija / Prijedlog",
-        optTipProblem: "⚠️ Prijava problema",
-        optTipOstalo: "📝 Ostalo",
-        lblPoruka: "Vaša Poruka / Pitanje *",
-        placeholderPoruka: "Napišite vaše pitanje ili sugestiju...",
-        lblNapomena: "Željeni način odgovora ili dodatna napomena (Opcionalno)",
-        placeholderNapomena: "Npr. Odgovorite mi na Viber, e-mail ili ovdje u chatu...",
-        btnSend: "POŠALJI PORUKU",
-        sending: "Slanje poruke...",
-        success: "Hvala vam! Vaša poruka je uspješno poslana.",
-        rights: "Sva prava zadržana."
+        lblIme: "Vaše Ime / Nadimak", lblEmail: "E-mail Adresa", lblTip: "Vrsta upita *",
+        optTipPitanje: "❓ Pitanje", optTipSugestija: "💡 Sugestija", optTipProblem: "⚠️ Prijava problema", optTipOstalo: "📝 Ostalo",
+        lblPoruka: "Vaša Poruka / Pitanje *", lblOdgovor: "💬 Odgovor Administratora:",
+        noAnswer: "⏳ Nemate novih odgovora ili je vaš upit u obradi...",
+        btnSend: "POŠALJI PORUKU", sending: "Slanje poruke...", success: "Hvala vam! Vaša poruka je poslana.", rights: "Sva prava zadržana."
       },
       EN: {
-        btnDash: "🏠 Dashboard",
-        mainTitle: "📩 Contact & Support",
+        btnDash: "🏠 Dashboard", mainTitle: "📩 Contact & Support",
         subtitle: "Your details are loaded automatically. Send us your question or suggestion!",
-        lblIme: "Your Name / Nickname (Auto)",
-        lblEmail: "E-mail Address (Auto)",
-        lblTip: "Inquiry Type *",
-        optTipPitanje: "❓ Question",
-        optTipSugestija: "💡 Suggestion / Idea",
-        optTipProblem: "⚠️ Issue / Bug Report",
-        optTipOstalo: "📝 Other",
-        lblPoruka: "Your Message / Question *",
-        placeholderPoruka: "Type your question or suggestion here...",
-        lblNapomena: "Preferred reply method or extra note (Optional)",
-        placeholderNapomena: "E.g. Reply via email, phone or chat...",
-        btnSend: "SEND MESSAGE",
-        sending: "Sending message...",
-        success: "Thank you! Your message has been sent successfully.",
-        rights: "All rights reserved."
+        lblIme: "Your Name / Nickname", lblEmail: "E-mail Address", lblTip: "Inquiry Type *",
+        optTipPitanje: "❓ Question", optTipSugestija: "💡 Suggestion", optTipProblem: "⚠️ Bug Report", optTipOstalo: "📝 Other",
+        lblPoruka: "Your Message / Question *", lblOdgovor: "💬 Admin Answer:",
+        noAnswer: "⏳ No new answers yet or your inquiry is being processed...",
+        btnSend: "SEND MESSAGE", sending: "Sending message...", success: "Thank you! Your message has been sent.", rights: "All rights reserved."
       },
       DE: {
-        btnDash: "🏠 Dashboard",
-        mainTitle: "📩 Kontakt & Support",
-        subtitle: "Ihre Daten wurden automatisch geladen. Schreiben Sie uns eine Frage oder ein Feedback!",
-        lblIme: "Ihr Name / Spitzname (Auto)",
-        lblEmail: "E-Mail-Adresse (Auto)",
-        lblTip: "Anfrageart *",
-        optTipPitanje: "❓ Frage",
-        optTipSugestija: "💡 Vorschlag / Idee",
-        optTipProblem: "⚠️ Problem melden",
-        optTipOstalo: "📝 Sonstiges",
-        lblPoruka: "Ihre Nachricht / Frage *",
-        placeholderPoruka: "Schreiben Sie hier Ihre Frage oder Ihren Vorschlag...",
-        lblNapomena: "Bevorzugte Antwortmethode oder Anmerkung (Optional)",
-        placeholderNapomena: "Z.B. Antworten Sie per E-Mail oder Chat...",
-        btnSend: "NACHRICHT SENDEN",
-        sending: "Nachricht wird gesendet...",
-        success: "Vielen Dank! Ihre Nachricht wurde erfolgreich gesendet.",
-        rights: "Alle Rechte vorbehalten."
+        btnDash: "🏠 Dashboard", mainTitle: "📩 Kontakt & Support",
+        subtitle: "Ihre Daten wurden automatisch geladen. Schreiben Sie uns eine Frage!",
+        lblIme: "Ihr Name / Spitzname", lblEmail: "E-Mail-Adresse", lblTip: "Anfrageart *",
+        optTipPitanje: "❓ Frage", optTipSugestija: "💡 Vorschlag", optTipProblem: "⚠️ Problem melden", optTipOstalo: "📝 Sonstiges",
+        lblPoruka: "Ihre Nachricht / Frage *", lblOdgovor: "💬 Admin-Antwort:",
+        noAnswer: "⏳ Noch keine neuen Antworten...",
+        btnSend: "NACHRICHT SENDEN", sending: "Senden...", success: "Vielen Dank! Ihre Nachricht wurde gesendet.", rights: "Alle Rechte vorbehalten."
       }
     };
 
     function promijeniJezik(lang) {
       trenutniJezik = lang;
       const t = prevodi[lang];
-
       document.getElementById('txtBtnDash').innerText = t.btnDash;
       document.getElementById('txtMainTitle').innerText = t.mainTitle;
       document.getElementById('txtSubtitle').innerText = t.subtitle;
@@ -188,14 +174,12 @@
       document.getElementById('optTipProblem').innerText = t.optTipProblem;
       document.getElementById('optTipOstalo').innerText = t.optTipOstalo;
       document.getElementById('lblPoruka').innerText = t.lblPoruka;
-      document.getElementById('cPoruka').placeholder = t.placeholderPoruka;
-      document.getElementById('lblNapomena').innerText = t.lblNapomena;
-      document.getElementById('cOdgovorNapomena').placeholder = t.placeholderNapomena;
+      document.getElementById('lblOdgovor').innerText = t.lblOdgovor;
       document.getElementById('sendBtn').innerText = t.btnSend;
       document.getElementById('txtRights').innerText = t.rights;
     }
 
-    async function ucitajProfilKorisnika() {
+    async function ucitajIPratiProfil() {
       const inputIme = document.getElementById('cIme');
       const inputEmail = document.getElementById('cEmail');
 
@@ -203,6 +187,7 @@
         const { data: { user } } = await _supabase.auth.getUser();
 
         if (user && user.email) {
+          userEmail = user.email;
           inputEmail.value = user.email;
 
           const { data: profile } = await _supabase
@@ -211,22 +196,81 @@
             .or(`USER.eq.${user.id},MAIL.eq.${user.email}`)
             .maybeSingle();
 
-          if (profile && profile.IME) {
-            inputIme.value = profile.IME;
-          } else {
-            inputIme.value = user.email.split('@')[0];
-          }
+          inputIme.value = (profile && profile.IME) ? profile.IME : user.email.split('@')[0];
+
+          // Učitavamo zadnji odgovor ako postoji
+          await proveriaZadnjiOdgovor();
+
+          // POKREĆEMO SLUŠANJE U REALNOM VREMENU (REALTIME NOTIFIKACIJA)
+          slusajOdgovoreURealneVremenu();
         } else {
           inputIme.removeAttribute('readonly');
           inputEmail.removeAttribute('readonly');
-          inputIme.placeholder = "Name";
-          inputEmail.placeholder = "email@domain.com";
         }
       } catch (e) {
-        console.warn("Sesija nije učitana:", e);
-        inputIme.removeAttribute('readonly');
-        inputEmail.removeAttribute('readonly');
+        console.warn("Nije moguće učitati profil:", e);
       }
+    }
+
+    // UČITAVA ZADNJI ODGOVOR
+    async function proveriaZadnjiOdgovor() {
+      if (!userEmail) return;
+
+      const { data, error } = await _supabase
+        .from('KONTAKT_PORUKE')
+        .select('*')
+        .eq('email', userEmail)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (data) {
+        trazeniPorukaId = data.id;
+        prikaziOdgovorUKontenjeru(data.odgovor);
+      }
+    }
+
+    function prikaziOdgovorUKontenjeru(odgovorText) {
+      const box = document.getElementById('cOdgovorAdmina');
+      const t = prevodi[trenutniJezik];
+
+      if (odgovorText && odgovorText.trim().length > 0 && odgovorText !== 'Na čekanju...') {
+        box.value = odgovorText;
+        box.style.color = '#155724';
+        box.style.borderColor = '#28a745';
+      } else {
+        box.value = t.noAnswer;
+        box.style.color = '#6c757d';
+      }
+    }
+
+    // SUPABASE REALTIME SLUŠALAC (Korisniku iskače obavještenje u sekundi kad admin spasi odgovor!)
+    function slusajOdgovoreURealneVremenu() {
+      if (!userEmail) return;
+
+      _supabase
+        .channel('public:KONTAKT_PORUKE')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'KONTAKT_PORUKE' }, payload => {
+          const noviUnos = payload.new;
+          
+          if (noviUnos && noviUnos.email === userEmail) {
+            prikaziOdgovorUKontenjeru(noviUnos.odgovor);
+            prikaziToastNotifikaciju("🔔 Stigao je odgovor!", "Administrator je upravo odgovorio na vašu poruku.");
+          }
+        })
+        .subscribe();
+    }
+
+    function prikaziToastNotifikaciju(naslov, poruka) {
+      const toast = document.getElementById('toastNotif');
+      document.getElementById('toastTitle').innerText = naslov;
+      document.getElementById('toastBody').innerText = poruka;
+
+      toast.style.display = 'flex';
+
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 6000);
     }
 
     async function handleSendContact(e) {
@@ -237,16 +281,9 @@
       const email = document.getElementById('cEmail').value.trim();
       const tip = document.getElementById('cTip').value;
       const poruka = document.getElementById('cPoruka').value.trim();
-      const napomenaOdgovor = document.getElementById('cOdgovorNapomena').value.trim();
 
       const statusDiv = document.getElementById('statusMessage');
       const sendBtn = document.getElementById('sendBtn');
-
-      if (!ime || !email || !poruka) {
-        statusDiv.style.color = 'red';
-        statusDiv.textContent = 'Molimo popunite sva obavezna polja!';
-        return;
-      }
 
       statusDiv.style.color = '#0056b3';
       statusDiv.textContent = t.sending;
@@ -261,7 +298,7 @@
               email: email,
               tip: tip,
               poruka: poruka,
-              odgovor: napomenaOdgovor ? `[Napomena]: ${napomenaOdgovor}` : 'Na čekanju...'
+              odgovor: 'Na čekanju...'
             }
           ]);
 
@@ -270,7 +307,9 @@
         statusDiv.style.color = 'green';
         statusDiv.textContent = t.success;
         document.getElementById('cPoruka').value = '';
-        document.getElementById('cOdgovorNapomena').value = '';
+        
+        // Resetujemo polje odgovora na "u obradi"
+        document.getElementById('cOdgovorAdmina').value = t.noAnswer;
 
       } catch (err) {
         statusDiv.style.color = 'red';
@@ -280,7 +319,7 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', ucitajProfilKorisnika);
+    document.addEventListener('DOMContentLoaded', ucitajIPratiProfil);
   </script>
 
 </body>
