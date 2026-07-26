@@ -1,4 +1,7 @@
-<meta charset="UTF-8">
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Poruke & AI Prevođenje | LjubavNaPrviKlik</title>
 
@@ -159,7 +162,7 @@
     let primateljIme = '';
     
     let onlineUserIds = new Set();
-    let porukeBrojMap = {}; // Za brojanje s kim najviše pričaš
+    let porukeBrojMap = {};
 
     async function ucitajSve() {
       if (!_supabase) return;
@@ -175,7 +178,6 @@
       slusajPorukeRealtime();
     }
 
-    // REALTIME ONLINE TRACKING (Supabase Presence)
     function pratiOnlinePresence() {
       if (!_supabase || !trenutniKorisnik) return;
 
@@ -198,19 +200,19 @@
       });
     }
 
-    // BROJANJE PORUKA SA SVAKIM KORISNIKOM (Sortiranje po aktivnosti)
     async function izracunajStatistikuPoruka() {
       if (!trenutniKorisnik) return;
       try {
+        const mojId = String(trenutniKorisnik.id);
         const { data: poruke } = await _supabase
           .from('PRIVATNE_PORUKE')
           .select('posiljalac, primalac')
-          .or(`posiljalac.eq.${trenutniKorisnik.id},primalac.eq.${trenutniKorisnik.id}`);
+          .or(`posiljalac.eq.${mojId},primalac.eq.${mojId}`);
 
         porukeBrojMap = {};
         if (poruke) {
           poruke.forEach(p => {
-            const partner = p.posiljalac === trenutniKorisnik.id ? p.primalac : p.posiljalac;
+            const partner = String(p.posiljalac) === mojId ? String(p.primalac) : String(p.posiljalac);
             porukeBrojMap[partner] = (porukeBrojMap[partner] || 0) + 1;
           });
         }
@@ -245,31 +247,32 @@
       const listEl = document.getElementById('userList');
       listEl.innerHTML = '';
 
-      // Filtriraj samog sebe
-      let lista = sviKorisniciBaza.filter(k => !trenutniKorisnik || (k.USER !== trenutniKorisnik.id && k.id !== trenutniKorisnik.id));
+      let lista = sviKorisniciBaza.filter(k => {
+        const kId = String(k.USER || k.id);
+        return !trenutniKorisnik || kId !== String(trenutniKorisnik.id);
+      });
 
       if (lista.length === 0) {
         listEl.innerHTML = '<div style="padding:15px; text-align:center; color:#888;">Nema registrovanih drugih članova u bazi.</div>';
         return;
       }
 
-      // SORTIRANJE: 1. ONLINE PRVO, 2. NAJVIŠE PORUKA
       lista.sort((a, b) => {
-        const aId = a.USER || a.id;
-        const bId = b.USER || b.id;
+        const aId = String(a.USER || a.id);
+        const bId = String(b.USER || b.id);
 
         const aOnline = onlineUserIds.has(aId) ? 1 : 0;
         const bOnline = onlineUserIds.has(bId) ? 1 : 0;
 
-        if (aOnline !== bOnline) return bOnline - aOnline; // Online idu na vrh
+        if (aOnline !== bOnline) return bOnline - aOnline;
 
         const aCount = porukeBrojMap[aId] || 0;
         const bCount = porukeBrojMap[bId] || 0;
-        return bCount - aCount; // Oni s više poruka idu više
+        return bCount - aCount;
       });
 
       lista.forEach(k => {
-        const uId = k.USER || k.id;
+        const uId = String(k.USER || k.id);
         const isOnline = onlineUserIds.has(uId);
         const totalMsgs = porukeBrojMap[uId] || 0;
 
@@ -297,7 +300,7 @@
     }
 
     function odaberiKorisnikaZaChat(userId, ime, isOnline) {
-      primateljId = userId;
+      primateljId = String(userId);
       primateljIme = ime;
 
       document.getElementById('chatWithTitle').innerText = `Dopisivanje sa: ${ime}`;
@@ -318,25 +321,30 @@
       box.innerHTML = '<div style="text-align:center; color:#888;">Učitavanje poruka...</div>';
 
       try {
-        const { data: poruke } = await _supabase
+        const mojId = String(trenutniKorisnik.id);
+        const pId = String(primateljId);
+
+        const { data: poruke, error } = await _supabase
           .from('PRIVATNE_PORUKE')
           .select('*')
-          .or(`and(posiljalac.eq.${trenutniKorisnik.id},primalac.eq.${primateljId}),and(posiljalac.eq.${primateljId},primalac.eq.${trenutniKorisnik.id})`)
+          .or(`and(posiljalac.eq."${mojId}",primalac.eq."${pId}"),and(posiljalac.eq."${pId}",primalac.eq."${mojId}")`)
           .order('created_at', { ascending: true });
 
         box.innerHTML = '';
 
-        if (!poruke || poruke.length === 0) {
+        if (error || !poruke || poruke.length === 0) {
           box.innerHTML = `<div style="text-align:center; color:#888; margin-top:20px;">Započnite razgovor sa <strong>${primateljIme}</strong>!</div>`;
           return;
         }
 
         poruke.forEach(p => {
-          prikaziBublePoruku(p.poruka, p.posiljalac === trenutniKorisnik.id, p.created_at, p.prevod);
+          const jeMoja = String(p.posiljalac) === mojId;
+          prikaziBublePoruku(p.poruka, jeMoja, p.created_at, p.prevod);
         });
 
         box.scrollTop = box.scrollHeight;
       } catch (e) {
+        console.error("Greška pri dohvatu poruka:", e);
         box.innerHTML = '<div style="text-align:center; color:#888;">Započnite novu konverzaciju.</div>';
       }
     }
@@ -373,20 +381,23 @@
       prikaziBublePoruku(tekst, true, new Date().toISOString());
       input.value = '';
 
-      // Povećaj brojač lokalno i ažuriraj listu
       porukeBrojMap[primateljId] = (porukeBrojMap[primateljId] || 0) + 1;
       osvjeziListuKorisnikaPrikaz();
 
       try {
-        await _supabase
+        const mojId = trenutniKorisnik ? String(trenutniKorisnik.id) : 'gost';
+        
+        const { error } = await _supabase
           .from('PRIVATNE_PORUKE')
           .insert([{
-            posiljalac: trenutniKorisnik ? trenutniKorisnik.id : 'gost',
-            primalac: primateljId,
+            posiljalac: mojId,
+            primalac: String(primateljId),
             poruka: tekst
           }]);
+
+        if (error) console.error("Greška iz Supabase-a pri slanju:", error);
       } catch (e) {
-        console.warn("Poruka sačuvana u interfejsu:", e);
+        console.error("Sustavska greška pri slanju:", e);
       }
     }
 
@@ -410,11 +421,15 @@
         .channel('public:PRIVATNE_PORUKE')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'PRIVATNE_PORUKE' }, payload => {
           if (payload.new) {
-            const partner = payload.new.posiljalac === trenutniKorisnik.id ? payload.new.primalac : payload.new.posiljalac;
+            const mojId = trenutniKorisnik ? String(trenutniKorisnik.id) : '';
+            const pos = String(payload.new.posiljalac);
+            const prim = String(payload.new.primalac);
+
+            const partner = pos === mojId ? prim : pos;
             porukeBrojMap[partner] = (porukeBrojMap[partner] || 0) + 1;
             osvjeziListuKorisnikaPrikaz();
 
-            if (payload.new.posiljalac === primateljId) {
+            if (pos === String(primateljId)) {
               prikaziBublePoruku(payload.new.poruka, false, payload.new.created_at, payload.new.prevod);
             }
           }
