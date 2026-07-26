@@ -1,9 +1,24 @@
+Evo kompletno ažuriranog koda za KONTAKT.html.
+
+Ubacio sam dugme ➕ Započni potpuno novu poruku / temu odmah iznad historije razgovora.
+
+Kada korisnik klikne na to dugme:
+
+    Skreće se fokus na novu formu.
+
+    Prazni se polje za unos teksta.
+
+    Sljedeća poslana poruka se upisuje u bazu kao potpuno nova tema/upit (odvojena od prethodnih razgovora).
+
+Sačuvaj kompletan kôd u KONTAKT.html:
+HTML
+
 <!DOCTYPE html>
 <html lang="bs">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kontakt & Sugestije | LjubavNaPrviKlik</title>
+  <title>Kontakt & Podrška | LjubavNaPrviKlik</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -11,13 +26,18 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
     
-    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
     .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; }
+    
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+    .lang-select { padding: 6px 10px; border-radius: 20px; border: 1px solid #d90429; background: #fff; font-weight: bold; font-size: 0.85rem; color: #2b2d42; outline: none; cursor: pointer; }
     .btn-dash { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
     .btn-dash:hover { background: #ef233c; }
+    .btn-admin-toggle { background: #28a745; color: #fff; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; border: none; cursor: pointer; display: inline-block; }
+    .btn-admin-toggle:hover { background: #218838; }
 
-    .main-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
-    .contact-card { background: #fff; width: 100%; max-width: 550px; padding: 35px; border-radius: 20px; box-shadow: 0 10px 25px rgba(217, 4, 41, 0.1); border-top: 5px solid #d90429; }
+    .main-container { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 30px 20px; max-width: 800px; margin: 0 auto; width: 100%; gap: 25px; }
+    .contact-card { background: #fff; width: 100%; padding: 35px; border-radius: 20px; box-shadow: 0 10px 25px rgba(217, 4, 41, 0.1); border-top: 5px solid #d90429; }
     .contact-card h2 { text-align: center; color: #800020; margin-bottom: 8px; font-size: 1.8rem; }
     .subtitle { text-align: center; color: #666; font-size: 0.95rem; margin-bottom: 25px; }
 
@@ -25,52 +45,137 @@
     .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #2b2d42; }
     .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; outline: none; font-family: inherit; }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #d90429; }
-    .form-group textarea { resize: vertical; min-height: 120px; }
+    .form-group input[readonly], .form-group textarea[readonly] { background-color: #f8f9fa; cursor: not-allowed; color: #495057; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
 
     .btn-submit { width: 100%; background-color: #d90429; color: #fff; padding: 14px; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
     .btn-submit:hover { background-color: #ef233c; }
 
-    #statusMessage { margin-top: 15px; text-align: center; font-weight: bold; word-break: break-word; }
+    /* OKVIR ZA KONVERZACIJU / PREPISKU */
+    .chat-box { background: #fdfbfb; border: 1px solid #eee; border-radius: 12px; padding: 15px; max-height: 300px; overflow-y: auto; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
+    .chat-bubble { padding: 10px 14px; border-radius: 12px; max-width: 85%; font-size: 0.95rem; line-height: 1.4; }
+    .chat-user { background: #e3f2fd; color: #0d47a1; align-self: flex-end; border-bottom-right-radius: 2px; }
+    .chat-admin { background: #e8f5e9; color: #1b5e20; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #c8e6c9; }
+    .chat-meta { font-size: 0.75rem; opacity: 0.7; margin-bottom: 4px; font-weight: bold; }
 
+    /* DUGMAD IZNAD CHAT-A */
+    .chat-action-btns { display: flex; gap: 8px; align-items: center; }
+    .btn-chat-action { border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: opacity 0.2s; }
+    .btn-chat-action:hover { opacity: 0.9; }
+    .btn-new-topic { background: #28a745; color: #fff; }
+    .btn-refresh-chat { background: #2b2d42; color: #fff; }
+
+    /* ADMIN PANEL KOJI SE OTVARA KAD ADMIN KLIKNE DUGME */
+    .admin-panel { background: #fff; width: 100%; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border-top: 5px solid #28a745; display: none; }
+    .admin-panel h3 { color: #155724; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+    
+    #adminMsgList { max-height: 480px; overflow-y: auto; padding-right: 8px; }
+
+    .admin-filter-bar { display: flex; gap: 10px; margin-bottom: 15px; }
+    .btn-filter { background: #e9ecef; border: 1px solid #ced4da; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
+    .btn-filter.active { background: #28a745; color: white; border-color: #28a745; }
+
+    .msg-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+    .msg-header { font-size: 0.85rem; color: #6c757d; margin-bottom: 6px; display: flex; justify-content: space-between; flex-wrap: wrap; }
+    
+    .reply-input-box { background: #e8f5e9; padding: 12px; border-radius: 10px; border: 1px solid #c8e6c9; margin-top: 10px; }
+    .reply-input-box label { font-weight: bold; color: #2e7d32; font-size: 0.9rem; margin-bottom: 5px; display: block; }
+    .reply-input-box textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #a5d6a7; font-size: 0.95rem; min-height: 70px; }
+    .btn-send-reply { background: #28a745; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; margin-top: 8px; cursor: pointer; }
+    .btn-send-reply:hover { background: #218838; }
+
+    /* POP-UP NOTIFIKACIJA */
+    .toast-notification {
+      position: fixed; top: 20px; right: 20px; background: #28a745; color: #fff;
+      padding: 16px 24px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+      display: none; align-items: center; gap: 12px; z-index: 9999; animation: slideIn 0.4s ease-out;
+    }
+    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+    #statusMessage { margin-top: 15px; text-align: center; font-weight: bold; word-break: break-word; }
     footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
   </style>
 </head>
 <body>
 
+  <div id="toastNotif" class="toast-notification">
+    <span style="font-size: 1.5rem;">🔔</span>
+    <div>
+      <strong id="toastTitle">Stigao je novi odgovor!</strong>
+      <p id="toastBody" style="font-size:0.85rem; margin-top:2px;">Administrator je odgovorio na vaš upit.</p>
+    </div>
+  </div>
+
   <header>
     <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
-    <a href="DASHBOARD.html" class="btn-dash">🏠 Dashboard</a>
+    
+    <div class="nav-actions">
+      <select id="langSelect" class="lang-select" onchange="promijeniJezik(this.value)">
+        <option value="BS" selected>🌐 Bosanski (BS)</option>
+        <option value="EN">🌐 English (EN)</option>
+        <option value="DE">🌐 Deutsch (DE)</option>
+      </select>
+      
+      <button class="btn-admin-toggle" id="btnAdminToggle" onclick="toggleAdminPanel()">👑 Admin Panel</button>
+      <a href="DASHBOARD.html" class="btn-dash" id="txtBtnDash">🏠 Dashboard</a>
+    </div>
   </header>
 
   <div class="main-container">
+
+    <div class="admin-panel" id="adminPanel">
+      <h3>
+        👑 Admin Odgovori 
+        <button onclick="ucitajPorukeZaAdmina()" style="font-size:0.8rem; padding:4px 8px; cursor:pointer;">🔄 Osvježi</button>
+      </h3>
+
+      <div class="admin-filter-bar">
+        <button class="btn-filter active" id="filterAll" onclick="filtrirajPoruke('sve')">📋 Sve poruke</button>
+        <button class="btn-filter" id="filterPending" onclick="filtrirajPoruke('cekanje')">⏳ Na čekanju</button>
+      </div>
+
+      <div id="adminMsgList">Učitavanje...</div>
+    </div>
+
     <div class="contact-card">
-      <h2>📩 Kontakt & Podrška</h2>
-      <p class="subtitle">Imate pitanje, sugestiju ili problem? Napišite nam poruku!</p>
+      <h2 id="txtMainTitle">📩 Kontakt & Podrška</h2>
+      <p class="subtitle" id="txtSubtitle">Pošaljite nam pitanje ili nastavite razgovor sa administratorom!</p>
+
+      <div id="conversationContainer" style="display:none; margin-bottom: 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+          <label style="font-weight:bold; color:#800020;">💬 Historija razgovora sa podrškom:</label>
+          <div class="chat-action-btns">
+            <button type="button" class="btn-chat-action btn-new-topic" onclick="zapocniNoviUpit()">➕ Započni Novu Temu</button>
+            <button type="button" class="btn-chat-action btn-refresh-chat" onclick="ucitajHistorijuKorisnika()">🔄 Osvježi</button>
+          </div>
+        </div>
+        <div class="chat-box" id="chatHistoryBox"></div>
+      </div>
 
       <form id="contactForm" onsubmit="handleSendContact(event)">
         <div class="form-group">
-          <label>Vaše Ime i Prezime / Nadimak *</label>
-          <input type="text" id="cIme" placeholder="Npr. Marko Marković" required>
+          <label id="lblIme">Vaše Ime / Nadimak</label>
+          <input type="text" id="cIme" placeholder="Učitavanje..." required readonly>
         </div>
 
         <div class="form-group">
-          <label>E-mail Adresa *</label>
-          <input type="email" id="cEmail" placeholder="vas@email.com" required>
+          <label id="lblEmail">E-mail Adresa</label>
+          <input type="email" id="cEmail" placeholder="Učitavanje..." required readonly>
         </div>
 
         <div class="form-group">
-          <label>Vrsta upita *</label>
+          <label id="lblTip">Vrsta upita *</label>
           <select id="cTip" required>
-            <option value="Pitanje" selected>❓ Pitanje</option>
-            <option value="Sugestija">💡 Sugestija / Prijedlog</option>
-            <option value="Problem">⚠️ Prijava problema</option>
-            <option value="Ostalo">📝 Ostalo</option>
+            <option value="Pitanje" id="optTipPitanje" selected>❓ Pitanje / Potpitanje</option>
+            <option value="Sugestija" id="optTipSugestija">💡 Sugestija / Prijedlog</option>
+            <option value="Problem" id="optTipProblem">⚠️ Prijava problema</option>
+            <option value="Ostalo" id="optTipOstalo">📝 Ostalo</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label>Vaša Poruka *</label>
-          <textarea id="cPoruka" placeholder="Napišite vaše pitanje ili sugestiju detaljno..." required></textarea>
+          <label id="lblPoruka">Napišite poruku ili dodatno pitanje *</label>
+          <textarea id="cPoruka" placeholder="Unesite vaše pitanje..." required></textarea>
         </div>
 
         <button type="submit" class="btn-submit" id="sendBtn">POŠALJI PORUKU</button>
@@ -78,20 +183,323 @@
 
       <div id="statusMessage"></div>
     </div>
+
   </div>
 
   <footer>
-    <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
+    <p>© 2026 LjubavNaPrviKlik. <span id="txtRights">Sva prava zadržana.</span></p>
   </footer>
 
   <script>
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
 
+    const ADMIN_EMAILS = ['admin@ljubavnaprviklik.com', 'adna@gmail.com', 'nusret.halilovic@gmail.com'];
+    const ADMIN_PASS_FALLBACK = 'admin123';
+
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    let userEmail = null;
+    let isAdmin = false;
+    let aktivnaPorukaId = null;
+    let postojecaHistorija = [];
+    let svePorukeAdmin = [];
+    let trenutniJezik = 'BS';
+
+    const prevodi = {
+      BS: { btnDash: "🏠 Dashboard", mainTitle: "📩 Kontakt & Podrška", subtitle: "Pošaljite pitanje ili nastavite razgovor!", lblIme: "Vaše Ime / Nadimak", lblEmail: "E-mail Adresa", lblTip: "Vrsta upita *", optTipPitanje: "❓ Pitanje / Potpitanje", optTipSugestija: "💡 Sugestija", optTipProblem: "⚠️ Prijava problema", optTipOstalo: "📝 Ostalo", lblPoruka: "Napišite poruku ili dodatno pitanje *", btnSend: "POŠALJI PORUKU", sending: "Slanje...", success: "Hvala vam! Poruka je poslana.", rights: "Sva prava zadržana." },
+      EN: { btnDash: "🏠 Dashboard", mainTitle: "📩 Contact & Support", subtitle: "Send a question or continue discussion!", lblIme: "Your Name / Nickname", lblEmail: "E-mail Address", lblTip: "Inquiry Type *", optTipPitanje: "❓ Question / Follow-up", optTipSugestija: "💡 Suggestion", optTipProblem: "⚠️ Bug Report", optTipOstalo: "📝 Other", lblPoruka: "Write your message or follow-up question *", btnSend: "SEND MESSAGE", sending: "Sending...", success: "Thank you! Message sent.", rights: "All rights reserved." },
+      DE: { btnDash: "🏠 Dashboard", mainTitle: "📩 Kontakt & Support", subtitle: "Schreiben Sie uns oder antworten Sie!", lblIme: "Ihr Name / Spitzname", lblEmail: "E-Mail-Adresse", lblTip: "Anfrageart *", optTipPitanje: "❓ Frage / Rückfrage", optTipSugestija: "💡 Vorschlag", optTipProblem: "⚠️ Problem melden", optTipOstalo: "📝 Sonstiges", lblPoruka: "Ihre Nachricht oder Rückfrage *", btnSend: "NACHRICHT SENDEN", sending: "Senden...", success: "Danke! Nachricht gesendet.", rights: "Alle Rechte vorbehalten." }
+    };
+
+    function promijeniJezik(lang) {
+      trenutniJezik = lang;
+      const t = prevodi[lang];
+      document.getElementById('txtBtnDash').innerText = t.btnDash;
+      document.getElementById('txtMainTitle').innerText = t.mainTitle;
+      document.getElementById('txtSubtitle').innerText = t.subtitle;
+      document.getElementById('lblIme').innerText = t.lblIme;
+      document.getElementById('lblEmail').innerText = t.lblEmail;
+      document.getElementById('lblTip').innerText = t.lblTip;
+      document.getElementById('optTipPitanje').innerText = t.optTipPitanje;
+      document.getElementById('optTipSugestija').innerText = t.optTipSugestija;
+      document.getElementById('optTipProblem').innerText = t.optTipProblem;
+      document.getElementById('optTipOstalo').innerText = t.optTipOstalo;
+      document.getElementById('lblPoruka').innerText = t.lblPoruka;
+      document.getElementById('sendBtn').innerText = t.btnSend;
+      document.getElementById('txtRights').innerText = t.rights;
+    }
+
+    function provjeriAdminPristup(email) {
+      if (email && ADMIN_EMAILS.includes(email.toLowerCase())) {
+        isAdmin = true;
+      }
+    }
+
+    function toggleAdminPanel() {
+      if (!isAdmin) {
+        const pass = prompt("Unesite Admin lozinku za pristup:");
+        if (pass === ADMIN_PASS_FALLBACK) {
+          isAdmin = true;
+        } else {
+          alert("Pogrešna lozinka!");
+          return;
+        }
+      }
+
+      const panel = document.getElementById('adminPanel');
+      const mainTitle = document.getElementById('txtMainTitle');
+
+      if (panel.style.display === 'none' || panel.style.display === '') {
+        panel.style.display = 'block';
+        if (mainTitle) mainTitle.innerText = "👑 Admin Panel — Odgovori na upite";
+        ucitajPorukeZaAdmina();
+      } else {
+        panel.style.display = 'none';
+        if (mainTitle) mainTitle.innerText = "📩 Kontakt & Podrška";
+      }
+    }
+
+    async function ucitajPorukeZaAdmina() {
+      const listDiv = document.getElementById('adminMsgList');
+      listDiv.innerHTML = 'Učitavanje poruka...';
+
+      const { data, error } = await _supabase
+        .from('KONTAKT_PORUKE')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error || !data || data.length === 0) {
+        listDiv.innerHTML = '<p>Nema pristiglih poruka.</p>';
+        return;
+      }
+
+      svePorukeAdmin = data;
+      prikaziAdminPoruke(svePorukeAdmin);
+    }
+
+    function filtrirajPoruke(tip) {
+      document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+      
+      if (tip === 'sve') {
+        document.getElementById('filterAll').classList.add('active');
+        prikaziAdminPoruke(svePorukeAdmin);
+      } else if (tip === 'cekanje') {
+        document.getElementById('filterPending').classList.add('active');
+        const naCekanju = svePorukeAdmin.filter(p => !p.odgovor || p.odgovor.includes('Na čekanju'));
+        prikaziAdminPoruke(naCekanju);
+      }
+    }
+
+    function prikaziAdminPoruke(lista) {
+      const listDiv = document.getElementById('adminMsgList');
+
+      if (lista.length === 0) {
+        listDiv.innerHTML = '<p style="padding:10px;">Nema poruka za ovaj prikaz.</p>';
+        return;
+      }
+
+      listDiv.innerHTML = '';
+      lista.forEach(item => {
+        let razgovor = item.razgovor || [];
+        
+        let chatHtml = razgovor.map(r => `
+          <div style="margin-bottom:6px; font-size:0.88rem; padding:6px 10px; border-radius:6px; background:${r.posiljalac === 'admin' ? '#e8f5e9' : '#ffffff'}; border:1px solid #ddd;">
+            <strong>${r.posiljalac === 'admin' ? '👑 Admin' : '👤 Korisnik'}:</strong> ${r.poruka}
+            <div style="font-size:0.7rem; color:#888;">${new Date(r.vrijeme).toLocaleString()}</div>
+          </div>
+        `).join('');
+
+        if (chatHtml === '') {
+          chatHtml = `<p style="font-size:0.9rem;"><strong>Upit:</strong> ${item.poruka}</p>`;
+        }
+
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'msg-card';
+        itemDiv.innerHTML = `
+          <div class="msg-header">
+            <span>👤 <strong>${item.ime}</strong> (${item.email})</span>
+            <span>📅 ${new Date(item.created_at).toLocaleString()}</span>
+          </div>
+          
+          <div style="background:#fff; padding:10px; border-radius:8px; margin-bottom:8px;">
+            ${chatHtml}
+          </div>
+
+          <div class="reply-input-box">
+            <label>✏️ Odgovori na ovu konverzaciju:</label>
+            <textarea id="replyText_${item.id}" placeholder="Napišite odgovor..."></textarea>
+            <button class="btn-send-reply" onclick="posaljiAdminOdgovor(${item.id})">💾 Pošalji Odgovor & Notifikaciju</button>
+          </div>
+        `;
+        listDiv.appendChild(itemDiv);
+      });
+    }
+
+    async function posaljiAdminOdgovor(id) {
+      const replyVal = document.getElementById(`replyText_${id}`).value.trim();
+
+      if (!replyVal) {
+        alert("Molimo unesite tekst odgovora!");
+        return;
+      }
+
+      try {
+        const { data: postojece } = await _supabase
+          .from('KONTAKT_PORUKE')
+          .select('razgovor, poruka')
+          .eq('id', id)
+          .single();
+
+        let trenutnaLista = postojece.razgovor || [];
+        
+        if (trenutnaLista.length === 0 && postojece.poruka) {
+          trenutnaLista.push({ posiljalac: 'korisnik', poruka: postojece.poruka, vrijeme: new Date().toISOString() });
+        }
+
+        trenutnaLista.push({ posiljalac: 'admin', poruka: replyVal, vrijeme: new Date().toISOString() });
+
+        const { error } = await _supabase
+          .from('KONTAKT_PORUKE')
+          .update({ 
+            odgovor: replyVal,
+            razgovor: trenutnaLista
+          })
+          .eq('id', id);
+
+        if (error) throw error;
+
+        alert("Odgovor je sačuvan i poslan korisniku!");
+        document.getElementById(`replyText_${id}`).value = '';
+        ucitajPorukeZaAdmina();
+      } catch (e) {
+        alert("Greška pri slanju: " + e.message);
+      }
+    }
+
+    async function ucitajProfil() {
+      const inputIme = document.getElementById('cIme');
+      const inputEmail = document.getElementById('cEmail');
+
+      try {
+        const { data: { user } } = await _supabase.auth.getUser();
+
+        if (user && user.email) {
+          userEmail = user.email;
+          inputEmail.value = user.email;
+
+          provjeriAdminPristup(user.email);
+
+          const { data: profile } = await _supabase
+            .from('UPOZNAVANJ_KORISNICI')
+            .select('IME')
+            .or(`USER.eq.${user.id},MAIL.eq.${user.email}`)
+            .maybeSingle();
+
+          inputIme.value = (profile && profile.IME) ? profile.IME : user.email.split('@')[0];
+
+          ucitajHistorijuKorisnika();
+          slusajOdgovoreRealtime();
+        } else {
+          inputIme.removeAttribute('readonly');
+          inputEmail.removeAttribute('readonly');
+          provjeriAdminPristup(null);
+        }
+      } catch (e) {
+        console.warn("Greška pri učitavanju:", e);
+      }
+    }
+
+    async function ucitajHistorijuKorisnika() {
+      if (!userEmail) return;
+
+      const { data } = await _supabase
+        .from('KONTAKT_PORUKE')
+        .select('*')
+        .eq('email', userEmail)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (data && aktivnaPorukaId !== null) {
+        aktivnaPorukaId = data.id;
+        postojecaHistorija = data.razgovor || [];
+
+        if (postojecaHistorija.length === 0 && data.poruka) {
+          postojecaHistorija.push({ posiljalac: 'korisnik', poruka: data.poruka, vrijeme: data.created_at });
+          if (data.odgovor && data.odgovor !== 'Na čekanju...') {
+            postojecaHistorija.push({ posiljalac: 'admin', poruka: data.odgovor, vrijeme: data.created_at });
+          }
+        }
+
+        prikaziRazgovor(postojecaHistorija);
+      }
+    }
+
+    // FUNKCIJA ZA ZAPOČINJANJE POTPUNO NOVE TEME/UPITA
+    function zapocniNoviUpit() {
+      aktivnaPorukaId = null; // Poništavamo ID tako da baza kreira novu poruku
+      postojecaHistorija = [];
+      document.getElementById('conversationContainer').style.display = 'none';
+      document.getElementById('cPoruka').value = '';
+      document.getElementById('cPoruka').focus();
+      
+      const statusDiv = document.getElementById('statusMessage');
+      statusDiv.style.color = '#28a745';
+      statusDiv.textContent = 'Spremno za slanje nove poruke! Unesite pitanje i kliknite Pošalji.';
+    }
+
+    function prikaziRazgovor(lista) {
+      const box = document.getElementById('chatHistoryBox');
+      const container = document.getElementById('conversationContainer');
+
+      if (!lista || lista.length === 0) {
+        container.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'block';
+      box.innerHTML = '';
+
+      lista.forEach(msg => {
+        const bubble = document.createElement('div');
+        const isAdminMsg = msg.posiljalac === 'admin';
+        bubble.className = `chat-bubble ${isAdminMsg ? 'chat-admin' : 'chat-user'}`;
+        
+        bubble.innerHTML = `
+          <div class="chat-meta">${isAdminMsg ? '👑 Podrška / Admin' : '👤 Vi'}:</div>
+          <div>${msg.poruka}</div>
+        `;
+        box.appendChild(bubble);
+      });
+
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function slusajOdgovoreRealtime() {
+      if (!userEmail) return;
+
+      _supabase
+        .channel('public:KONTAKT_PORUKE')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'KONTAKT_PORUKE' }, payload => {
+          if (payload.new && payload.new.email === userEmail && payload.new.id === aktivnaPorukaId) {
+            postojecaHistorija = payload.new.razgovor || [];
+            prikaziRazgovor(postojecaHistorija);
+            prikaziToast();
+          }
+        })
+        .subscribe();
+    }
+
+    function prikaziToast() {
+      const toast = document.getElementById('toastNotif');
+      toast.style.display = 'flex';
+      setTimeout(() => { toast.style.display = 'none'; }, 6000);
+    }
 
     async function handleSendContact(e) {
       e.preventDefault();
+      const t = prevodi[trenutniJezik];
 
       const ime = document.getElementById('cIme').value.trim();
       const email = document.getElementById('cEmail').value.trim();
@@ -101,42 +509,66 @@
       const statusDiv = document.getElementById('statusMessage');
       const sendBtn = document.getElementById('sendBtn');
 
-      if (!ime || !email || !poruka) {
-        statusDiv.style.color = 'red';
-        statusDiv.textContent = 'Molimo popunite sva polja!';
-        return;
-      }
-
       statusDiv.style.color = '#0056b3';
-      statusDiv.textContent = 'Slanje poruke...';
+      statusDiv.textContent = t.sending;
       sendBtn.disabled = true;
 
       try {
-        // Upis u tabelu KONTAKT_PORUKE
-        const { error } = await _supabase
-          .from('KONTAKT_PORUKE')
-          .insert([
-            {
-              ime: ime,
-              email: email,
-              tip: tip,
-              poruka: poruka
-            }
-          ]);
+        // Ako postoji aktivna poruka, nastavlja se konverzacija
+        if (aktivnaPorukaId) {
+          let novaLista = [...postojecaHistorija, { posiljalac: 'korisnik', poruka: poruka, vrijeme: new Date().toISOString() }];
 
-        if (error) throw error;
+          const { error } = await _supabase
+            .from('KONTAKT_PORUKE')
+            .update({
+              razgovor: novaLista,
+              odgovor: 'Na čekanju (Stiglo novo potpitanje)...'
+            })
+            .eq('id', aktivnaPorukaId);
+
+          if (error) throw error;
+          
+          postojecaHistorija = novaLista;
+          prikaziRazgovor(postojecaHistorija);
+        } else {
+          // KREIRA SE POTPUNO NOVA PORUKA / TEMA U BAZI
+          let pocetnaLista = [{ posiljalac: 'korisnik', poruka: poruka, vrijeme: new Date().toISOString() }];
+          
+          const { data, error } = await _supabase
+            .from('KONTAKT_PORUKE')
+            .insert([{ 
+              ime, 
+              email, 
+              tip, 
+              poruka, 
+              odgovor: 'Na čekanju...',
+              razgovor: pocetnaLista 
+            }])
+            .select()
+            .single();
+
+          if (error) throw error;
+          
+          if (data) {
+            aktivnaPorukaId = data.id;
+            postojecaHistorija = pocetnaLista;
+            prikaziRazgovor(postojecaHistorija);
+          }
+        }
 
         statusDiv.style.color = 'green';
-        statusDiv.textContent = 'Hvala vam! Vaša poruka je uspješno poslana.';
-        document.getElementById('contactForm').reset();
+        statusDiv.textContent = t.success;
+        document.getElementById('cPoruka').value = '';
 
       } catch (err) {
         statusDiv.style.color = 'red';
-        statusDiv.textContent = 'Greška pri slanju: ' + err.message;
+        statusDiv.textContent = 'Greška: ' + err.message;
       } finally {
         sendBtn.disabled = false;
       }
     }
+
+    document.addEventListener('DOMContentLoaded', ucitajProfil);
   </script>
 
 </body>
