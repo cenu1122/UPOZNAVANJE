@@ -412,31 +412,30 @@
 }
 
     async function postaviKorisnikaOffline() {
-      if (!trenutniKorisnik) return;
-      const mojId = String(trenutniKorisnik.id);
-      const mojMail = trenutniKorisnik.email;
+  if (!trenutniKorisnik) return;
+  
+  const mojId = String(trenutniKorisnik.id);
+  const mojMail = trenutniKorisnik.email ? trenutniKorisnik.email.trim().toLowerCase() : '';
 
-      try {
-        if (mojMail) {
-          await _supabase
-            .from('UPOZNAVANJ_KORISNICI')
-            .update({ is_online: false, last_seen: new Date().toISOString() })
-            .or(`MAIL.eq.${mojMail},USER.eq.${mojId}`);
-        } else {
-          await _supabase
-            .from('UPOZNAVANJ_KORISNICI')
-            .update({ is_online: false, last_seen: new Date().toISOString() })
-            .eq('USER', mojId);
-        }
-      } catch (e) {
-        console.warn("Greška pri postavljanju offline statusa:", e);
-      }
+  try {
+    // 1. Prvo pokušavamo ažurirati offline status po USER UUID-u
+    let { data } = await _supabase
+      .from('UPOZNAVANJ_KORISNICI')
+      .update({ is_online: false, last_seen: new Date().toISOString() })
+      .eq('USER', mojId)
+      .select();
+
+    // 2. Ako nije našao po USER-u, ažuriramo po MAIL-u
+    if ((!data || data.length === 0) && mojMail) {
+      await _supabase
+        .from('UPOZNAVANJ_KORISNICI')
+        .update({ is_online: false, last_seen: new Date().toISOString() })
+        .ilike('MAIL', mojMail);
     }
-
-    window.addEventListener('beforeunload', () => {
-      postaviKorisnikaOffline();
-    });
-
+  } catch (e) {
+    console.warn("Greška pri postavljanju offline statusa:", e);
+  }
+}
     async function izracunajStatistikuPoruka() {
       if (!trenutniKorisnik) return;
       try {
