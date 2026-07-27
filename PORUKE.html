@@ -1,3 +1,8 @@
+Vidim na slici gdje je poruka stala! Poruka se prekinula na dnu objašnjenja, pa evo kompletnog koda za PORUKE.html od prve do zadnje linije — uključujući sve stilove, ugrađenu Groq prevođenje funkciju (prevediTekstPrijeSlanja), popravljene Realtime slušaoce i is_online logiku.
+
+Samo kopiraj sve iz okvira ispod i zamijeni čitav sadržaj fajla PORUKE.html:
+HTML
+
 <!DOCTYPE html>
 <html lang="bs">
 <head>
@@ -112,7 +117,8 @@
       cursor: pointer; 
     }
     
-    .user-item:hover, .user-item.active { 
+    .user-item:hover, 
+    .user-item.active { 
       background: #ffe0e5; 
     }
     
@@ -266,11 +272,29 @@
     }
 
     @media (max-width: 768px) {
-      body { height: 100vh; }
-      .chat-container { flex-direction: column; }
-      .users-sidebar { width: 100%; height: 180px; border-right: none; border-bottom: 2px solid #ffd8df; }
-      .chat-window { flex: 1; height: calc(100vh - 240px); }
-      .message { max-width: 90%; }
+      body { 
+        height: 100vh; 
+      }
+      
+      .chat-container { 
+        flex-direction: column; 
+      }
+      
+      .users-sidebar { 
+        width: 100%; 
+        height: 180px; 
+        border-right: none; 
+        border-bottom: 2px solid #ffd8df; 
+      }
+      
+      .chat-window { 
+        flex: 1; 
+        height: calc(100vh - 240px); 
+      }
+      
+      .message { 
+        max-width: 90%; 
+      }
     }
   </style>
 </head>
@@ -333,11 +357,15 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
 
     let _supabase = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-    let trenutniKorisnik = null, primateljId = null, primateljIme = '';
-    let porukeBrojMap = {}, sviKorisniciBaza = [];
+    let trenutniKorisnik = null;
+    let primateljId = null;
+    let primateljIme = '';
+    let porukeBrojMap = {};
+    let sviKorisniciBaza = [];
 
     async function ucitajSve() {
       if (!_supabase) return;
+      
       const { data: { user } } = await _supabase.auth.getUser();
       if (user) {
         trenutniKorisnik = user;
@@ -359,85 +387,88 @@
       await postaviKorisnikaOnline();
       await izracunajStatistikuPoruka();
       await ucitajListuKorisnika();
-      if (primateljId) await ucitajPorukeRazgovora();
+      
+      if (primateljId) {
+        await ucitajPorukeRazgovora();
+      }
 
       setTimeout(() => {
         if (btn) btn.innerText = "🔄 Osvježi";
       }, 500);
     }
 
-    // AŽURIRANO: Traži korisnika po MAIL-u (iz Auth-a) ili USER UUID-u i dodaje UUID ako fali!
     async function postaviKorisnikaOnline() {
-  if (!trenutniKorisnik) return;
-  
-  const mojId = String(trenutniKorisnik.id);
-  const mojMail = trenutniKorisnik.email ? trenutniKorisnik.email.trim().toLowerCase() : '';
+      if (!trenutniKorisnik) return;
+      
+      const mojId = String(trenutniKorisnik.id);
+      const mojMail = trenutniKorisnik.email ? trenutniKorisnik.email.trim().toLowerCase() : '';
 
-  try {
-    // 1. Pokušavamo ažurirati po USER UUID-u
-    let { data, error, count } = await _supabase
-      .from('UPOZNAVANJ_KORISNICI')
-      .update({ is_online: true, last_seen: new Date().toISOString() })
-      .eq('USER', mojId)
-      .select();
-
-    // 2. Ako po USER-u nije našao nijedan red, tražimo po MAIL-u
-    if ((!data || data.length === 0) && mojMail) {
-      const resultByMail = await _supabase
-        .from('UPOZNAVANJ_KORISNICI')
-        .update({ 
-          is_online: true, 
-          last_seen: new Date().toISOString(),
-          USER: mojId // Odmah upisujemo i UUID da popunimo NULL polje
-        })
-        .ilike('MAIL', mojMail)
-        .select();
-
-      // 3. Ako korisnik uopće ne postoji u tabeli UPOZNAVANJ_KORISNICI, ubaci ga!
-      if (!resultByMail.data || resultByMail.data.length === 0) {
-        await _supabase
+      try {
+        let { data } = await _supabase
           .from('UPOZNAVANJ_KORISNICI')
-          .insert([{
-            USER: mojId,
-            MAIL: mojMail,
-            IME: mojMail.split('@')[0],
-            is_online: true,
-            last_seen: new Date().toISOString()
-          }]);
+          .update({ is_online: true, last_seen: new Date().toISOString() })
+          .eq('USER', mojId)
+          .select();
+
+        if ((!data || data.length === 0) && mojMail) {
+          const resultByMail = await _supabase
+            .from('UPOZNAVANJ_KORISNICI')
+            .update({ 
+              is_online: true, 
+              last_seen: new Date().toISOString(),
+              USER: mojId 
+            })
+            .ilike('MAIL', mojMail)
+            .select();
+
+          if (!resultByMail.data || resultByMail.data.length === 0) {
+            await _supabase
+              .from('UPOZNAVANJ_KORISNICI')
+              .insert([{
+                USER: mojId,
+                MAIL: mojMail,
+                IME: mojMail.split('@')[0],
+                is_online: true,
+                last_seen: new Date().toISOString()
+              }]);
+          }
+        }
+      } catch (e) {
+        console.warn("Greška pri postavljanju online statusa:", e);
       }
     }
-  } catch (e) {
-    console.warn("Greška pri postavljanju online statusa:", e);
-  }
-}
 
     async function postaviKorisnikaOffline() {
-  if (!trenutniKorisnik) return;
-  
-  const mojId = String(trenutniKorisnik.id);
-  const mojMail = trenutniKorisnik.email ? trenutniKorisnik.email.trim().toLowerCase() : '';
+      if (!trenutniKorisnik) return;
+      
+      const mojId = String(trenutniKorisnik.id);
+      const mojMail = trenutniKorisnik.email ? trenutniKorisnik.email.trim().toLowerCase() : '';
 
-  try {
-    // 1. Prvo pokušavamo ažurirati offline status po USER UUID-u
-    let { data } = await _supabase
-      .from('UPOZNAVANJ_KORISNICI')
-      .update({ is_online: false, last_seen: new Date().toISOString() })
-      .eq('USER', mojId)
-      .select();
+      try {
+        let { data } = await _supabase
+          .from('UPOZNAVANJ_KORISNICI')
+          .update({ is_online: false, last_seen: new Date().toISOString() })
+          .eq('USER', mojId)
+          .select();
 
-    // 2. Ako nije našao po USER-u, ažuriramo po MAIL-u
-    if ((!data || data.length === 0) && mojMail) {
-      await _supabase
-        .from('UPOZNAVANJ_KORISNICI')
-        .update({ is_online: false, last_seen: new Date().toISOString() })
-        .ilike('MAIL', mojMail);
+        if ((!data || data.length === 0) && mojMail) {
+          await _supabase
+            .from('UPOZNAVANJ_KORISNICI')
+            .update({ is_online: false, last_seen: new Date().toISOString() })
+            .ilike('MAIL', mojMail);
+        }
+      } catch (e) {
+        console.warn("Greška pri postavljanju offline statusa:", e);
+      }
     }
-  } catch (e) {
-    console.warn("Greška pri postavljanju offline statusa:", e);
-  }
-}
+
+    window.addEventListener('beforeunload', () => {
+      postaviKorisnikaOffline();
+    });
+
     async function izracunajStatistikuPoruka() {
       if (!trenutniKorisnik) return;
+      
       try {
         const mojId = String(trenutniKorisnik.id);
         const { data: poruke } = await _supabase
@@ -457,8 +488,12 @@
 
     async function ucitajListuKorisnika() {
       if (!_supabase) return;
+      
       try {
-        const { data: korisnici } = await _supabase.from('UPOZNAVANJ_KORISNICI').select('*');
+        const { data: korisnici } = await _supabase
+          .from('UPOZNAVANJ_KORISNICI')
+          .select('*');
+          
         sviKorisniciBaza = korisnici || [];
         osvjeziListuKorisnikaPrikaz();
       } catch (e) {}
@@ -475,7 +510,6 @@
         const mojMail = trenutniKorisnik ? trenutniKorisnik.email : '';
         const mojId = trenutniKorisnik ? String(trenutniKorisnik.id) : '';
 
-        // Sakrij trenutno prijavljenog korisnika iz liste
         if (mojId && kId === mojId) return false;
         if (mojMail && kMail && kMail === mojMail) return false;
         return true;
@@ -494,7 +528,8 @@
         const bOnline = b.is_online === true ? 1 : 0;
         if (aOnline !== bOnline) return bOnline - aOnline;
 
-        const aId = String(a.USER || a.id || ''), bId = String(b.USER || b.id || '');
+        const aId = String(a.USER || a.id || '');
+        const bId = String(b.USER || b.id || '');
         return (porukeBrojMap[bId] || 0) - (porukeBrojMap[aId] || 0);
       });
 
@@ -541,11 +576,14 @@
 
     async function ucitajPorukeRazgovora() {
       if (!trenutniKorisnik || !primateljId) return;
+      
       const box = document.getElementById('messagesBox');
       box.innerHTML = '<div style="text-align:center; color:#888;">Učitavanje...</div>';
 
       try {
-        const mojId = String(trenutniKorisnik.id), pId = String(primateljId);
+        const mojId = String(trenutniKorisnik.id);
+        const pId = String(primateljId);
+        
         const { data: poruke } = await _supabase
           .from('PRIVATNE_PORUKE')
           .select('*')
@@ -569,7 +607,11 @@
       const box = document.getElementById('messagesBox');
       const msg = document.createElement('div');
       msg.className = `message ${jeMoja ? 'sent' : 'received'}`;
-      const tFormat = vrijeme ? new Date(vrijeme).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      const tFormat = vrijeme 
+        ? new Date(vrijeme).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+        : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
       msg.innerHTML = `<div>${tekst}</div><div class="time">${tFormat}</div>`;
       box.appendChild(msg);
       box.scrollTop = box.scrollHeight;
@@ -578,6 +620,7 @@
     async function posaljiPoruku() {
       const input = document.getElementById('msgInput');
       const tekst = input.value.trim();
+      
       if (!tekst || !primateljId) return;
 
       prikaziBublePoruku(tekst, true, new Date().toISOString());
@@ -588,7 +631,9 @@
 
       try {
         const mojId = trenutniKorisnik ? String(trenutniKorisnik.id) : 'gost';
-        await _supabase.from('PRIVATNE_PORUKE').insert([{ posiljalac: mojId, primalac: String(primateljId), poruka: tekst }]);
+        await _supabase
+          .from('PRIVATNE_PORUKE')
+          .insert([{ posiljalac: mojId, primalac: String(primateljId), poruka: tekst }]);
       } catch (e) {}
     }
 
@@ -631,6 +676,7 @@
 
     function slusajPorukeRealtime() {
       if (!_supabase) return;
+
       _supabase.channel('public:PRIVATNE_PORUKE')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'PRIVATNE_PORUKE' }, payload => {
           if (payload.new) {
@@ -639,13 +685,14 @@
             const prim = String(payload.new.primalac);
 
             const partner = (pos === mojId) ? prim : pos;
+
             porukeBrojMap[partner] = (porukeBrojMap[partner] || 0) + 1;
             osvjeziListuKorisnikaPrikaz();
 
-            if (pos === String(primateljId) || prim === String(primateljId)) {
-              if (pos !== mojId) {
-                prikaziBublePoruku(payload.new.poruka, false, payload.new.created_at);
-              }
+            if (pos === String(primateljId)) {
+              prikaziBublePoruku(payload.new.poruka, false, payload.new.created_at);
+            } else if (pos !== mojId) {
+              console.log("📩 Nova poruka od drugog korisnika:", payload.new.poruka);
             }
           }
         }).subscribe();
@@ -653,6 +700,7 @@
 
     function slusajPromjeneStatusaRealtime() {
       if (!_supabase) return;
+      
       _supabase.channel('public:UPOZNAVANJ_KORISNICI')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'UPOZNAVANJ_KORISNICI' }, () => {
           ucitajListuKorisnika();
