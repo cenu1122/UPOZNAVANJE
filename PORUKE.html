@@ -1,179 +1,4 @@
-indow">
-      <div class="chat-header">
-        <div class="user-avatar" id="activeAvatar">💬</div>
-        <div>
-          <h3 id="chatWithTitle" style="font-size:1rem;">Odaberite člana</h3>
-          <span id="chatUserStatusText" class="status-badge offline">ODABERITE ČLANA</span>
-        </div>
-      </div>
-
-      <div class="ai-toolbar">
-        <span>🤖 <strong>AI Prevodilac</strong></span>
-        <select id="aiTargetLang" style="padding:2px 5px; border-radius:4px;">
-          <option value="Bosanski" selected>Bosanski / Hrvatski / Srpski</option>
-          <option value="Engleski">Engleski</option>
-          <option value="Nemački">Njemački</option>
-        </select>
-      </div>
-
-      <div class="messages-box" id="messagesBox">
-        <div class="message received">
-          Dobrodošli! Odaberite člana iz liste s lijeve strane za početak razgovora.
-          <div class="time">Sada</div>
-        </div>
-      </div>
-
-      <div class="chat-input-container">
-        <input type="text" id="msgInput" placeholder="Napišite poruku..." onkeypress="if(event.key==='Enter') posaljiPoruku()">
-        <button class="btn-ai" onclick="prevediTekstPrijeSlanja()">🤖 Prevedi</button>
-        <button class="btn-send" onclick="posaljiPoruku()">Pošalji 🚀</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
-
-    let _supabase = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-    let trenutniKorisnik = null, primateljId = null, primateljIme = '';
-    let porukeBrojMap = {}, sviKorisniciBaza = [];
-
-    async function ucitajSve() {
-      if (!_supabase) return;
-      const { data: { user } } = await _supabase.auth.getUser();
-      if (user) {
-        trenutniKorisnik = user;
-        await postaviKorisnikaOnline();
-      }
-
-      await izracunajStatistikuPoruka();
-      await ucitajListuKorisnika();
-      slusajPorukeRealtime();
-      slusajPromjeneStatusaRealtime();
-
-      setInterval(ucitajListuKorisnika, 15000);
-    }
-
-    // FUNKCIJA ZA RUČNO / PRISILNO OSVJEŽAVANJE
-    async function prisilnoOsvjezi() {
-      const btn = document.querySelector('.btn-refresh');
-      if (btn) btn.innerText = "⏳ UCITAVAM...";
-
-      await postaviKorisnikaOnline();
-      await izracunajStatistikuPoruka();
-      await ucitajListuKorisnika();
-      if (primateljId) await ucitajPorukeRazgovora();
-
-      setTimeout(() => {
-        if (btn) btn.innerText = "🔄 Osvježi";
-      }, 500);
-    }
-
-    async function postaviKorisnikaOnline() {
-      if (!trenutniKorisnik) return;
-      const mojId = String(trenutniKorisnik.id);
-      try {
-        await _supabase
-          .from('UPOZNAVANJ_KORISNICI')
-          .update({ is_online: true, last_seen: new Date().toISOString() })
-          .or(`USER.eq.${mojId},id.eq.${mojId}`);
-      } catch (e) {
-        console.warn("Greška pri postavljanju online statusa:", e);
-      }
-    }
-
-    async function postaviKorisnikaOffline() {
-      if (!trenutniKorisnik) return;
-      const mojId = String(trenutniKorisnik.id);
-      try {
-        await _supabase
-          .from('UPOZNAVANJ_KORISNICI')
-          .update({ is_online: false, last_seen: new Date().toISOString() })
-          .or(`USER.eq.${mojId},id.eq.${mojId}`);
-      } catch (e) {
-        console.warn("Greška pri postavljanju offline statusa:", e);
-      }
-    }
-
-    window.addEventListener('beforeunload', () => {
-      postaviKorisnikaOffline();
-    });
-
-    async function izracunajStatistikuPoruka() {
-      if (!trenutniKorisnik) return;
-      try {
-        const mojId = String(trenutniKorisnik.id);
-        const { data: poruke } = await _supabase.from('PRIVATNE_PORUKE').select('posiljalac, primalac').or(`posiljalac.eq.${mojId},primalac.eq.${mojId}`);
-        porukeBrojMap = {};
-        if (poruke) {
-          poruke.forEach(p => {
-            const partner = String(p.posiljalac) === mojId ? String(p.primalac) : String(p.posiljalac);
-            porukeBrojMap[partner] = (porukeBrojMap[partner] || 0) + 1;
-          });
-        }
-      } catch (e) {}
-    }
-
-    async function ucitajListuKorisnika() {
-      if (!_supabase) return;
-      try {
-        const { data: korisnici } = await _supabase.from('UPOZNAVANJ_KORISNICI').select('*');
-        sviKorisniciBaza = korisnici || [];
-        osvjeziListuKorisnikaPrikaz();
-      } catch (e) {}
-    }
-
-    function osvjeziListuKorisnikaPrikaz() {
-      const listEl = document.getElementById('userList');
-      if (!listEl) return;
-      listEl.innerHTML = '';
-
-      let lista = sviKorisniciBaza.filter(k => {
-        const kId = String(k.USER || k.id || '');
-        return !trenutniKorisnik || kId !== String(trenutniKorisnik.id);
-      });
-
-      if (lista.length === 0) {
-        listEl.innerHTML = '<div style="padding:15px; text-align:center; color:#888;">Nema članova.</div>';
-        return;
-      }
-
-      const onlineBroj = lista.filter(k => k.is_online === true).length;
-      document.getElementById('onlineCount').innerText = onlineBroj;
-
-      lista.sort((a, b) => {
-        const aOnline = a.is_online === true ? 1 : 0;
-        const bOnline = b.is_online === true ? 1 : 0;
-        if (aOnline !== bOnline) return bOnline - aOnline;
-
-        const aId = String(a.USER || a.id || ''), bId = String(b.USER || b.id || '');
-        return (porukeBrojMap[bId] || 0) - (porukeBrojMap[aId] || 0);
-      });
-
-      lista.forEach(k => {
-        const uId = String(k.USER || k.id || '');
-        const isOnline = k.is_online === true;
-        const totalMsgs = porukeBrojMap[uId] || 0;
-
-        const prikazIme = k.IME || k.MAIL || k.USERNAME || 'Član';
-        const inicijal = prikazIme.charAt(0).toUpperCase() || 'C';
-
-        const item = document.createElement('div');
-        item.className = `user-item ${primateljId === uId ? 'active' : ''}`;
-        item.onclick = () => odaberiKorisnikaZaChat(uId, prikazIme, isOnline);
-
-        item.innerHTML = `
-          <div class="user-avatar">${inicijal}</div>
-          <div class="user-info">
-            <h4>
-              <span>${prikazIme}</span>
-              ${totalMsgs > 0 ? `<span style="background:#d90429; color:#fff; font-size:0.65rem; padding:1px 5px; border-radius:8px;">💬 ${totalMsgs}</span>` : ''}
-            </h4>
-            <p>${isOnline ? '<span class="status-badge online">🟢 SADA ONLINE</span>' : '<span class="status-badge offline">⚪ NEAKTIVAN</span>'}</p>
-          </div>
-        `;
-        listEl.appendChild(item);
+listEl.appendChild(item);
       });
     }
 
@@ -243,9 +68,41 @@ indow">
       } catch (e) {}
     }
 
-    function prevediTekstPrijeSlanja() {
+    async function prevediTekstPrijeSlanja() {
       const input = document.getElementById('msgInput');
-      if (input.value.trim()) input.value = `[${document.getElementById('aiTargetLang').value}] ${input.value.trim()}`;
+      const tekst = input.value.trim();
+      const ciljniJezik = document.getElementById('aiTargetLang').value;
+      const btn = document.querySelector('.btn-ai');
+
+      if (!tekst) {
+        alert("Napišite tekst prije prevođenja!");
+        return;
+      }
+
+      if (btn) btn.innerText = "⏳ Prevodim...";
+
+      try {
+        const { data, error } = await _supabase.functions.invoke('prevedi-poruku', {
+          body: { tekst: tekst, ciljniJezik: ciljniJezik }
+        });
+
+        if (error) {
+          console.error("Greška iz Edge Funkcije:", error);
+          alert("Došlo je do greške pri pozivanju AI prevođenja.");
+          return;
+        }
+
+        if (data && data.prijevod) {
+          input.value = data.prijevod;
+        } else {
+          alert("AI nije vratio odgovor.");
+        }
+      } catch (e) {
+        console.error("Greška pri prevođenju:", e);
+        alert("Nije moguće izvršiti prevođenje.");
+      } finally {
+        if (btn) btn.innerText = "🤖 Prevedi";
+      }
     }
 
     function slusajPorukeRealtime() {
