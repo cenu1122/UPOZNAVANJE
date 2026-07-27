@@ -368,32 +368,48 @@
 
     // AŽURIRANO: Traži korisnika po MAIL-u (iz Auth-a) ili USER UUID-u i dodaje UUID ako fali!
     async function postaviKorisnikaOnline() {
-      if (!trenutniKorisnik) return;
-      const mojId = String(trenutniKorisnik.id);
-      const mojMail = trenutniKorisnik.email;
+  if (!trenutniKorisnik) return;
+  
+  const mojId = String(trenutniKorisnik.id);
+  const mojMail = trenutniKorisnik.email ? trenutniKorisnik.email.trim().toLowerCase() : '';
 
-      try {
-        let updateData = { 
+  try {
+    // 1. Pokušavamo ažurirati po USER UUID-u
+    let { data, error, count } = await _supabase
+      .from('UPOZNAVANJ_KORISNICI')
+      .update({ is_online: true, last_seen: new Date().toISOString() })
+      .eq('USER', mojId)
+      .select();
+
+    // 2. Ako po USER-u nije našao nijedan red, tražimo po MAIL-u
+    if ((!data || data.length === 0) && mojMail) {
+      const resultByMail = await _supabase
+        .from('UPOZNAVANJ_KORISNICI')
+        .update({ 
           is_online: true, 
           last_seen: new Date().toISOString(),
-          USER: mojId // Automatski popunjava USER kolonu ako je bila NULL
-        };
+          USER: mojId // Odmah upisujemo i UUID da popunimo NULL polje
+        })
+        .ilike('MAIL', mojMail)
+        .select();
 
-        if (mojMail) {
-          await _supabase
-            .from('UPOZNAVANJ_KORISNICI')
-            .update(updateData)
-            .or(`MAIL.eq.${mojMail},USER.eq.${mojId}`);
-        } else {
-          await _supabase
-            .from('UPOZNAVANJ_KORISNICI')
-            .update(updateData)
-            .eq('USER', mojId);
-        }
-      } catch (e) {
-        console.warn("Greška pri postavljanju online statusa:", e);
+      // 3. Ako korisnik uopće ne postoji u tabeli UPOZNAVANJ_KORISNICI, ubaci ga!
+      if (!resultByMail.data || resultByMail.data.length === 0) {
+        await _supabase
+          .from('UPOZNAVANJ_KORISNICI')
+          .insert([{
+            USER: mojId,
+            MAIL: mojMail,
+            IME: mojMail.split('@')[0],
+            is_online: true,
+            last_seen: new Date().toISOString()
+          }]);
       }
     }
+  } catch (e) {
+    console.warn("Greška pri postavljanju online statusa:", e);
+  }
+}
 
     async function postaviKorisnikaOffline() {
       if (!trenutniKorisnik) return;
