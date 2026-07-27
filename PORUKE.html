@@ -1,8 +1,3 @@
-Vidim na slici gdje je poruka stala! Poruka se prekinula na dnu objašnjenja, pa evo kompletnog koda za PORUKE.html od prve do zadnje linije — uključujući sve stilove, ugrađenu Groq prevođenje funkciju (prevediTekstPrijeSlanja), popravljene Realtime slušaoce i is_online logiku.
-
-Samo kopiraj sve iz okvira ispod i zamijeni čitav sadržaj fajla PORUKE.html:
-HTML
-
 <!DOCTYPE html>
 <html lang="bs">
 <head>
@@ -209,6 +204,7 @@ HTML
       border-radius: 12px; 
       font-size: 0.9rem; 
       word-wrap: break-word; 
+      position: relative;
     }
     
     .message.sent { 
@@ -223,12 +219,51 @@ HTML
       color: #2b2d42; 
       border: 1px solid #ddd; 
     }
+
+    .translation-subtext {
+      font-size: 0.8rem;
+      font-style: italic;
+      margin-top: 6px;
+      padding-top: 4px;
+      border-top: 1px dashed rgba(255,255,255,0.4);
+      display: none; /* Inicijalno sakriveno dok se ne klikne dugme */
+    }
+
+    .message.received .translation-subtext {
+      border-top-color: #ddd;
+      color: #555;
+    }
+
+    .btn-toggle-orig {
+      background: rgba(0, 0, 0, 0.15);
+      border: none;
+      color: inherit;
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .btn-toggle-orig:hover {
+      background: rgba(0, 0, 0, 0.25);
+    }
     
     .time { 
       font-size: 0.65rem; 
       opacity: 0.7; 
       text-align: right; 
       margin-top: 4px; 
+    }
+
+    .translation-preview {
+      display: none;
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 6px 15px;
+      font-size: 0.8rem;
+      border-top: 1px solid #c8e6c9;
     }
 
     .chat-input-container { 
@@ -344,6 +379,10 @@ HTML
         </div>
       </div>
 
+      <div class="translation-preview" id="translationPreview">
+        🌐 Prijevod spreman: <span id="previewText"></span>
+      </div>
+
       <div class="chat-input-container">
         <input type="text" id="msgInput" placeholder="Napišite poruku..." onkeypress="if(event.key==='Enter') posaljiPoruku()">
         <button class="btn-ai" onclick="prevediTekstPrijeSlanja()">🤖 Prevedi</button>
@@ -362,6 +401,7 @@ HTML
     let primateljIme = '';
     let porukeBrojMap = {};
     let sviKorisniciBaza = [];
+    let trenutniPrijevod = null;
 
     async function ucitajSve() {
       if (!_supabase) return;
@@ -377,7 +417,11 @@ HTML
       slusajPorukeRealtime();
       slusajPromjeneStatusaRealtime();
 
-      setInterval(ucitajListuKorisnika, 15000);
+      // Svakih 15 sekundi šalji "ping" i osvježavaj listu
+      setInterval(async () => {
+        if (trenutniKorisnik) await postaviKorisnikaOnline();
+        await ucitajListuKorisnika();
+      }, 15000);
     }
 
     async function prisilnoOsvjezi() {
@@ -520,12 +564,21 @@ HTML
         return;
       }
 
-      const onlineBroj = lista.filter(k => k.is_online === true).length;
+      // Dodatna provjera: Korisnik je ONLINE samo ako je is_online=true I ako je bio aktivan u zadnje 2 minute (120000 ms)
+      const sada = new Date().getTime();
+      const provjeriAktivnost = (k) => {
+        if (k.is_online !== true) return false;
+        if (!k.last_seen) return true;
+        const zadnjiPut = new Date(k.last_seen).getTime();
+        return (sada - zadnjiPut) < 120000; // Akter u zadnje 2 minute
+      };
+
+      const onlineBroj = lista.filter(k => provjeriAktivnost(k)).length;
       document.getElementById('onlineCount').innerText = onlineBroj;
 
       lista.sort((a, b) => {
-        const aOnline = a.is_online === true ? 1 : 0;
-        const bOnline = b.is_online === true ? 1 : 0;
+        const aOnline = provjeriAktivnost(a) ? 1 : 0;
+        const bOnline = provjeriAktivnost(b) ? 1 : 0;
         if (aOnline !== bOnline) return bOnline - aOnline;
 
         const aId = String(a.USER || a.id || '');
@@ -535,7 +588,7 @@ HTML
 
       lista.forEach(k => {
         const uId = String(k.USER || k.id || '');
-        const isOnline = k.is_online === true;
+        const isOnline = provjeriAktivnost(k);
         const totalMsgs = porukeBrojMap[uId] || 0;
 
         const prikazIme = k.IME || k.MAIL || k.USERNAME || 'Član';
@@ -596,14 +649,15 @@ HTML
           return;
         }
 
-        poruke.forEach(p => prikaziBublePoruku(p.poruka, String(p.posiljalac) === mojId, p.created_at));
+        poruke.forEach(p => prikaziBublePoruku(p.id, p.poruka, p.poruka_prijevod, String(p.posiljalac) === mojId, p.created_at));
         box.scrollTop = box.scrollHeight;
       } catch (e) {
         box.innerHTML = '<div style="text-align:center; color:#888;">Nema poruka.</div>';
       }
     }
 
-    function prikaziBublePoruku(tekst, jeMoja, vrijeme) {
+    // Funkcija koja prikazuje poruku i dodaje dugme za prikazivanje/skrivanje originala
+    function prikaziBublePoruku(msgId, tekst, prijevodTekst, jeMoja, vrijeme) {
       const box = document.getElementById('messagesBox');
       const msg = document.createElement('div');
       msg.className = `message ${jeMoja ? 'sent' : 'received'}`;
@@ -611,10 +665,33 @@ HTML
       const tFormat = vrijeme 
         ? new Date(vrijeme).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
         : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        
-      msg.innerHTML = `<div>${tekst}</div><div class="time">${tFormat}</div>`;
+
+      // Ako postoji prijevod, on je primarni tekst, a original ide ispod sa dugmetom
+      const glavnitTekst = prijevodTekst ? prijevodTekst : tekst;
+      
+      let origHtml = '';
+      if (prijevodTekst) {
+        origHtml = `
+          <button class="btn-toggle-orig" onclick="toggleOrig('${msgId}')">👁️ Prikaži/sakrij original</button>
+          <div id="orig-${msgId}" class="translation-subtext">Original: ${tekst}</div>
+        `;
+      }
+
+      msg.innerHTML = `<div>${glavnitTekst}</div>${origHtml}<div class="time">${tFormat}</div>`;
       box.appendChild(msg);
       box.scrollTop = box.scrollHeight;
+    }
+
+    // Funkcija za pali/gasi originalni tekst
+    function toggleOrig(id) {
+      const el = document.getElementById(`orig-${id}`);
+      if (el) {
+        if (el.style.display === 'block') {
+          el.style.display = 'none';
+        } else {
+          el.style.display = 'block';
+        }
+      }
     }
 
     async function posaljiPoruku() {
@@ -623,8 +700,14 @@ HTML
       
       if (!tekst || !primateljId) return;
 
-      prikaziBublePoruku(tekst, true, new Date().toISOString());
+      const sačuvaniPrijevod = trenutniPrijevod;
+      const tempId = 'temp_' + Date.now();
+      
+      prikaziBublePoruku(tempId, tekst, sačuvaniPrijevod, true, new Date().toISOString());
+      
       input.value = '';
+      trenutniPrijevod = null;
+      document.getElementById('translationPreview').style.display = 'none';
 
       porukeBrojMap[primateljId] = (porukeBrojMap[primateljId] || 0) + 1;
       osvjeziListuKorisnikaPrikaz();
@@ -633,8 +716,15 @@ HTML
         const mojId = trenutniKorisnik ? String(trenutniKorisnik.id) : 'gost';
         await _supabase
           .from('PRIVATNE_PORUKE')
-          .insert([{ posiljalac: mojId, primalac: String(primateljId), poruka: tekst }]);
-      } catch (e) {}
+          .insert([{ 
+            posiljalac: mojId, 
+            primalac: String(primateljId), 
+            poruka: tekst,
+            poruka_prijevod: sačuvaniPrijevod
+          }]);
+      } catch (e) {
+        console.error("Greška pri slanju poruke:", e);
+      }
     }
 
     async function prevediTekstPrijeSlanja() {
@@ -662,7 +752,10 @@ HTML
         }
 
         if (data && data.prijevod) {
-          input.value = data.prijevod;
+          trenutniPrijevod = data.prijevod;
+          
+          document.getElementById('previewText').innerText = data.prijevod;
+          document.getElementById('translationPreview').style.display = 'block';
         } else {
           alert("AI nije vratio odgovor.");
         }
@@ -690,9 +783,7 @@ HTML
             osvjeziListuKorisnikaPrikaz();
 
             if (pos === String(primateljId)) {
-              prikaziBublePoruku(payload.new.poruka, false, payload.new.created_at);
-            } else if (pos !== mojId) {
-              console.log("📩 Nova poruka od drugog korisnika:", payload.new.poruka);
+              prikaziBublePoruku(payload.new.id, payload.new.poruka, payload.new.poruka_prijevod, false, payload.new.created_at);
             }
           }
         }).subscribe();
