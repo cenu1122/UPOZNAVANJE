@@ -1,83 +1,14 @@
-<!DOCTYPE html>
-<html lang="bs">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Poruke | LjubavNaPrviKlik</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-
-    header { background-color: #2b2d42; color: #fff; padding: 12px 5%; display: flex; justify-content: space-between; align-items: center; }
-    .logo { font-size: 1.3rem; font-weight: bold; color: #fff; text-decoration: none; }
-    .btn-nav { background: #d90429; color: #fff; text-decoration: none; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; }
-
-    .chat-container { flex: 1; display: flex; max-width: 1200px; width: 100%; margin: 10px auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
-
-    .users-sidebar { width: 320px; background: #fdf0f2; border-right: 1px solid #ffd8df; display: flex; flex-direction: column; }
-    .sidebar-header { padding: 12px 15px; background: #2b2d42; color: #fff; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-    .user-list { flex: 1; overflow-y: auto; }
-    .user-item { padding: 10px 14px; border-bottom: 1px solid #ffe3e8; display: flex; align-items: center; gap: 10px; cursor: pointer; }
-    .user-item:hover, .user-item.active { background: #ffe0e5; }
-    
-    .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: #d90429; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-    .status-badge { font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 10px; display: inline-block; }
-    .status-badge.online { background: #28a745; color: #fff; }
-    .status-badge.offline { background: #ccc; color: #444; }
-
-    .user-info { flex: 1; }
-    .user-info h4 { font-size: 0.9rem; margin-bottom: 2px; display: flex; justify-content: space-between; }
-
-    .chat-window { flex: 1; display: flex; flex-direction: column; background: #fff; }
-    .chat-header { padding: 12px 20px; border-bottom: 1px solid #eee; background: #fafafa; display: flex; align-items: center; gap: 12px; }
-
-    .ai-toolbar { background: #f3e5f5; border-bottom: 1px solid #e1bee7; padding: 6px 15px; font-size: 0.8rem; color: #4a148c; display: flex; justify-content: space-between; align-items: center; }
-
-    .messages-box { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #fff8f9; }
-    .message { max-width: 70%; padding: 10px 14px; border-radius: 12px; font-size: 0.9rem; word-wrap: break-word; }
-    .message.sent { align-self: flex-end; background: #d90429; color: #fff; }
-    .message.received { align-self: flex-start; background: #fff; color: #2b2d42; border: 1px solid #ddd; }
-    .time { font-size: 0.65rem; opacity: 0.7; text-align: right; margin-top: 4px; }
-
-    .chat-input-container { padding: 10px 15px; border-top: 1px solid #eee; display: flex; gap: 8px; }
-    .chat-input-container input { flex: 1; padding: 10px 15px; border: 1px solid #ccc; border-radius: 20px; outline: none; }
-    .btn-send { background: #d90429; color: #fff; border: none; padding: 0 18px; border-radius: 20px; font-weight: bold; cursor: pointer; }
-    .btn-ai { background: #8e24aa; color: #fff; border: none; padding: 0 12px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.8rem; }
-  </style>
-</head>
-<body>
-
-  <header>
-    <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
-    <div>
-      <a href="DASHBOARD.html" class="btn-nav">🏠 Dashboard</a>
-      <a href="KONTAKT.html" class="btn-nav">📩 Podrška</a>
-    </div>
-  </header>
-
-  <div class="chat-container">
-    <div class="users-sidebar">
-      <div class="sidebar-header">
-        <span>👥 Članovi (<span id="onlineCount">0</span> online)</span>
-        <button onclick="ucitajSve()" style="background:none; border:none; color:#fff; cursor:pointer;">🔄</button>
-      </div>
-      <div class="user-list" id="userList">
-        <div style="padding:15px; text-align:center; color:#888;">Učitavanje...</div>
-      </div>
-    </div>
-
-    <div class="chat-window">
+indow">
       <div class="chat-header">
         <div class="user-avatar" id="activeAvatar">💬</div>
         <div>
-          <h3 id="chatWithTitle">Odaberite člana s lijeve strane</h3>
+          <h3 id="chatWithTitle" style="font-size:1rem;">Odaberite člana</h3>
           <span id="chatUserStatusText" class="status-badge offline">ODABERITE ČLANA</span>
         </div>
       </div>
 
       <div class="ai-toolbar">
-        <span>🤖 <strong>AI Prevodilac:</strong></span>
+        <span>🤖 <strong>AI Prevodilac</strong></span>
         <select id="aiTargetLang" style="padding:2px 5px; border-radius:4px;">
           <option value="Bosanski" selected>Bosanski / Hrvatski / Srpski</option>
           <option value="Engleski">Engleski</option>
@@ -106,32 +37,68 @@
 
     let _supabase = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
     let trenutniKorisnik = null, primateljId = null, primateljIme = '';
-    let onlineUserIds = new Set(), porukeBrojMap = {}, sviKorisniciBaza = [];
+    let porukeBrojMap = {}, sviKorisniciBaza = [];
 
     async function ucitajSve() {
       if (!_supabase) return;
       const { data: { user } } = await _supabase.auth.getUser();
-      if (user) trenutniKorisnik = user;
+      if (user) {
+        trenutniKorisnik = user;
+        await postaviKorisnikaOnline();
+      }
 
-      pratiOnlinePresence();
       await izracunajStatistikuPoruka();
       await ucitajListuKorisnika();
       slusajPorukeRealtime();
+      slusajPromjeneStatusaRealtime();
+
+      setInterval(ucitajListuKorisnika, 15000);
     }
 
-    function pratiOnlinePresence() {
-      if (!_supabase || !trenutniKorisnik) return;
-      const room = _supabase.channel('online-users', { config: { presence: { key: trenutniKorisnik.id } } });
-      room.on('presence', { event: 'sync' }, () => {
-        onlineUserIds.clear();
-        Object.keys(room.presenceState()).forEach(id => onlineUserIds.add(id));
-        document.getElementById('onlineCount').innerText = onlineUserIds.size;
-        osvjeziListuKorisnikaPrikaz();
-      });
-      room.subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') await room.track({ online_at: new Date().toISOString() });
-      });
+    // FUNKCIJA ZA RUČNO / PRISILNO OSVJEŽAVANJE
+    async function prisilnoOsvjezi() {
+      const btn = document.querySelector('.btn-refresh');
+      if (btn) btn.innerText = "⏳ UCITAVAM...";
+
+      await postaviKorisnikaOnline();
+      await izracunajStatistikuPoruka();
+      await ucitajListuKorisnika();
+      if (primateljId) await ucitajPorukeRazgovora();
+
+      setTimeout(() => {
+        if (btn) btn.innerText = "🔄 Osvježi";
+      }, 500);
     }
+
+    async function postaviKorisnikaOnline() {
+      if (!trenutniKorisnik) return;
+      const mojId = String(trenutniKorisnik.id);
+      try {
+        await _supabase
+          .from('UPOZNAVANJ_KORISNICI')
+          .update({ is_online: true, last_seen: new Date().toISOString() })
+          .or(`USER.eq.${mojId},id.eq.${mojId}`);
+      } catch (e) {
+        console.warn("Greška pri postavljanju online statusa:", e);
+      }
+    }
+
+    async function postaviKorisnikaOffline() {
+      if (!trenutniKorisnik) return;
+      const mojId = String(trenutniKorisnik.id);
+      try {
+        await _supabase
+          .from('UPOZNAVANJ_KORISNICI')
+          .update({ is_online: false, last_seen: new Date().toISOString() })
+          .or(`USER.eq.${mojId},id.eq.${mojId}`);
+      } catch (e) {
+        console.warn("Greška pri postavljanju offline statusa:", e);
+      }
+    }
+
+    window.addEventListener('beforeunload', () => {
+      postaviKorisnikaOffline();
+    });
 
     async function izracunajStatistikuPoruka() {
       if (!trenutniKorisnik) return;
@@ -168,22 +135,25 @@
       });
 
       if (lista.length === 0) {
-        listEl.innerHTML = '<div style="padding:15px; text-align:center; color:#888;">Nema pronađenih članova.</div>';
+        listEl.innerHTML = '<div style="padding:15px; text-align:center; color:#888;">Nema članova.</div>';
         return;
       }
 
+      const onlineBroj = lista.filter(k => k.is_online === true).length;
+      document.getElementById('onlineCount').innerText = onlineBroj;
+
       lista.sort((a, b) => {
-        const aId = String(a.USER || a.id || '');
-        const bId = String(b.USER || b.id || '');
-        const aOnline = onlineUserIds.has(aId) ? 1 : 0;
-        const bOnline = onlineUserIds.has(bId) ? 1 : 0;
+        const aOnline = a.is_online === true ? 1 : 0;
+        const bOnline = b.is_online === true ? 1 : 0;
         if (aOnline !== bOnline) return bOnline - aOnline;
+
+        const aId = String(a.USER || a.id || ''), bId = String(b.USER || b.id || '');
         return (porukeBrojMap[bId] || 0) - (porukeBrojMap[aId] || 0);
       });
 
       lista.forEach(k => {
         const uId = String(k.USER || k.id || '');
-        const isOnline = onlineUserIds.has(uId);
+        const isOnline = k.is_online === true;
         const totalMsgs = porukeBrojMap[uId] || 0;
 
         const prikazIme = k.IME || k.MAIL || k.USERNAME || 'Član';
@@ -211,7 +181,7 @@
       primateljId = String(userId);
       primateljIme = ime;
 
-      document.getElementById('chatWithTitle').innerText = `Dopisivanje sa: ${ime}`;
+      document.getElementById('chatWithTitle').innerText = ime;
       document.getElementById('activeAvatar').innerText = ime[0].toUpperCase();
 
       const statusBadge = document.getElementById('chatUserStatusText');
@@ -284,12 +254,27 @@
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'PRIVATNE_PORUKE' }, payload => {
           if (payload.new) {
             const mojId = trenutniKorisnik ? String(trenutniKorisnik.id) : '';
-            const pos = String(payload.new.posiljalac), prim = String(payload.new.primalac);
-            const partner = pos === mojId ? prim : pos;
+            const pos = String(payload.new.posiljalac);
+            const prim = String(payload.new.primalac);
+
+            const partner = (pos === mojId) ? prim : pos;
             porukeBrojMap[partner] = (porukeBrojMap[partner] || 0) + 1;
             osvjeziListuKorisnikaPrikaz();
-            if (pos === String(primateljId)) prikaziBublePoruku(payload.new.poruka, false, payload.new.created_at);
+
+            if (pos === String(primateljId) || prim === String(primateljId)) {
+              if (pos !== mojId) {
+                prikaziBublePoruku(payload.new.poruka, false, payload.new.created_at);
+              }
+            }
           }
+        }).subscribe();
+    }
+
+    function slusajPromjeneStatusaRealtime() {
+      if (!_supabase) return;
+      _supabase.channel('public:UPOZNAVANJ_KORISNICI')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'UPOZNAVANJ_KORISNICI' }, () => {
+          ucitajListuKorisnika();
         }).subscribe();
     }
 
