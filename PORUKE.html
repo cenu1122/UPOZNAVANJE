@@ -159,9 +159,13 @@
 
     function osvjeziListuKorisnikaPrikaz() {
       const listEl = document.getElementById('userList');
+      if (!listEl) return;
       listEl.innerHTML = '';
 
-      let lista = sviKorisniciBaza.filter(k => !trenutniKorisnik || String(k.USER || k.id) !== String(trenutniKorisnik.id));
+      let lista = sviKorisniciBaza.filter(k => {
+        const kId = String(k.USER || k.id || '');
+        return !trenutniKorisnik || kId !== String(trenutniKorisnik.id);
+      });
 
       if (lista.length === 0) {
         listEl.innerHTML = '<div style="padding:15px; text-align:center; color:#888;">Nema pronađenih članova.</div>';
@@ -169,26 +173,31 @@
       }
 
       lista.sort((a, b) => {
-        const aId = String(a.USER || a.id), bId = String(b.USER || b.id);
-        const aOnline = onlineUserIds.has(aId) ? 1 : 0, bOnline = onlineUserIds.has(bId) ? 1 : 0;
+        const aId = String(a.USER || a.id || '');
+        const bId = String(b.USER || b.id || '');
+        const aOnline = onlineUserIds.has(aId) ? 1 : 0;
+        const bOnline = onlineUserIds.has(bId) ? 1 : 0;
         if (aOnline !== bOnline) return bOnline - aOnline;
         return (porukeBrojMap[bId] || 0) - (porukeBrojMap[aId] || 0);
       });
 
       lista.forEach(k => {
-        const uId = String(k.USER || k.id);
+        const uId = String(k.USER || k.id || '');
         const isOnline = onlineUserIds.has(uId);
         const totalMsgs = porukeBrojMap[uId] || 0;
 
+        const prikazIme = k.IME || k.MAIL || k.USERNAME || 'Član';
+        const inicijal = prikazIme.charAt(0).toUpperCase() || 'C';
+
         const item = document.createElement('div');
         item.className = `user-item ${primateljId === uId ? 'active' : ''}`;
-        item.onclick = () => odaberiKorisnikaZaChat(uId, k.IME || k.MAIL || 'Član', isOnline);
+        item.onclick = () => odaberiKorisnikaZaChat(uId, prikazIme, isOnline);
 
         item.innerHTML = `
-          <div class="user-avatar">${(k.IME || k.MAIL || 'C')[0].toUpperCase()}</div>
+          <div class="user-avatar">${inicijal}</div>
           <div class="user-info">
             <h4>
-              <span>${k.IME || k.MAIL || 'Član'}</span>
+              <span>${prikazIme}</span>
               ${totalMsgs > 0 ? `<span style="background:#d90429; color:#fff; font-size:0.65rem; padding:1px 5px; border-radius:8px;">💬 ${totalMsgs}</span>` : ''}
             </h4>
             <p>${isOnline ? '<span class="status-badge online">🟢 SADA ONLINE</span>' : '<span class="status-badge offline">⚪ NEAKTIVAN</span>'}</p>
@@ -287,3 +296,4 @@
     document.addEventListener('DOMContentLoaded', ucitajSve);
   </script>
 </body>
+</html>
