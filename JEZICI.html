@@ -139,7 +139,7 @@
 <body>
 
   <header>
-    <a href="#" class="logo">🎓 AI PROFESOR - TUTOR ZA JEZIKE</a>
+    <a href="DASHBOARD.html" class="logo">🎓 AI PROFESOR - TUTOR ZA JEZIKE</a>
   </header>
 
   <div class="app-container">
@@ -181,6 +181,24 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
     let _supabase = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
+    // Pomoćna funkcija za spašavanje poruka u bazu preko SQL funkcije
+    async function sacuvajUBazu(posiljalac, poruka) {
+      if (!_supabase) return;
+      const jezik = document.getElementById('learnLang').value;
+      const nivo = document.getElementById('userLevel').value;
+      
+      try {
+        await _supabase.rpc('spremac_i_dohvati_poruke_jezika', {
+          p_jezik: jezik,
+          p_nivo: nivo,
+          p_posiljalac: posiljalac,
+          p_poruka: poruka
+        });
+      } catch (err) {
+        console.warn("Nije uspjelo čuvanje u bazu:", err);
+      }
+    }
+
     async function pokreniLekciju() {
       const jezik = document.getElementById('learnLang').value;
       const nivo = document.getElementById('userLevel').value;
@@ -195,24 +213,27 @@
       3. Na kraju postavi JEDNO pitanje ili zadatak korisniku na jeziku koji uči (${jezik}) na koje mora odgovoriti.`;
 
       try {
-        const { data, error } = await _supabase.functions.invoke('jezici', {
+        // Poziv prema Edge Funkciji 'nauci-jezik-ai' ili 'jezici'
+        const { data, error } = await _supabase.functions.invoke('nauci-jezik-ai', {
           body: { 
-            tekst: prompt, 
-            ciljniJezik: "Bosanski",
+            poruka: prompt, 
             jezik: jezik,
-            akcija: "lekcija"
+            nivo: nivo
           }
         });
 
-        if (!error && data && (data.prijevod || data.odgovor || data.result)) {
-          const odgovorText = data.prijevod || data.odgovor || data.result;
+        if (!error && data && (data.odgovor || data.prijevod || data.result)) {
+          const odgovorText = data.odgovor || data.prijevod || data.result;
           chatBox.innerHTML = `<div class="msg ai">${pripremiPrikazTeksta(odgovorText)}</div>`;
+          
+          // Sačuvaj lekciju u bazu
+          sacuvajUBazu('ai_profesor', odgovorText);
         } else {
           chatBox.innerHTML = `<div class="msg ai">NISAM USPIO UČITATI LEKCIJU. POKUŠAJTE PONOVO.</div>`;
         }
       } catch (e) {
         console.error(e);
-        chatBox.innerHTML = `<div class="msg ai">GREŠKA PRI KOMUNIKACIJI SA FUNKCIJOM 'JEZICI'.</div>`;
+        chatBox.innerHTML = `<div class="msg ai">GREŠKA PRI KOMUNIKACIJI SA FUNKCIJOM.</div>`;
       }
     }
 
@@ -220,42 +241,40 @@
       const input = document.getElementById('userInput');
       const tekst = input.value.trim();
       const jezik = document.getElementById('learnLang').value;
+      const nivo = document.getElementById('userLevel').value;
       const chatBox = document.getElementById('chatBox');
 
       if (!tekst) return;
 
+      // Prikaz korisnikove poruke i spašavanje u bazu
       chatBox.innerHTML += `<div class="msg user">${tekst}</div>`;
       input.value = '';
       chatBox.scrollTop = chatBox.scrollHeight;
+      sacuvajUBazu('korisnik', tekst);
 
       const tempAiId = 'loading_' + Date.now();
       chatBox.innerHTML += `<div class="msg ai" id="${tempAiId}">⏳ PROFESOR ANALIZIRA TVOJ ODGOVOR I PRIPREMA ISPRAVKU...</div>`;
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      const promptAnaliza = `Tvoja uloga je AI Profesor jezika ${jezik}. Korisnik je odgovorio na tvoj zadatak sa: "${tekst}".
-      Analiziraj njegov odgovor i uradi sljedeće (na bosanskom jeziku):
-      1. Ako ima grešaka u gramatici, pravopisu ili izboru riječi:
-         - Jasno ga ispravi i napiši kako treba tačno da glasi.
-         - Objasni ukratko ZAŠTO je to greška.
-      2. Ako je odgovor tačan, pohvali ga.
-      3. Zatim daj novo kratko pitanje/zadatak na jeziku ${jezik} kako bismo nastavili vježbu.`;
-
       try {
-        const { data, error } = await _supabase.functions.invoke('jezici', {
+        // Pozivamo Edge Funkciju koja šalje tvoju poruku AI-ju
+        const { data, error } = await _supabase.functions.invoke('nauci-jezik-ai', {
           body: { 
-            tekst: promptAnaliza, 
-            ciljniJezik: "Bosanski",
+            poruka: tekst, 
             jezik: jezik,
-            akcija: "analiza"
+            nivo: nivo
           }
         });
 
         const tempEl = document.getElementById(tempAiId);
         if (tempEl) tempEl.remove();
 
-        if (!error && data && (data.prijevod || data.odgovor || data.result)) {
-          const odgovorText = data.prijevod || data.odgovor || data.result;
+        if (!error && data && (data.odgovor || data.prijevod || data.result)) {
+          const odgovorText = data.odgovor || data.prijevod || data.result;
           chatBox.innerHTML += `<div class="msg ai">${pripremiPrikazTeksta(odgovorText)}</div>`;
+          
+          // Sačuvaj AI odgovor u bazu
+          sacuvajUBazu('ai_profesor', odgovorText);
         } else {
           chatBox.innerHTML += `<div class="msg ai">GREŠKA U ANALIZI ODGOVORA. POKUŠAJTE PONOVO.</div>`;
         }
