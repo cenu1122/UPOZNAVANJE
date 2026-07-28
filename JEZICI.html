@@ -25,6 +25,28 @@
       align-items: center;
     }
 
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .btn-dashboard {
+      background-color: #d90429;
+      color: #fff;
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      transition: background 0.2s;
+    }
+
+    .btn-dashboard:hover {
+      background-color: #ef233c;
+    }
+
     .logo {
       font-size: 1.3rem;
       font-weight: bold;
@@ -139,7 +161,11 @@
 <body>
 
   <header>
-    <a href="DASHBOARD.html" class="logo">🎓 AI PROFESOR - TUTOR ZA JEZIKE</a>
+    <div class="header-left">
+      <!-- DUGME ZA POVRATAK NA DASHBOARD -->
+      <a href="DASHBOARD.html" class="btn-dashboard">⬅ DASHBOARD</a>
+      <a href="DASHBOARD.html" class="logo">🎓 AI PROFESOR - TUTOR ZA JEZIKE</a>
+    </div>
   </header>
 
   <div class="app-container">
@@ -181,7 +207,6 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
     let _supabase = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-    // Pomoćna funkcija za spašavanje poruka u bazu preko SQL funkcije
     async function sacuvajUBazu(posiljalac, poruka) {
       if (!_supabase) return;
       const jezik = document.getElementById('learnLang').value;
@@ -213,7 +238,6 @@
       3. Na kraju postavi JEDNO pitanje ili zadatak korisniku na jeziku koji uči (${jezik}) na koje mora odgovoriti.`;
 
       try {
-        // Poziv prema Edge Funkciji 'nauci-jezik-ai' ili 'jezici'
         const { data, error } = await _supabase.functions.invoke('nauci-jezik-ai', {
           body: { 
             poruka: prompt, 
@@ -226,7 +250,6 @@
           const odgovorText = data.odgovor || data.prijevod || data.result;
           chatBox.innerHTML = `<div class="msg ai">${pripremiPrikazTeksta(odgovorText)}</div>`;
           
-          // Sačuvaj lekciju u bazu
           sacuvajUBazu('ai_profesor', odgovorText);
         } else {
           chatBox.innerHTML = `<div class="msg ai">NISAM USPIO UČITATI LEKCIJU. POKUŠAJTE PONOVO.</div>`;
@@ -246,7 +269,6 @@
 
       if (!tekst) return;
 
-      // Prikaz korisnikove poruke i spašavanje u bazu
       chatBox.innerHTML += `<div class="msg user">${tekst}</div>`;
       input.value = '';
       chatBox.scrollTop = chatBox.scrollHeight;
@@ -257,7 +279,6 @@
       chatBox.scrollTop = chatBox.scrollHeight;
 
       try {
-        // Pozivamo Edge Funkciju koja šalje tvoju poruku AI-ju
         const { data, error } = await _supabase.functions.invoke('nauci-jezik-ai', {
           body: { 
             poruka: tekst, 
@@ -273,7 +294,6 @@
           const odgovorText = data.odgovor || data.prijevod || data.result;
           chatBox.innerHTML += `<div class="msg ai">${pripremiPrikazTeksta(odgovorText)}</div>`;
           
-          // Sačuvaj AI odgovor u bazu
           sacuvajUBazu('ai_profesor', odgovorText);
         } else {
           chatBox.innerHTML += `<div class="msg ai">GREŠKA U ANALIZI ODGOVORA. POKUŠAJTE PONOVO.</div>`;
