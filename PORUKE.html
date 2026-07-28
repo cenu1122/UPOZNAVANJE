@@ -101,7 +101,7 @@
     .user-list { 
       flex: 1; 
       overflow-y: auto; 
-    }
+    } 
     
     .user-item { 
       padding: 10px 14px; 
@@ -180,12 +180,20 @@
     .ai-toolbar { 
       background: #f3e5f5; 
       border-bottom: 1px solid #e1bee7; 
-      padding: 6px 15px; 
+      padding: 8px 15px; 
       font-size: 0.8rem; 
       color: #4a148c; 
       display: flex; 
       justify-content: space-between; 
       align-items: center; 
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .ai-toolbar-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
     .messages-box { 
@@ -226,7 +234,7 @@
       margin-top: 6px;
       padding-top: 4px;
       border-top: 1px dashed rgba(255,255,255,0.4);
-      display: none; /* Inicijalno sakriveno dok se ne klikne dugme */
+      display: none; /* Inicijalno sakriveno */
     }
 
     .message.received .translation-subtext {
@@ -235,19 +243,25 @@
     }
 
     .btn-toggle-orig {
-      background: rgba(0, 0, 0, 0.15);
+      background: rgba(0, 0, 0, 0.2);
       border: none;
       color: inherit;
-      font-size: 0.65rem;
-      padding: 2px 6px;
+      font-size: 0.7rem;
+      padding: 3px 8px;
       border-radius: 6px;
       cursor: pointer;
-      margin-top: 4px;
+      margin-top: 6px;
       display: inline-block;
+      font-weight: bold;
+    }
+
+    .message.sent .btn-toggle-orig {
+      background: rgba(255, 255, 255, 0.25);
+      color: #fff;
     }
 
     .btn-toggle-orig:hover {
-      background: rgba(0, 0, 0, 0.25);
+      opacity: 0.85;
     }
     
     .time { 
@@ -255,15 +269,6 @@
       opacity: 0.7; 
       text-align: right; 
       margin-top: 4px; 
-    }
-
-    .translation-preview {
-      display: none;
-      background: #e8f5e9;
-      color: #2e7d32;
-      padding: 6px 15px;
-      font-size: 0.8rem;
-      border-top: 1px solid #c8e6c9;
     }
 
     .chat-input-container { 
@@ -287,22 +292,10 @@
       background: #d90429; 
       color: #fff; 
       border: none; 
-      padding: 0 16px; 
+      padding: 0 18px; 
       border-radius: 20px; 
       font-weight: bold; 
       cursor: pointer; 
-      flex-shrink: 0; 
-    }
-    
-    .btn-ai { 
-      background: #8e24aa; 
-      color: #fff; 
-      border: none; 
-      padding: 0 10px; 
-      border-radius: 20px; 
-      font-weight: bold; 
-      cursor: pointer; 
-      font-size: 0.8rem; 
       flex-shrink: 0; 
     }
 
@@ -364,12 +357,21 @@
       </div>
 
       <div class="ai-toolbar">
-        <span>🤖 <strong>AI Prevodilac</strong></span>
-        <select id="aiTargetLang" style="padding:2px 5px; border-radius:4px;">
-          <option value="Bosanski" selected>Bosanski / Hrvatski / Srpski</option>
-          <option value="Engleski">Engleski</option>
-          <option value="Nemački">Njemački</option>
-        </select>
+        <div>
+          <span>🤖 <strong>AI Prevodilac</strong></span>
+          <select id="aiTargetLang" style="padding:2px 5px; border-radius:4px; margin-left:6px;">
+            <option value="Bosanski" selected>Bosanski / Hrvatski / Srpski</option>
+            <option value="Engleski">Engleski</option>
+            <option value="Nemački">Njemački</option>
+          </select>
+        </div>
+
+        <div class="ai-toolbar-controls">
+          <label style="cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:4px;">
+            <input type="checkbox" id="toggleAllOrig" onchange="toggleSveOriginale(this.checked)">
+            👁️ Prikaži sve originale odjednom
+          </label>
+        </div>
       </div>
 
       <div class="messages-box" id="messagesBox">
@@ -379,13 +381,8 @@
         </div>
       </div>
 
-      <div class="translation-preview" id="translationPreview">
-        🌐 Prijevod spreman: <span id="previewText"></span>
-      </div>
-
       <div class="chat-input-container">
         <input type="text" id="msgInput" placeholder="Napišite poruku..." onkeypress="if(event.key==='Enter') posaljiPoruku()">
-        <button class="btn-ai" onclick="prevediTekstPrijeSlanja()">🤖 Prevedi</button>
         <button class="btn-send" onclick="posaljiPoruku()">Pošalji 🚀</button>
       </div>
     </div>
@@ -401,7 +398,6 @@
     let primateljIme = '';
     let porukeBrojMap = {};
     let sviKorisniciBaza = [];
-    let trenutniPrijevod = null;
 
     async function ucitajSve() {
       if (!_supabase) return;
@@ -417,7 +413,6 @@
       slusajPorukeRealtime();
       slusajPromjeneStatusaRealtime();
 
-      // Svakih 15 sekundi šalji "ping" i osvježavaj listu
       setInterval(async () => {
         if (trenutniKorisnik) await postaviKorisnikaOnline();
         await ucitajListuKorisnika();
@@ -564,13 +559,12 @@
         return;
       }
 
-      // Dodatna provjera: Korisnik je ONLINE samo ako je is_online=true I ako je bio aktivan u zadnje 2 minute (120000 ms)
       const sada = new Date().getTime();
       const provjeriAktivnost = (k) => {
         if (k.is_online !== true) return false;
         if (!k.last_seen) return true;
         const zadnjiPut = new Date(k.last_seen).getTime();
-        return (sada - zadnjiPut) < 120000; // Akter u zadnje 2 minute
+        return (sada - zadnjiPut) < 120000;
       };
 
       const onlineBroj = lista.filter(k => provjeriAktivnost(k)).length;
@@ -651,12 +645,17 @@
 
         poruke.forEach(p => prikaziBublePoruku(p.id, p.poruka, p.poruka_prijevod, String(p.posiljalac) === mojId, p.created_at));
         box.scrollTop = box.scrollHeight;
+
+        // Provjeri stanje glavnog prekidača za prikaz originala
+        const toggleAll = document.getElementById('toggleAllOrig');
+        if (toggleAll && toggleAll.checked) {
+          toggleSveOriginale(true);
+        }
       } catch (e) {
         box.innerHTML = '<div style="text-align:center; color:#888;">Nema poruka.</div>';
       }
     }
 
-    // Funkcija koja prikazuje poruku i dodaje dugme za prikazivanje/skrivanje originala
     function prikaziBublePoruku(msgId, tekst, prijevodTekst, jeMoja, vrijeme) {
       const box = document.getElementById('messagesBox');
       const msg = document.createElement('div');
@@ -666,48 +665,89 @@
         ? new Date(vrijeme).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
         : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      // Ako postoji prijevod, on je primarni tekst, a original ide ispod sa dugmetom
-      const glavnitTekst = prijevodTekst ? prijevodTekst : tekst;
-      
+      let primarniTekst = tekst;
+      let sekundarniTekst = null;
+
+      if (prijevodTekst && prijevodTekst.trim() !== "" && prijevodTekst !== tekst) {
+        primarniTekst = prijevodTekst;
+        sekundarniTekst = tekst;
+      }
+
       let origHtml = '';
-      if (prijevodTekst) {
+      if (sekundarniTekst) {
         origHtml = `
-          <button class="btn-toggle-orig" onclick="toggleOrig('${msgId}')">👁️ Prikaži/sakrij original</button>
-          <div id="orig-${msgId}" class="translation-subtext">Original: ${tekst}</div>
+          <div>
+            <button class="btn-toggle-orig" onclick="toggleOrig('${msgId}')">👁️ Prikaži/sakrij original</button>
+            <div id="orig-${msgId}" class="translation-subtext">Original: ${sekundarniTekst}</div>
+          </div>
         `;
       }
 
-      msg.innerHTML = `<div>${glavnitTekst}</div>${origHtml}<div class="time">${tFormat}</div>`;
+      msg.innerHTML = `<div>${primarniTekst}</div>${origHtml}<div class="time">${tFormat}</div>`;
       box.appendChild(msg);
       box.scrollTop = box.scrollHeight;
     }
 
-    // Funkcija za pali/gasi originalni tekst
+    // Pojedinačno paljenje/gašenje
     function toggleOrig(id) {
       const el = document.getElementById(`orig-${id}`);
       if (el) {
-        if (el.style.display === 'block') {
-          el.style.display = 'none';
-        } else {
+        const trenutniStyle = window.getComputedStyle(el).display;
+        if (trenutniStyle === 'none') {
           el.style.display = 'block';
+        } else {
+          el.style.display = 'none';
         }
       }
     }
 
+    // Prikaz svih originala odjednom preko prekidača u vrhu
+    function toggleSveOriginale(prikaziSve) {
+      const sviOriginali = document.querySelectorAll('.translation-subtext');
+      sviOriginali.forEach(el => {
+        el.style.display = prikaziSve ? 'block' : 'none';
+      });
+    }
+
+    // Automatsko slanje i prevođenje
     async function posaljiPoruku() {
       const input = document.getElementById('msgInput');
       const tekst = input.value.trim();
+      const ciljniJezik = document.getElementById('aiTargetLang').value;
+      const btnSend = document.querySelector('.btn-send');
       
       if (!tekst || !primateljId) return;
 
-      const sačuvaniPrijevod = trenutniPrijevod;
+      input.disabled = true;
+      if (btnSend) btnSend.innerText = "⏳ Šaljem...";
+
+      let automatskiPrijevod = null;
+
+      try {
+        const { data: aiData, error: aiError } = await _supabase.functions.invoke('prevedi-poruku', {
+          body: { tekst: tekst, ciljniJezik: ciljniJezik }
+        });
+
+        if (!aiError && aiData && aiData.prijevod) {
+          automatskiPrijevod = aiData.prijevod;
+        }
+      } catch (err) {
+        console.error("Greška pri pozivanju AI servisa:", err);
+      }
+
       const tempId = 'temp_' + Date.now();
-      
-      prikaziBublePoruku(tempId, tekst, sačuvaniPrijevod, true, new Date().toISOString());
-      
+      prikaziBublePoruku(tempId, tekst, automatskiPrijevod, true, new Date().toISOString());
+
+      // Ako je uključen grupni prekidač, prikaži i novu poruku u originalu odmah
+      const toggleAll = document.getElementById('toggleAllOrig');
+      if (toggleAll && toggleAll.checked) {
+        toggleSveOriginale(true);
+      }
+
       input.value = '';
-      trenutniPrijevod = null;
-      document.getElementById('translationPreview').style.display = 'none';
+      input.disabled = false;
+      input.focus();
+      if (btnSend) btnSend.innerText = "Pošalji 🚀";
 
       porukeBrojMap[primateljId] = (porukeBrojMap[primateljId] || 0) + 1;
       osvjeziListuKorisnikaPrikaz();
@@ -720,50 +760,10 @@
             posiljalac: mojId, 
             primalac: String(primateljId), 
             poruka: tekst,
-            poruka_prijevod: sačuvaniPrijevod
+            poruka_prijevod: automatskiPrijevod
           }]);
       } catch (e) {
-        console.error("Greška pri slanju poruke:", e);
-      }
-    }
-
-    async function prevediTekstPrijeSlanja() {
-      const input = document.getElementById('msgInput');
-      const tekst = input.value.trim();
-      const ciljniJezik = document.getElementById('aiTargetLang').value;
-      const btn = document.querySelector('.btn-ai');
-
-      if (!tekst) {
-        alert("Napišite tekst prije prevođenja!");
-        return;
-      }
-
-      if (btn) btn.innerText = "⏳ Prevodim...";
-
-      try {
-        const { data, error } = await _supabase.functions.invoke('prevedi-poruku', {
-          body: { tekst: tekst, ciljniJezik: ciljniJezik }
-        });
-
-        if (error) {
-          console.error("Greška iz Edge Funkcije:", error);
-          alert("Došlo je do greške pri pozivanju AI prevođenja.");
-          return;
-        }
-
-        if (data && data.prijevod) {
-          trenutniPrijevod = data.prijevod;
-          
-          document.getElementById('previewText').innerText = data.prijevod;
-          document.getElementById('translationPreview').style.display = 'block';
-        } else {
-          alert("AI nije vratio odgovor.");
-        }
-      } catch (e) {
-        console.error("Greška pri prevođenju:", e);
-        alert("Nije moguće izvršiti prevođenje.");
-      } finally {
-        if (btn) btn.innerText = "🤖 Prevedi";
+        console.error("Greška pri upisu u bazu:", e);
       }
     }
 
@@ -784,6 +784,11 @@
 
             if (pos === String(primateljId)) {
               prikaziBublePoruku(payload.new.id, payload.new.poruka, payload.new.poruka_prijevod, false, payload.new.created_at);
+              
+              const toggleAll = document.getElementById('toggleAllOrig');
+              if (toggleAll && toggleAll.checked) {
+                toggleSveOriginale(true);
+              }
             }
           }
         }).subscribe();
