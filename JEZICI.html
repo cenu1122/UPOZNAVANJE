@@ -57,7 +57,7 @@
 
     .app-container {
       flex: 1;
-      max-width: 900px;
+      max-width: 950px;
       width: 100%;
       margin: 20px auto;
       background: #fff;
@@ -73,29 +73,43 @@
       color: #fff;
       padding: 12px 20px;
       display: flex;
-      gap: 15px;
+      gap: 12px;
       align-items: center;
       flex-wrap: wrap;
       text-transform: uppercase;
       font-weight: bold;
     }
 
-    .setup-bar select, .setup-bar button {
+    .setup-bar select {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: none;
+      font-weight: bold;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+
+    .btn-action {
       padding: 8px 14px;
       border-radius: 6px;
       border: none;
       font-weight: bold;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       text-transform: uppercase;
-    }
-
-    .btn-start {
-      background: #28a745;
-      color: #fff;
       cursor: pointer;
+      color: #fff;
+      transition: transform 0.1s, background 0.2s;
     }
 
-    .btn-start:hover { background: #218838; }
+    .btn-action:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-lesson { background: #007bff; }
+    .btn-lesson:hover { background: #0056b3; }
+
+    .btn-chat { background: #28a745; }
+    .btn-chat:hover { background: #218838; }
 
     .chat-box {
       flex: 1;
@@ -162,7 +176,6 @@
 
   <header>
     <div class="header-left">
-      <!-- DUGME ZA POVRATAK NA DASHBOARD -->
       <a href="DASHBOARD.html" class="btn-dashboard">⬅ DASHBOARD</a>
       <a href="DASHBOARD.html" class="logo">🎓 AI PROFESOR - TUTOR ZA JEZIKE</a>
     </div>
@@ -170,7 +183,7 @@
 
   <div class="app-container">
     <div class="setup-bar">
-      <label>JEZIK ZA UČENJE:</label>
+      <label>JEZIK:</label>
       <select id="learnLang">
         <option value="ENGLESKI" selected>ENGLESKI</option>
         <option value="NJEMAČKI">NJEMAČKI</option>
@@ -187,12 +200,14 @@
         <option value="NAPREDNI (C1/C2)">NAPREDNI (C1/C2)</option>
       </select>
 
-      <button class="btn-start" onclick="pokreniLekciju()">🚀 ZAPOČNI NOVU LEKCIJU</button>
+      <!-- DVA ODVOJENA DUGMETA -->
+      <button class="btn-action btn-lesson" onclick="pokreniAktivnost('LEKCIJA')">🚀 NOVA LEKCIJA</button>
+      <button class="btn-action btn-chat" onclick="pokreniAktivnost('SLOBODAN_RAZGOVOR')">💬 SLOBODAN RAZGOVOR</button>
     </div>
 
     <div class="chat-box" id="chatBox">
       <div class="msg ai">
-        ZDRAVO! JA SAM TVOJ AI PROFESOR. ODABERI JEZIK I NIVO IZNAD, PA KLIKNI <strong>"ZAPOČNI NOVU LEKCIJU"</strong> DA KRENEMO S VJEŽBANJEM!
+        ZDRAVO! ODABERI JEZIK I NIVO IZNAD, PA KLIKNI NA <strong>"🚀 NOVA LEKCIJA"</strong> ILI <strong>"💬 SLOBODAN RAZGOVOR"</strong> DA KRENEMO!
       </div>
     </div>
 
@@ -206,6 +221,8 @@
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
     let _supabase = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    let trenutniRezim = 'LEKCIJA';
 
     async function sacuvajUBazu(posiljalac, poruka) {
       if (!_supabase) return;
@@ -224,18 +241,30 @@
       }
     }
 
-    async function pokreniLekciju() {
+    async function pokreniAktivnost(rezim) {
+      trenutniRezim = rezim;
       const jezik = document.getElementById('learnLang').value;
       const nivo = document.getElementById('userLevel').value;
       const chatBox = document.getElementById('chatBox');
 
-      chatBox.innerHTML = `<div class="msg ai">⏳ PROFESOR PRIPREMA NOVU LEKCIJU ZA ${jezik} (${nivo})...</div>`;
+      if (rezim === 'SLOBODAN_RAZGOVOR') {
+        chatBox.innerHTML = `<div class="msg ai">⏳ SAGOVORNIK POKREĆE NEOBAVEZNI RAZGOVOR NA JEZIKU: ${jezik} (${nivo})...</div>`;
+      } else {
+        chatBox.innerHTML = `<div class="msg ai">⏳ PROFESOR PRIPREMA LEKCIJU ZA JEZIK: ${jezik} (${nivo})...</div>`;
+      }
 
-      const prompt = `Djeluj kao strpljiv i stručan profesor jezika. Pripremi kratku lekciju za jezik: ${jezik} na nivou ${nivo}. 
-      Struktura odgovora:
-      1. Kratko objašnjenje jednog pravila, fraze ili vokabulara (na bosanskom jeziku).
-      2. Daj jedan ili dva primjera.
-      3. Na kraju postavi JEDNO pitanje ili zadatak korisniku na jeziku koji uči (${jezik}) na koje mora odgovoriti.`;
+      let prompt = "";
+      if (rezim === 'SLOBODAN_RAZGOVOR') {
+        prompt = `Ponašaj se kao opušten, prijateljski sagovornik na jeziku ${jezik} za nekoga sa nivoom znanja ${nivo}. 
+        Započni lagan i opušten neobavezni razgovor (npr. o hobijima, vremenu, vikendu ili putovanjima) direktno na jeziku ${jezik}. 
+        Na kraju dodaj kratku rečenicu na bosanskom u zagradi: "(Slobodno mi odgovori na ${jezik}u ili pitaj šta god želiš!)".`;
+      } else {
+        prompt = `Djeluj kao strpljiv i stručan profesor jezika. Pripremi kratku lekciju za jezik: ${jezik} na nivou ${nivo}. 
+        Struktura odgovora:
+        1. Kratko objašnjenje jednog pravila, fraze ili vokabulara (na bosanskom jeziku).
+        2. Daj jedan ili dva primjera.
+        3. Na kraju postavi JEDNO pitanje ili zadatak korisniku na jeziku koji uči (${jezik}) na koje mora odgovoriti.`;
+      }
 
       try {
         const { data, error } = await _supabase.functions.invoke('nauci-jezik-ai', {
@@ -249,14 +278,13 @@
         if (!error && data && (data.odgovor || data.prijevod || data.result)) {
           const odgovorText = data.odgovor || data.prijevod || data.result;
           chatBox.innerHTML = `<div class="msg ai">${pripremiPrikazTeksta(odgovorText)}</div>`;
-          
           sacuvajUBazu('ai_profesor', odgovorText);
         } else {
-          chatBox.innerHTML = `<div class="msg ai">NISAM USPIO UČITATI LEKCIJU. POKUŠAJTE PONOVO.</div>`;
+          chatBox.innerHTML = `<div class="msg ai">NISAM USPIO ZAPOČETI ACTIVNOST. POKUŠAJTE PONOVO.</div>`;
         }
       } catch (e) {
         console.error(e);
-        chatBox.innerHTML = `<div class="msg ai">GREŠKA PRI KOMUNIKACIJI SA FUNKCIJOM.</div>`;
+        chatBox.innerHTML = `<div class="msg ai">GREŠKA PRI KOMUNIKACIJI SA AI FUNKCIJOM.</div>`;
       }
     }
 
@@ -275,13 +303,19 @@
       sacuvajUBazu('korisnik', tekst);
 
       const tempAiId = 'loading_' + Date.now();
-      chatBox.innerHTML += `<div class="msg ai" id="${tempAiId}">⏳ PROFESOR ANALIZIRA TVOJ ODGOVOR I PRIPREMA ISPRAVKU...</div>`;
+      chatBox.innerHTML += `<div class="msg ai" id="${tempAiId}">⏳ ODGOVOR SE PRIPREMA...</div>`;
       chatBox.scrollTop = chatBox.scrollHeight;
+
+      let promptZaAI = tekst;
+      if (trenutniRezim === 'SLOBODAN_RAZGOVOR') {
+        promptZaAI = `Korisnik uči jezik ${jezik} na nivou ${nivo}. Njegov odgovor/poruka je: "${tekst}". 
+        Odgovori prirodno kao prijatelj u neobaveznom razgovoru na jeziku ${jezik}. Nastavi temu ili predloži novu neobaveznu temu. Ako naprave veliku gramatičku grešku, na samom kraju dodaj kratku i blagu ispravku u zagradi na bosanskom.`;
+      }
 
       try {
         const { data, error } = await _supabase.functions.invoke('nauci-jezik-ai', {
           body: { 
-            poruka: tekst, 
+            poruka: promptZaAI, 
             jezik: jezik,
             nivo: nivo
           }
@@ -293,10 +327,9 @@
         if (!error && data && (data.odgovor || data.prijevod || data.result)) {
           const odgovorText = data.odgovor || data.prijevod || data.result;
           chatBox.innerHTML += `<div class="msg ai">${pripremiPrikazTeksta(odgovorText)}</div>`;
-          
           sacuvajUBazu('ai_profesor', odgovorText);
         } else {
-          chatBox.innerHTML += `<div class="msg ai">GREŠKA U ANALIZI ODGOVORA. POKUŠAJTE PONOVO.</div>`;
+          chatBox.innerHTML += `<div class="msg ai">GREŠKA U DOBIJANJU ODGOVORA. POKUŠAJTE PONOVO.</div>`;
         }
       } catch (e) {
         console.error(e);
