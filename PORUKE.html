@@ -196,6 +196,20 @@
       gap: 12px;
     }
 
+    .search-lang-input {
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 0.75rem;
+      width: 130px;
+      margin-left: 6px;
+      outline: none;
+    }
+
+    .search-lang-input:focus {
+      border-color: #8e24aa;
+    }
+
     .messages-box { 
       flex: 1; 
       padding: 15px; 
@@ -234,7 +248,7 @@
       margin-top: 6px;
       padding-top: 4px;
       border-top: 1px dashed rgba(255,255,255,0.4);
-      display: none; /* Inicijalno sakriveno */
+      display: none;
     }
 
     .message.received .translation-subtext {
@@ -357,9 +371,10 @@
       </div>
 
       <div class="ai-toolbar">
-        <div>
+        <div style="display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
           <span>🤖 <strong>AI Prevodilac</strong></span>
-          <select id="aiTargetLang" style="padding:4px 8px; border-radius:4px; margin-left:6px; max-width:250px;">
+          <input type="text" id="searchLang" class="search-lang-input" placeholder="🔍 Pretraži jezik..." oninput="filtrirajJezike()">
+          <select id="aiTargetLang" style="padding:4px 8px; border-radius:4px; max-width:200px;">
             <option value="Bosanski" selected>Bosanski / Hrvatski / Srpski</option>
             <option value="Engleski">Engleski (English)</option>
             <option value="Njemački">Njemački (Deutsch)</option>
@@ -464,6 +479,29 @@
     let primateljIme = '';
     let porukeBrojMap = {};
     let sviKorisniciBaza = [];
+
+    // Funkcija za brzu pretragu i filtriranje jezika u select listi
+    function filtrirajJezike() {
+      const unos = document.getElementById('searchLang').value.toLowerCase().trim();
+      const select = document.getElementById('aiTargetLang');
+      const opcije = select.options;
+      let prviVidljivi = null;
+
+      for (let i = 0; i < opcije.length; i++) {
+        const tekstOpcije = opcije[i].text.toLowerCase();
+        if (tekstOpcije.includes(unos)) {
+          opcije[i].style.display = "";
+          if (!prviVidljivi) prviVidljivi = opcije[i];
+        } else {
+          opcije[i].style.display = "none";
+        }
+      }
+
+      // Ako je trenutno selektovana opcija sakrivena, prebaci selekciju na prvu vidljivu
+      if (select.selectedOptions[0] && select.selectedOptions[0].style.display === "none" && prviVidljivi) {
+        select.value = prviVidljivi.value;
+      }
+    }
 
     async function ucitajSve() {
       if (!_supabase) return;
