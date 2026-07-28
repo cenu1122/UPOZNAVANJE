@@ -151,7 +151,7 @@
     .user-info { 
       flex: 1; 
       overflow: hidden; 
-    }
+    } 
     
     .user-info h4 { 
       font-size: 0.9rem; 
@@ -313,7 +313,7 @@
         height: 180px; 
         border-right: none; 
         border-bottom: 2px solid #ffd8df; 
-      }
+      } 
       
       .chat-window { 
         flex: 1; 
@@ -359,10 +359,76 @@
       <div class="ai-toolbar">
         <div>
           <span>🤖 <strong>AI Prevodilac</strong></span>
-          <select id="aiTargetLang" style="padding:2px 5px; border-radius:4px; margin-left:6px;">
+          <select id="aiTargetLang" style="padding:4px 8px; border-radius:4px; margin-left:6px; max-width:250px;">
             <option value="Bosanski" selected>Bosanski / Hrvatski / Srpski</option>
-            <option value="Engleski">Engleski</option>
-            <option value="Nemački">Njemački</option>
+            <option value="Engleski">Engleski (English)</option>
+            <option value="Njemački">Njemački (Deutsch)</option>
+            <option value="Španski">Španski (Español)</option>
+            <option value="Francuski">Francuski (Français)</option>
+            <option value="Italijanski">Italijanski (Italiano)</option>
+
+            <option value="Albanski">Albanski (Shqip)</option>
+            <option value="Amharski">Amharski (አማርኛ)</option>
+            <option value="Arapski">Arapski (العربية)</option>
+            <option value="Jermenski">Armenski (Հայերեն)</option>
+            <option value="Azerbejdžanski">Azerbejdžanski (Azərbaycan)</option>
+            <option value="Baski">Baskijski (Euskara)</option>
+            <option value="Bengalski">Bengalski (বাংলা)</option>
+            <option value="Bjeloruski">Bjeloruski (Belaruskaja)</option>
+            <option value="Bugarski">Bugarski (Български)</option>
+            <option value="Češki">Češki (Čeština)</option>
+            <option value="Danski">Danski (Dansk)</option>
+            <option value="Estonaki">Estonski (Eesti)</option>
+            <option value="Filipinski">Filipinski (Tagalog)</option>
+            <option value="Finski">Finski (Suomi)</option>
+            <option value="Grčki">Grčki (Ελληνικά)</option>
+            <option value="Gruzijski">Gruzijski (ქართული)</option>
+
+            <option value="Hebrejski">Hebrejski (עברית)</option>
+            <option value="Hindi">Hindi (हिन्दी)</option>
+            <option value="Holandski">Holandski (Nederlands)</option>
+            <option value="Indonežanski">Indonežanski (Bahasa Indonesia)</option>
+            <option value="Irski">Irski (Gaeilge)</option>
+            <option value="Islandski">Islandski (Íslenska)</option>
+            <option value="Japanski">Japanski (日本語)</option>
+            <option value="Jidiš">Jidiš (ייִדיש)</option>
+            <option value="Južnoafrički">Afrikaans</option>
+            <option value="Katalonski">Katalonski (Català)</option>
+            <option value="Kazaški">Kazaški (Қазақша)</option>
+            <option value="Kineski Pojednostavljeni">Kineski Pojednostavljeni (中文 - 简体)</option>
+            <option value="Kineski Tradicionalni">Kineski Tradicionalni (中文 - 繁體)</option>
+            <option value="Korejski">Korejski (한국어)</option>
+            <option value="Kurdski">Kurdski (Kurdî)</option>
+            <option value="Lao">Lao (ລາວ)</option>
+            <option value="Latinski">Latinski (Latina)</option>
+            <option value="Letonski">Letonski (Latviešu)</option>
+            <option value="Litvanski">Litvanski (Lietuvių)</option>
+
+            <option value="Mađarski">Mađarski (Magyar)</option>
+            <option value="Makedonski">Makedonski (Makedonski)</option>
+            <option value="Malajski">Malajski (Bahasa Melayu)</option>
+
+            <option value="Malteski">Malteški (Malti)</option>
+            <option value="Mongolski">Mongolski (Mongol)</option>
+            <option value="Nepalski">Nepalski (नेपाली)</option>
+            <option value="Norveški">Norveški (Norsk)</option>
+            <option value="Persijski">Persijski (فارسی)</option>
+            <option value="Poljski">Poljski (Polski)</option>
+            <option value="Portugalski">Portugalski (Português)</option>
+            <option value="Rumunski">Rumunski (Română)</option>
+            <option value="Ruski">Ruski (Русский)</option>
+            <option value="Slovački">Slovački (Slovenčina)</option>
+            <option value="Slovenački">Slovenački (Slovenščina)</option>
+            <option value="Somalski">Somalski (Soomaali)</option>
+            <option value="Swahili">Swahili (Kiswahili)</option>
+            <option value="Švedski">Švedski (Svenska)</option>
+            <option value="Tajlandski">Tajlandski (ไทย)</option>
+            <option value="Turski">Turski (Türkçe)</option>
+            <option value="Ukrajinski">Ukrajinski (Українська)</option>
+
+            <option value="Urdu">Urdu (اردو)</option>
+            <option value="Uzbečki">Uzbečki (Oʻzbekcha)</option>
+            <option value="Vijetnamski">Vijetnamski (Tiếng Việt)</option>
           </select>
         </div>
 
@@ -646,7 +712,6 @@
         poruke.forEach(p => prikaziBublePoruku(p.id, p.poruka, p.poruka_prijevod, String(p.posiljalac) === mojId, p.created_at));
         box.scrollTop = box.scrollHeight;
 
-        // Provjeri stanje glavnog prekidača za prikaz originala
         const toggleAll = document.getElementById('toggleAllOrig');
         if (toggleAll && toggleAll.checked) {
           toggleSveOriginale(true);
@@ -688,7 +753,6 @@
       box.scrollTop = box.scrollHeight;
     }
 
-    // Pojedinačno paljenje/gašenje
     function toggleOrig(id) {
       const el = document.getElementById(`orig-${id}`);
       if (el) {
@@ -701,7 +765,6 @@
       }
     }
 
-    // Prikaz svih originala odjednom preko prekidača u vrhu
     function toggleSveOriginale(prikaziSve) {
       const sviOriginali = document.querySelectorAll('.translation-subtext');
       sviOriginali.forEach(el => {
@@ -709,7 +772,6 @@
       });
     }
 
-    // Automatsko slanje i prevođenje
     async function posaljiPoruku() {
       const input = document.getElementById('msgInput');
       const tekst = input.value.trim();
@@ -738,7 +800,6 @@
       const tempId = 'temp_' + Date.now();
       prikaziBublePoruku(tempId, tekst, automatskiPrijevod, true, new Date().toISOString());
 
-      // Ako je uključen grupni prekidač, prikaži i novu poruku u originalu odmah
       const toggleAll = document.getElementById('toggleAllOrig');
       if (toggleAll && toggleAll.checked) {
         toggleSveOriginale(true);
