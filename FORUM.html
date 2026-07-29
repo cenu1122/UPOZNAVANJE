@@ -212,9 +212,9 @@
       new google.translate.TranslateElement({
         pageLanguage: 'bs',
         includedLanguages: 'bs,hr,sr,en,de,fr,it,es,ru,tr,ar,zh,ja,pt,nl,pl,uk,sv,no,fi,da,el,hu,ro,bg,cs,sk,sl,sq,mk',
-        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+        layout: .translate.TranslateElement.InlineLayout.SIMPLE,
         autoDisplay: false
-      }, 'google_translate_element');
+      }, '_translate_element');
     }
 
     // SVI SVJETSKI JEZICI
@@ -535,17 +535,15 @@
           }
         }).subscribe();
 
-      _supabase.channel('public:FORUM_KOMENTARI')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'FORUM_KOMENTARI' }, payload => {
-          ucitajSveTeme();
-          if (!jePrvoUcitavanje && payload.new.autor_ime !== korisnikIme) {
-            prikaziNotifikaciju("💬 Novi komentar!", `${payload.new.autor_ime}: "${payload.new.sadrzaj}"`);
-          }
-        }).subscribe();
-    }
-
-    document.addEventListener('DOMContentLoaded', inicijalizujForum);
-  </script>
+    <script type="text/javascript">
+  function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+      pageLanguage: 'bs',
+      autoDisplay: false
+    }, 'google_translate_element');
+  }
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 </body>
 </html>
