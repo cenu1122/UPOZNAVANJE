@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="bs">
 <head>
@@ -51,6 +52,11 @@
         <div class="form-group">
           <label>Nadimak / Ime za prikaz *</label>
           <input type="text" id="ime" placeholder="Npr. Ana Anić" required>
+        </div>
+
+        <div class="form-group">
+          <label>Godine *</label>
+          <input type="number" id="godine" placeholder="Npr. 28" min="18" max="100" required>
         </div>
 
         <div class="form-group">
@@ -117,6 +123,7 @@
 
     async function handleRegister() {
       const ime = document.getElementById('ime').value.trim();
+      const godine = document.getElementById('godine').value.trim();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const telefon = document.getElementById('telefon').value.trim();
@@ -128,9 +135,15 @@
       const statusDiv = document.getElementById('statusMessage');
       const regBtn = document.getElementById('regBtn');
 
-      if (!ime || !email || !password || !telefon || !vjera || !ja || !trazim || fileInput.files.length === 0) {
+      if (!ime || !godine || !email || !password || !telefon || !vjera || !ja || !trazim || fileInput.files.length === 0) {
         statusDiv.style.color = 'red';
         statusDiv.textContent = 'Molimo popunite sva polja i odaberite sliku!';
+        return;
+      }
+
+      if (parseInt(godine) < 18) {
+        statusDiv.style.color = 'red';
+        statusDiv.textContent = 'Morate imati najmanje 18 godina za registraciju!';
         return;
       }
 
@@ -139,6 +152,9 @@
         statusDiv.textContent = 'Lozinka mora imati najmanje 6 znakova!';
         return;
       }
+
+      // Preuzimanje zapamćenog izvora (ako je korisnik došao preko linka npr. ?izvor=viber)
+      const dolazniIzvor = localStorage.getItem('dolazni_izvor') || 'direktno';
 
       statusDiv.style.color = '#0056b3';
       regBtn.disabled = true;
@@ -162,7 +178,6 @@
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `avatari/${fileName}`;
 
-        // Šaljemo u bucket 'slike' (ako ti je bucket drugačije nazvan, promijeni 'slike' ispod)
         const { data: storageData, error: storageError } = await _supabase
           .storage
           .from('slike')
@@ -174,14 +189,13 @@
           console.warn("Storage upload nije uspio, koristi se fallback:", storageError.message);
           finalImageUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(ime)}`;
         } else {
-          // Preuzimanje javnog URL-a poslane slike
           const { data: urlData } = _supabase.storage.from('slike').getPublicUrl(filePath);
           finalImageUrl = urlData.publicUrl;
         }
 
         statusDiv.textContent = 'Spremanje podataka profila...';
 
-        // 3. Upis u tabelu UPOZNAVANJ_KORISNICI
+        // 3. Upis u tabelu UPOZNAVANJ_KORISNICI (uključujući GODINE i IZVOR)
         const { error: dbError } = await _supabase
           .from('UPOZNAVANJ_KORISNICI')
           .insert([
@@ -189,12 +203,14 @@
               USER: authData.user ? authData.user.id : null,
               MAIL: email,
               IME: ime,
+              GODINE: parseInt(godine),
               SIFRA: password,
               TELEFON: telefon,
               VJERA: vjera,
               JA: ja,
               TRAZIM: trazim,
-              SLIKE_URL: finalImageUrl
+              SLIKE_URL: finalImageUrl,
+              IZVOR: dolazniIzvor
             }
           ]);
 
