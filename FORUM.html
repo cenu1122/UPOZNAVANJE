@@ -21,7 +21,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; top: 0 !important; }
 
-    /* Sakrivanje Google Translate trake na vrhu */
+    /* Sakrivanje ružne Google trake na vrhu */
     .goog-te-banner-frame, .skiptranslate, #google_translate_element { display: none !important; }
     body { top: 0px !important; }
 
@@ -128,7 +128,7 @@
 
     <div class="nav-actions">
       <div class="lang-dropdown-wrapper" id="langDropdownWrapper">
-        <button class="lang-btn" id="mainLangBtn" onclick="toggleLangMenu(event)">
+        <button class="lang-btn" onclick="toggleLangMenu(event)">
           🌐 <span id="selectedLangText">Bosanski</span> ▼
         </button>
 
@@ -258,7 +258,6 @@
       if (e) e.stopPropagation();
       const menu = document.getElementById('langDropdownMenu');
       if (!menu) return;
-
       menu.classList.toggle('show');
 
       if (menu.classList.contains('show')) {
@@ -278,25 +277,15 @@
       popuniListuJezika(filtrirani);
     }
 
-    // BEZ PREKIDANJA KODA AKO SE PREVODILAC JOŠ UČITAVA
     function izaberiJezik(kod, ime) {
       document.getElementById('selectedLangText').innerText = ime;
       const menu = document.getElementById('langDropdownMenu');
       if (menu) menu.classList.remove('show');
 
-      const primijeniPrevod = () => {
-        let googleSelect = document.querySelector('.goog-te-combo');
-        if (googleSelect) {
-          googleSelect.value = kod;
-          googleSelect.dispatchEvent(new Event('change'));
-        }
-      };
-
-      let select = document.querySelector('.goog-te-combo');
-      if (select) {
-        primijeniPrevod();
-      } else {
-        setTimeout(primijeniPrevod, 800);
+      let googleSelect = document.querySelector('.goog-te-combo');
+      if (googleSelect) {
+        googleSelect.value = kod;
+        googleSelect.dispatchEvent(new Event('change'));
       }
     }
 
@@ -353,13 +342,13 @@
       slusajPromjeneNaForumu();
     }
 
+    // ČISTO I PROVJERENO UČITAVANJE TEME IZ TVOJE TABELE
     async function ucitajSveTeme() {
       if (!_supabase) return;
 
       const feedEl = document.getElementById('forumFeed');
 
       try {
-        // Direktni i čist upit na tabelu FORUM_POSTOVI
         const { data: postovi, error } = await _supabase
           .from('FORUM_POSTOVI')
           .select('*, FORUM_KOMENTARI(*)')
