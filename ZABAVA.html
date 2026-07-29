@@ -7,7 +7,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
@@ -145,7 +146,7 @@
     <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
   </footer>
 
-  <script>
+<script>
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
 
@@ -283,7 +284,7 @@
     // Funkcija koja poziva pozadinsku Supabase Edge funkciju (Groq)
     async function pozoviGroqZaVicKomentar(vicId, tekst) {
       try {
-        _supabase.functions.invoke('odgovori-zabava-ai', {
+        _supabase.functions.invoke('odgovori-forum-ai', {
           body: { vicId: vicId, komentar: tekst }
         });
       } catch (e) {
@@ -300,7 +301,7 @@
         }).subscribe();
     }
 
-    // ULAZ 1: Uvoz iz Excel / CSV Fajla
+    // ULAZ 1: Uvoz iz Excel (.xlsx, .xls) ili CSV Fajla
     function uploadIzExcela() {
       const fileInput = document.getElementById('excelFileInput');
       const file = fileInput.files[0];
@@ -310,13 +311,35 @@
         return;
       }
 
-      Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: async function(results) {
-          await sacuvajViceveUBazu(results.data);
-        }
-      });
+      const fileExt = file.name.split('.').pop().toLowerCase();
+
+      // Ako je pravi Excel fajl (.xlsx ili .xls)
+      if (fileExt === 'xlsx' || fileExt === 'xls') {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+            await sacuvajViceveUBazu(jsonData);
+          } catch (err) {
+            alert("Greška pri čitanju Excel fajla: " + err.message);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        // Ako je CSV fajl
+        Papa.parse(file, {
+          header: true,
+          skipEmptyLines: true,
+          complete: async function(results) {
+            await sacuvajViceveUBazu(results.data);
+          }
+        });
+      }
     }
 
     // ULAZ 2: Uvoz sa Google Sheets-a via CSV URL
