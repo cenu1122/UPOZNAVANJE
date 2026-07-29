@@ -21,7 +21,7 @@
 
     .main-container { flex: 1; padding: 30px 20px; max-width: 1000px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
 
-    /* ADMIN PANEL (Prikazuje se samo ako je korisnik admin) */
+    /* ADMIN PANEL */
     .admin-panel { display: none; background: #fff; border: 2px dashed #d90429; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(217, 4, 41, 0.1); }
     .admin-panel h3 { color: #d90429; font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
     .admin-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
@@ -39,14 +39,28 @@
     .content-section { display: none; flex-direction: column; gap: 20px; }
     .content-section.active { display: flex; }
 
-    /* SEKCIMA ZA VICEVE */
-    .jokes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-    .joke-card { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
-    .joke-badge { background: #ffe0e3; color: #800020; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; font-weight: bold; align-self: flex-start; }
-    .joke-text { font-size: 0.95rem; line-height: 1.5; color: #333; }
-    .joke-footer { display: flex; justify-content: flex-end; }
+    /* SEKCIJA ZA VICEVE I KOMENTARE */
+    .jokes-grid { display: flex; flex-direction: column; gap: 20px; }
+    .joke-card { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; display: flex; flex-direction: column; gap: 12px; }
+    .joke-header { display: flex; justify-content: space-between; align-items: center; }
+    .joke-badge { background: #ffe0e3; color: #800020; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; font-weight: bold; }
+    .joke-text { font-size: 1rem; line-height: 1.5; color: #333; }
+    .joke-footer { display: flex; justify-content: flex-end; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; }
     .btn-copy { background: #f0f0f0; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-weight: bold; color: #555; transition: background 0.2s; }
     .btn-copy:hover { background: #e0e0e0; }
+
+    /* SEKCIJA ZA KOMENTARE POD VICEM */
+    .comments-section { background: #fafafa; padding: 12px 15px; border-radius: 12px; border: 1px solid #f0f0f0; }
+    .comments-title { font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px; }
+    .comment-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+    .comment-item { background: #fff; padding: 6px 10px; border-radius: 8px; border: 1px solid #e0e0e0; font-size: 0.85rem; }
+    .comment-author { font-weight: bold; color: #d90429; margin-right: 6px; }
+    .comment-text { color: #333; }
+
+    .add-comment-box { display: flex; gap: 8px; }
+    .add-comment-box input { flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.85rem; outline: none; }
+    .btn-comment { background: #2b2d42; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+    .btn-comment:hover { background: #495057; }
 
     /* SEKCIJA ZA YOUTUBE VIDEA */
     .videos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
@@ -76,7 +90,6 @@
     <div id="adminPanel" class="admin-panel">
       <h3>👑 Admin Panel — Masovni Uvoz Viceva</h3>
       <div class="admin-inputs">
-        
         <div class="admin-card">
           <label>📁 Uvezi iz Excel / CSV fajla:</label>
           <input type="file" id="excelFileInput" accept=".csv, .xlsx, .xls" />
@@ -88,7 +101,6 @@
           <input type="text" id="sheetsUrlInput" placeholder="Zalijepi CSV link tabele..." />
           <button class="btn-admin" onclick="uploadIzGoogleSheets()">Uvezi sa Sheetsa 🔗</button>
         </div>
-
       </div>
     </div>
 
@@ -99,13 +111,12 @@
 
     <div id="viceviTab" class="content-section active">
       <div class="jokes-grid" id="jokesGrid">
-        <div style="text-align:center; color:#888; grid-column: 1/-1; padding:20px;">Učitavanje viceva...</div>
+        <div style="text-align:center; color:#888; padding:20px;">Učitavanje viceva...</div>
       </div>
     </div>
 
     <div id="videoTab" class="content-section">
       <div class="videos-grid">
-
         <div class="video-card">
           <div class="video-container">
             <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" allowfullscreen></iframe>
@@ -125,7 +136,6 @@
             <a href="https://www.youtube.com/watch?v=3JZ_D3ELwOQ" target="_blank" class="video-link">▶ Otvori na YouTube-u</a>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -140,33 +150,42 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
 
     let _supabase = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+    let trenutniKorisnik = null;
+    let korisnikIme = "Član";
 
     async function inicijalizujStranicu() {
       if (!_supabase) return;
 
-      // 1. Provjera da li je prijavljeni korisnik Admin (admin@gmail.com)
+      // 1. Dohvatanje korisnika i provjera Admina
       try {
         const { data: { user } } = await _supabase.auth.getUser();
         if (user && user.email) {
+          trenutniKorisnik = user;
           const mojEmail = user.email.trim().toLowerCase();
 
           const { data: profile } = await _supabase
             .from('UPOZNAVANJ_KORISNICI')
-            .select('ROLE')
+            .select('ROLE, IME')
             .or(`USER.eq.${user.id},MAIL.eq.${mojEmail}`)
             .maybeSingle();
 
-          // Prikazuje admin panel ako je email admin@gmail.com ILI ako u bazi ima ROLE === 'admin'
+          if (profile && profile.IME) {
+            korisnikIme = profile.IME;
+          } else {
+            korisnikIme = mojEmail.split('@')[0];
+          }
+
           if (mojEmail === 'admin@gmail.com' || (profile && profile.ROLE === 'admin')) {
             document.getElementById('adminPanel').style.display = 'block';
           }
         }
       } catch (e) {
-        console.warn("Greška pri provjeri admina:", e);
+        console.warn("Greška pri provjeri korisnika:", e);
       }
 
-      // 2. Učitavanje viceva iz Supabase baze
+      // 2. Učitavanje viceva i njihovih komentara
       await ucitajViceve();
+      slusajPromjeneNaKomentarima();
     }
 
     async function ucitajViceve() {
@@ -175,35 +194,53 @@
       const jokesGrid = document.getElementById('jokesGrid');
 
       try {
+        // Učitavamo viceve i povezane komentare
         const { data: vicevi, error } = await _supabase
           .from('ZABAVA_VICEVI')
-          .select('*')
+          .select('*, ZABAVA_KOMENTARI(*)')
           .order('created_at', { ascending: false });
 
         jokesGrid.innerHTML = '';
 
         if (error || !vicevi || vicevi.length === 0) {
-          // Prikaz podrazumijevanih viceva ako baza još nema unosa
-          jokesGrid.innerHTML = `
-            <div class="joke-card">
-              <span class="joke-badge">Vic Dana</span>
-              <p class="joke-text">Pita Mujo Fatu:<br>– Fato, da li bi radije živjela sa pametnim ili sa lijepim muškarcem?<br>– Ni sa jednim, Mujo, znaš da ja volim samo tebe!</p>
-              <div class="joke-footer">
-                <button class="btn-copy" onclick="kopirajTekst('Pita Mujo Fatu: – Fato, da li bi radije živjela sa pametnim ili sa lijepim muškarcem? – Ni sa jednim, Mujo, znaš da ja volim samo tebe!')">📋 Kopiraj vic</button>
-              </div>
-            </div>
-          `;
+          jokesGrid.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">Nema pronađenih viceva. Uvezite viceve preko Admin Panela!</div>';
           return;
         }
 
         vicevi.forEach(v => {
           const card = document.createElement('div');
           card.className = 'joke-card';
+
+          const komentari = v.ZABAVA_KOMENTARI || [];
+          let komentariHtml = '';
+
+          komentari.forEach(k => {
+            komentariHtml += `
+              <div class="comment-item">
+                <span class="comment-author">${k.autor_ime}:</span>
+                <span class="comment-text">${k.sadrzaj}</span>
+              </div>
+            `;
+          });
+
           card.innerHTML = `
-            <span class="joke-badge">${v.kategorija || 'Vic'}</span>
+            <div class="joke-header">
+              <span class="joke-badge">${v.kategorija || 'Vic'}</span>
+            </div>
             <p class="joke-text">${v.tekst.replace(/\n/g, '<br>')}</p>
             <div class="joke-footer">
               <button class="btn-copy" onclick="kopirajTekst(\`${v.tekst.replace(/`/g, "'")}\`)">📋 Kopiraj vic</button>
+            </div>
+
+            <div class="comments-section">
+              <div class="comments-title">💬 Komentari (${komentari.length})</div>
+              <div class="comment-list" id="joke-comments-${v.id}">
+                ${komentariHtml || '<div style="color:#aaa; font-style:italic; font-size:0.8rem;">Nema komentara. Napišite prvi komentar na ovaj vic!</div>'}
+              </div>
+              <div class="add-comment-box">
+                <input type="text" id="joke-input-${v.id}" placeholder="Napišite komentar na vic..." onkeypress="if(event.key==='Enter') dodajKomentarNaVic('${v.id}')">
+                <button class="btn-comment" onclick="dodajKomentarNaVic('${v.id}')">Komentariši</button>
+              </div>
             </div>
           `;
           jokesGrid.appendChild(card);
@@ -212,6 +249,55 @@
       } catch (e) {
         console.error("Greška pri učitavanju viceva:", e);
       }
+    }
+
+    async function dodajKomentarNaVic(vicId) {
+      const input = document.getElementById(`joke-input-${vicId}`);
+      const tekst = input.value.trim();
+
+      if (!tekst) return;
+
+      try {
+        const mojId = trenutniKorisnik ? String(trenutniKorisnik.id) : 'gost';
+
+        await _supabase
+          .from('ZABAVA_KOMENTARI')
+          .insert([{
+            vic_id: vicId,
+            autor_id: mojId,
+            autor_ime: korisnikIme,
+            sadrzaj: tekst
+          }]);
+
+        input.value = '';
+        await ucitajViceve();
+
+        // 🤖 AUTOMATSKI AI ODGOVOR OD GROQ-A SA ODGOĐENIM VREMENOM
+        pozoviGroqZaVicKomentar(vicId, tekst);
+
+      } catch (e) {
+        console.error("Greška pri komentarisanju vica:", e);
+      }
+    }
+
+    // Funkcija koja poziva pozadinsku Supabase Edge funkciju (Groq)
+    async function pozoviGroqZaVicKomentar(vicId, tekst) {
+      try {
+        _supabase.functions.invoke('odgovori-zabava-ai', {
+          body: { vicId: vicId, komentar: tekst }
+        });
+      } catch (e) {
+        console.warn("Greška pri slanju AI odgovora:", e);
+      }
+    }
+
+    function slusajPromjeneNaKomentarima() {
+      if (!_supabase) return;
+
+      _supabase.channel('public:ZABAVA_KOMENTARI')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'ZABAVA_KOMENTARI' }, () => {
+          ucitajViceve();
+        }).subscribe();
     }
 
     // ULAZ 1: Uvoz iz Excel / CSV Fajla
@@ -249,20 +335,18 @@
         complete: async function(results) {
           await sacuvajViceveUBazu(results.data);
         },
-        error: function(err) {
+        error: function() {
           alert("Greška pri preuzimanju tabele sa Google Sheets-a!");
         }
       });
     }
 
-    // Pomoćna funkcija za upis u Supabase bazu
     async function sacuvajViceveUBazu(redovi) {
       if (!redovi || redovi.length === 0) {
         alert("Nema pronađenih podataka u tabeli!");
         return;
       }
 
-      // Očekuju se kolone 'tekst' i 'kategorija' u Excelu/Sheets-u
       const zaUpis = redovi.map(r => ({
         tekst: r.tekst || r.Vic || r.Tekst || Object.values(r)[0],
         kategorija: r.kategorija || r.Kategorija || 'Opšte'
