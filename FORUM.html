@@ -56,6 +56,48 @@
     .btn-comment { background: #2b2d42; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
     .btn-comment:hover { background: #495057; }
 
+    /* NOTIFIKACIJA U GORNJEM DESNOM UGLU */
+    .notification-toast {
+      position: fixed;
+      top: 25px;
+      right: 25px;
+      background: #2b2d42;
+      color: #fff;
+      padding: 14px 20px;
+      border-radius: 12px;
+      border-left: 5px solid #d90429;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: all 0.4s ease;
+      pointer-events: none;
+    }
+
+    .notification-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .notification-icon {
+      font-size: 1.4rem;
+    }
+
+    .notification-body strong {
+      display: block;
+      color: #ffccd5;
+      font-size: 0.85rem;
+    }
+
+    .notification-body p {
+      font-size: 0.8rem;
+      margin-top: 2px;
+    }
+
     footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
   </style>
 </head>
@@ -68,6 +110,14 @@
       <a href="DASHBOARD.html" class="btn-nav">🏠 Dashboard</a>
     </div>
   </header>
+
+  <div id="toastNotification" class="notification-toast">
+    <div class="notification-icon">🔔</div>
+    <div class="notification-body">
+      <strong id="toastTitle">Novi komentar!</strong>
+      <p id="toastMessage">Neko je właśnie odgovorio na forumu.</p>
+    </div>
+  </div>
 
   <div class="main-container">
 
@@ -107,6 +157,7 @@
     let _supabase = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
     let trenutniKorisnik = null;
     let korisnikIme = "Član";
+    let jePrvoUcitavanje = true;
 
     async function inicijalizujForum() {
       if (!_supabase) return;
@@ -116,7 +167,6 @@
         if (user) {
           trenutniKorisnik = user;
           
-          // Dohvati ime korisnika iz baze
           const { data: profile } = await _supabase
             .from('UPOZNAVANJ_KORISNICI')
             .select('IME')
@@ -134,6 +184,7 @@
       }
 
       await ucitajSveTeme();
+      jePrvoUcitavanje = false; // Nakon prvog učitavanja, aktiviramo pop-up notifikacije
       slusajPromjeneNaForumu();
     }
 
@@ -141,7 +192,6 @@
       if (!_supabase) return;
 
       try {
-        // Učitavamo objave i njihove komentare
         const { data: postovi, error } = await _supabase
           .from('FORUM_POSTOVI')
           .select('*, FORUM_KOMENTARI(*)')
@@ -220,7 +270,7 @@
       try {
         const mojId = trenutniKorisnik ? String(trenutniKorisnik.id) : 'gost';
         
-        await _supabase
+        const { data: noviPost } = await _supabase
           .from('FORUM_POSTOVI')
           .insert([{
             autor_id: mojId,
@@ -228,11 +278,19 @@
             naslov: naslov,
             kategorija: kategorija,
             sadrzaj: sadrzaj
-          }]);
+          }])
+          .select()
+          .single();
 
         naslovInput.value = '';
         sadrzajInput.value = '';
         await ucitajSveTeme();
+
+        // Pozivamo AI pozadinsku funkciju
+        if (noviPost && noviPost.id) {
+          pozoviGroqZaForumOdgovor(noviPost.id, sadrzaj, "tema");
+        }
+
       } catch (e) {
         console.error("Greška pri objavi teme:", e);
       }
@@ -258,22 +316,56 @@
 
         input.value = '';
         await ucitajSveTeme();
+
+        // Pozivamo AI pozadinsku funkciju
+        pozoviGroqZaForumOdgovor(postId, tekst, "komentar");
+
       } catch (e) {
         console.error("Greška pri dodavanju komentara:", e);
       }
     }
 
+    async function pozoviGroqZaForumOdgovor(postId, tekst, tip) {
+      try {
+        _supabase.functions.invoke('odgovori-forum-ai', {
+          body: { postId: postId, tekst: tekst, tip: tip }
+        });
+      } catch (e) {
+        console.warn("Greška pri pozivanju AI servisa:", e);
+      }
+    }
+
+    // FUNKCIJA ZA PRIKAZ NOTIFIKACIJE U GORNJEM DESNOM UGLU
+    function prikaziNotifikaciju(naslov, poruka) {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastTitle').innerText = naslov;
+      document.getElementById('toastMessage').innerText = poruka;
+
+      toast.classList.add('show');
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 4500); // Sakriva se nakon 4.5 sekundi
+    }
+
+    // REALTIME SLUŠALICA SA AUTOMATSKIM POP-UP NOTIFIKACIJAMA
     function slusajPromjeneNaForumu() {
       if (!_supabase) return;
 
       _supabase.channel('public:FORUM_POSTOVI')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'FORUM_POSTOVI' }, () => {
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'FORUM_POSTOVI' }, payload => {
           ucitajSveTeme();
+          if (!jePrvoUcitavanje && payload.new.autor_ime !== korisnikIme) {
+            prikaziNotifikaciju("🗣️ Nova tema na forumu!", `${payload.new.autor_ime}: ${payload.new.naslov}`);
+          }
         }).subscribe();
 
       _supabase.channel('public:FORUM_KOMENTARI')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'FORUM_KOMENTARI' }, () => {
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'FORUM_KOMENTARI' }, payload => {
           ucitajSveTeme();
+          if (!jePrvoUcitavanje && payload.new.autor_ime !== korisnikIme) {
+            prikaziNotifikaciju("💬 Novi komentar!", `${payload.new.autor_ime}: "${payload.new.sadrzaj}"`);
+          }
         }).subscribe();
     }
 
