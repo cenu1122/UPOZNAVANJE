@@ -6,13 +6,22 @@
   <title>Forum | LjubavNaPrviKlik</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'bs',
+        autoDisplay: false
+      }, 'google_translate_element');
+    }
+  </script>
   <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; top: 0 !important; }
 
-    /* Sakrivanje Google Translate trake na vrhu i pop-upa da ne kvari dizajn */
+    /* Sakrivanje Google Translate trake na vrhu */
     .goog-te-banner-frame, .skiptranslate, #google_translate_element { display: none !important; }
     body { top: 0px !important; }
 
@@ -39,7 +48,7 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.2); border: 1px solid #eee;
       z-index: 10000; padding: 10px; flex-direction: column; gap: 8px;
     }
-    .lang-dropdown-menu.show { display: flex; }
+    .lang-dropdown-menu.show { display: flex !important; }
 
     .lang-search-box input {
       width: 100%; padding: 8px 12px; border: 1px solid #ccc;
@@ -96,31 +105,13 @@
 
     /* NOTIFIKACIJA U GORNJEM DESNOM UGLU */
     .notification-toast {
-      position: fixed;
-      top: 25px;
-      right: 25px;
-      background: #2b2d42;
-      color: #fff;
-      padding: 14px 20px;
-      border-radius: 12px;
-      border-left: 5px solid #d90429;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      z-index: 9999;
-      opacity: 0;
-      transform: translateY(-20px);
-      transition: all 0.4s ease;
-      pointer-events: none;
+      position: fixed; top: 25px; right: 25px; background: #2b2d42; color: #fff;
+      padding: 14px 20px; border-radius: 12px; border-left: 5px solid #d90429;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center;
+      gap: 12px; z-index: 9999; opacity: 0; transform: translateY(-20px);
+      transition: all 0.4s ease; pointer-events: none;
     }
-
-    .notification-toast.show {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
-
+    .notification-toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
     .notification-icon { font-size: 1.4rem; }
     .notification-body strong { display: block; color: #ffccd5; font-size: 0.85rem; }
     .notification-body p { font-size: 0.8rem; margin-top: 2px; }
@@ -137,7 +128,7 @@
 
     <div class="nav-actions">
       <div class="lang-dropdown-wrapper" id="langDropdownWrapper">
-        <button class="lang-btn" onclick="toggleLangMenu(event)">
+        <button class="lang-btn" id="mainLangBtn" onclick="toggleLangMenu(event)">
           🌐 <span id="selectedLangText">Bosanski</span> ▼
         </button>
 
@@ -207,16 +198,6 @@
     let korisnikIme = "Član";
     let jePrvoUcitavanje = true;
 
-    // INICIJALIZACIJA GOOGLE TRANSLATE
-    function googleTranslateElementInit() {
-      new google.translate.TranslateElement({
-        pageLanguage: 'bs',
-        includedLanguages: 'bs,hr,sr,en,de,fr,it,es,ru,tr,ar,zh,ja,pt,nl,pl,uk,sv,no,fi,da,el,hu,ro,bg,cs,sk,sl,sq,mk',
-        layout: .translate.TranslateElement.InlineLayout.SIMPLE,
-        autoDisplay: false
-      }, '_translate_element');
-    }
-
     // SVI SVJETSKI JEZICI
     const SVI_JEZICI = [
       { kod: 'bs', ime: 'Bosanski' },
@@ -274,48 +255,59 @@
     }
 
     function toggleLangMenu(e) {
-      e.stopPropagation();
+      if (e) e.stopPropagation();
       const menu = document.getElementById('langDropdownMenu');
+      if (!menu) return;
+
       menu.classList.toggle('show');
 
       if (menu.classList.contains('show')) {
         const searchInput = document.getElementById('langSearchInput');
-        searchInput.value = '';
-        popuniListuJezika(SVI_JEZICI);
-        setTimeout(() => searchInput.focus(), 100);
+        if (searchInput) {
+          searchInput.value = '';
+          popuniListuJezika(SVI_JEZICI);
+          setTimeout(() => searchInput.focus(), 100);
+        }
       }
     }
 
     function filtrirajJezike(e) {
-      e.stopPropagation();
+      if (e) e.stopPropagation();
       const term = e.target.value.toLowerCase().trim();
       const filtrirani = SVI_JEZICI.filter(j => j.ime.toLowerCase().includes(term));
       popuniListuJezika(filtrirani);
     }
 
-    // AUTOMATSKO PREVOĐENJE PREKO GOOGLE TRANSLATE-A
+    // BEZ PREKIDANJA KODA AKO SE PREVODILAC JOŠ UČITAVA
     function izaberiJezik(kod, ime) {
       document.getElementById('selectedLangText').innerText = ime;
-      document.getElementById('langDropdownMenu').classList.remove('show');
+      const menu = document.getElementById('langDropdownMenu');
+      if (menu) menu.classList.remove('show');
 
-      // Okidanje prevođenja unutar skrivenog Google selektora
-      const googleSelect = document.querySelector('.goog-te-combo');
-      if (googleSelect) {
-        googleSelect.value = kod;
-        googleSelect.dispatchEvent(new Event('change'));
+      const primijeniPrevod = () => {
+        let googleSelect = document.querySelector('.goog-te-combo');
+        if (googleSelect) {
+          googleSelect.value = kod;
+          googleSelect.dispatchEvent(new Event('change'));
+        }
+      };
+
+      let select = document.querySelector('.goog-te-combo');
+      if (select) {
+        primijeniPrevod();
       } else {
-        alert("Prevodilac se još učitava, pokrenite ponovo za sekundu.");
+        setTimeout(primijeniPrevod, 800);
       }
     }
 
     document.addEventListener('click', function(e) {
       const wrapper = document.getElementById('langDropdownWrapper');
       if (wrapper && !wrapper.contains(e.target)) {
-        document.getElementById('langDropdownMenu').classList.remove('show');
+        const menu = document.getElementById('langDropdownMenu');
+        if (menu) menu.classList.remove('show');
       }
     });
 
-    // FORMATIRANJE DATUMA I VREMENA
     function formatirajVrijeme(rawDatum) {
       if (!rawDatum) return '';
       const str = String(rawDatum).replace(' ', 'T');
@@ -364,13 +356,15 @@
     async function ucitajSveTeme() {
       if (!_supabase) return;
 
+      const feedEl = document.getElementById('forumFeed');
+
       try {
+        // Direktni i čist upit na tabelu FORUM_POSTOVI
         const { data: postovi, error } = await _supabase
           .from('FORUM_POSTOVI')
           .select('*, FORUM_KOMENTARI(*)')
           .order('created_at', { ascending: false });
 
-        const feedEl = document.getElementById('forumFeed');
         feedEl.innerHTML = '';
 
         if (error || !postovi || postovi.length === 0) {
@@ -393,7 +387,7 @@
             komentariHtml += `
               <div class="comment-item">
                 <div class="comment-header-info">
-                  <span class="comment-author">${k.autor_ime}</span>
+                  <span class="comment-author">${k.autor_ime || 'Član'}</span>
                   <span class="comment-time">${kDatum}</span>
                 </div>
                 <div class="comment-text">${k.sadrzaj}</div>
@@ -404,12 +398,12 @@
           postBox.innerHTML = `
             <div class="post-header">
               <div>
-                <span class="post-author">👤 ${post.autor_ime}</span>
+                <span class="post-author">👤 ${post.autor_ime || 'Član'}</span>
                 <span class="post-time">• ${datum}</span>
               </div>
               <span class="post-category">${post.kategorija || 'Opšte'}</span>
             </div>
-            <h3 class="post-title">${post.naslov}</h3>
+            <h3 class="post-title">${post.naslov || post.sadrzaj}</h3>
             <div class="post-content">${post.sadrzaj}</div>
 
             <div class="comments-section">
@@ -429,6 +423,7 @@
 
       } catch (e) {
         console.error("Greška pri učitavanju foruma:", e);
+        feedEl.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">Greška pri učitavanju tema.</div>';
       }
     }
 
@@ -451,15 +446,8 @@
         
         const { data: noviPost } = await _supabase
           .from('FORUM_POSTOVI')
-          .insert([{
-            autor_id: mojId,
-            autor_ime: korisnikIme,
-            naslov: naslov,
-            kategorija: kategorija,
-            sadrzaj: sadrzaj
-          }])
-          .select()
-          .single();
+          .insert([{ autor_id: mojId, autor_ime: korisnikIme, naslov: naslov, kategorija: kategorija, sadrzaj: sadrzaj }])
+          .select().single();
 
         naslovInput.value = '';
         sadrzajInput.value = '';
@@ -514,14 +502,12 @@
 
     function prikaziNotifikaciju(naslov, poruka) {
       const toast = document.getElementById('toastNotification');
+      if (!toast) return;
       document.getElementById('toastTitle').innerText = naslov;
       document.getElementById('toastMessage').innerText = poruka;
 
       toast.classList.add('show');
-
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 4500);
+      setTimeout(() => { toast.classList.remove('show'); }, 4500);
     }
 
     function slusajPromjeneNaForumu() {
@@ -535,15 +521,17 @@
           }
         }).subscribe();
 
-    <script type="text/javascript">
-  function googleTranslateElementInit() {
-    new google.translate.TranslateElement({
-      pageLanguage: 'bs',
-      autoDisplay: false
-    }, 'google_translate_element');
-  }
-</script>
-<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+      _supabase.channel('public:FORUM_KOMENTARI')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'FORUM_KOMENTARI' }, payload => {
+          ucitajSveTeme();
+          if (!jePrvoUcitavanje && payload.new.autor_ime !== korisnikIme) {
+            prikaziNotifikaciju("💬 Novi komentar!", `${payload.new.autor_ime}: "${payload.new.sadrzaj}"`);
+          }
+        }).subscribe();
+    }
+
+    document.addEventListener('DOMContentLoaded', inicijalizujForum);
+  </script>
 
 </body>
 </html>
