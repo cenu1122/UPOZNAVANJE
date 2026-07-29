@@ -6,10 +6,15 @@
   <title>Forum | LjubavNaPrviKlik</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; top: 0 !important; }
+
+    /* Sakrivanje Google Translate trake na vrhu i pop-upa da ne kvari dizajn */
+    .goog-te-banner-frame, .skiptranslate, #google_translate_element { display: none !important; }
+    body { top: 0px !important; }
 
     header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
     .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
@@ -17,6 +22,37 @@
     .nav-actions { display: flex; align-items: center; gap: 12px; }
     .btn-nav { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
     .btn-nav:hover { background: #ef233c; }
+
+    /* PADAJUĆI MENI ZA JEZIKE */
+    .lang-dropdown-wrapper { position: relative; display: inline-block; }
+    .lang-btn {
+      background: #3d405b; color: #fff; border: 1px solid #555;
+      padding: 8px 14px; border-radius: 20px; font-weight: bold;
+      font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px;
+      transition: background 0.2s;
+    }
+    .lang-btn:hover { background: #d90429; border-color: #d90429; }
+
+    .lang-dropdown-menu {
+      display: none; position: absolute; right: 0; top: 115%;
+      background: #ffffff; min-width: 240px; border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2); border: 1px solid #eee;
+      z-index: 10000; padding: 10px; flex-direction: column; gap: 8px;
+    }
+    .lang-dropdown-menu.show { display: flex; }
+
+    .lang-search-box input {
+      width: 100%; padding: 8px 12px; border: 1px solid #ccc;
+      border-radius: 8px; font-size: 0.85rem; outline: none;
+    }
+    .lang-search-box input:focus { border-color: #d90429; }
+
+    .lang-list { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+    .lang-option {
+      padding: 8px 12px; border-radius: 6px; font-size: 0.85rem;
+      color: #2b2d42; cursor: pointer; transition: background 0.2s;
+    }
+    .lang-option:hover { background: #ffe0e3; color: #d90429; font-weight: bold; }
 
     .main-container { flex: 1; padding: 30px 20px; max-width: 900px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
 
@@ -85,30 +121,40 @@
       pointer-events: auto;
     }
 
-    .notification-icon {
-      font-size: 1.4rem;
-    }
-
-    .notification-body strong {
-      display: block;
-      color: #ffccd5;
-      font-size: 0.85rem;
-    }
-
-    .notification-body p {
-      font-size: 0.8rem;
-      margin-top: 2px;
-    }
+    .notification-icon { font-size: 1.4rem; }
+    .notification-body strong { display: block; color: #ffccd5; font-size: 0.85rem; }
+    .notification-body p { font-size: 0.8rem; margin-top: 2px; }
 
     footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
   </style>
 </head>
 <body>
 
+  <div id="google_translate_element"></div>
+
   <header>
     <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik - Forum</a>
 
     <div class="nav-actions">
+      <div class="lang-dropdown-wrapper" id="langDropdownWrapper">
+        <button class="lang-btn" onclick="toggleLangMenu(event)">
+          🌐 <span id="selectedLangText">Bosanski</span> ▼
+        </button>
+
+        <div class="lang-dropdown-menu" id="langDropdownMenu">
+          <div class="lang-search-box" onclick="event.stopPropagation()">
+            <input 
+              type="text" 
+              id="langSearchInput" 
+              placeholder="🔍 Pretraži jezik..." 
+              oninput="filtrirajJezike(event)"
+              onclick="event.stopPropagation()"
+            />
+          </div>
+          <div class="lang-list" id="langList"></div>
+        </div>
+      </div>
+
       <a href="DASHBOARD.html" class="btn-nav">🏠 Dashboard</a>
     </div>
   </header>
@@ -161,10 +207,117 @@
     let korisnikIme = "Član";
     let jePrvoUcitavanje = true;
 
-    // Pomoćna funkcija za sigurno i tačno formatiranje datuma
+    // INICIJALIZACIJA GOOGLE TRANSLATE
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'bs',
+        includedLanguages: 'bs,hr,sr,en,de,fr,it,es,ru,tr,ar,zh,ja,pt,nl,pl,uk,sv,no,fi,da,el,hu,ro,bg,cs,sk,sl,sq,mk',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+        autoDisplay: false
+      }, 'google_translate_element');
+    }
+
+    // SVI SVJETSKI JEZICI
+    const SVI_JEZICI = [
+      { kod: 'bs', ime: 'Bosanski' },
+      { kod: 'hr', ime: 'Hrvatski' },
+      { kod: 'sr', ime: 'Srpski' },
+      { kod: 'en', ime: 'English (Engleski)' },
+      { kod: 'de', ime: 'Deutsch (Njemački)' },
+      { kod: 'fr', ime: 'Français (Francuski)' },
+      { kod: 'it', ime: 'Italiano (Italijanski)' },
+      { kod: 'es', ime: 'Español (Španski)' },
+      { kod: 'ru', ime: 'Русский (Ruski)' },
+      { kod: 'tr', ime: 'Türkçe (Turski)' },
+      { kod: 'ar', ime: 'العربية (Arapski)' },
+      { kod: 'zh-CN', ime: '中文 (Kineski)' },
+      { kod: 'ja', ime: '日本語 (Japanski)' },
+      { kod: 'pt', ime: 'Português (Portugalski)' },
+      { kod: 'nl', ime: 'Nederlands (Holandski)' },
+      { kod: 'pl', ime: 'Polski (Poljski)' },
+      { kod: 'uk', ime: 'Українська (Ukrajinski)' },
+      { kod: 'sv', ime: 'Svenska (Švedski)' },
+      { kod: 'no', ime: 'Norsk (Norveški)' },
+      { kod: 'fi', ime: 'Suomi (Finski)' },
+      { kod: 'da', ime: 'Dansk (Danski)' },
+      { kod: 'el', ime: 'Ελληνικά (Grčki)' },
+      { kod: 'hu', ime: 'Magyar (Mađarski)' },
+      { kod: 'ro', ime: 'Română (Rumunski)' },
+      { kod: 'bg', ime: 'Български (Bugarski)' },
+      { kod: 'cs', ime: 'Čeština (Češki)' },
+      { kod: 'sk', ime: 'Slovenčina (Slovački)' },
+      { kod: 'sl', ime: 'Slovenščina (Slovenski)' },
+      { kod: 'sq', ime: 'Shqip (Albanski)' },
+      { kod: 'mk', ime: 'Makedonski' }
+    ];
+
+    function popuniListuJezika(lista) {
+      const listEl = document.getElementById('langList');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      if (lista.length === 0) {
+        listEl.innerHTML = '<div style="padding:10px; font-size:0.8rem; color:#888; text-align:center;">Nema rezultata...</div>';
+        return;
+      }
+
+      lista.forEach(j => {
+        const opt = document.createElement('div');
+        opt.className = 'lang-option';
+        opt.innerText = j.ime;
+        opt.onclick = (e) => {
+          e.stopPropagation();
+          izaberiJezik(j.kod, j.ime);
+        };
+        listEl.appendChild(opt);
+      });
+    }
+
+    function toggleLangMenu(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('langDropdownMenu');
+      menu.classList.toggle('show');
+
+      if (menu.classList.contains('show')) {
+        const searchInput = document.getElementById('langSearchInput');
+        searchInput.value = '';
+        popuniListuJezika(SVI_JEZICI);
+        setTimeout(() => searchInput.focus(), 100);
+      }
+    }
+
+    function filtrirajJezike(e) {
+      e.stopPropagation();
+      const term = e.target.value.toLowerCase().trim();
+      const filtrirani = SVI_JEZICI.filter(j => j.ime.toLowerCase().includes(term));
+      popuniListuJezika(filtrirani);
+    }
+
+    // AUTOMATSKO PREVOĐENJE PREKO GOOGLE TRANSLATE-A
+    function izaberiJezik(kod, ime) {
+      document.getElementById('selectedLangText').innerText = ime;
+      document.getElementById('langDropdownMenu').classList.remove('show');
+
+      // Okidanje prevođenja unutar skrivenog Google selektora
+      const googleSelect = document.querySelector('.goog-te-combo');
+      if (googleSelect) {
+        googleSelect.value = kod;
+        googleSelect.dispatchEvent(new Event('change'));
+      } else {
+        alert("Prevodilac se još učitava, pokrenite ponovo za sekundu.");
+      }
+    }
+
+    document.addEventListener('click', function(e) {
+      const wrapper = document.getElementById('langDropdownWrapper');
+      if (wrapper && !wrapper.contains(e.target)) {
+        document.getElementById('langDropdownMenu').classList.remove('show');
+      }
+    });
+
+    // FORMATIRANJE DATUMA I VREMENA
     function formatirajVrijeme(rawDatum) {
       if (!rawDatum) return '';
-      // Zamjena ' ' sa 'T' osigurava da JS ispravno pročita UTC i pretvori u lokalno vrijeme
       const str = String(rawDatum).replace(' ', 'T');
       const d = new Date(str);
       if (isNaN(d.getTime())) return String(rawDatum);
@@ -179,6 +332,7 @@
     }
 
     async function inicijalizujForum() {
+      popuniListuJezika(SVI_JEZICI);
       if (!_supabase) return;
 
       try {
@@ -231,7 +385,6 @@
           const datum = formatirajVrijeme(post.created_at);
           const komentari = post.FORUM_KOMENTARI || [];
 
-          // Sortiramo komentare po vremenu nastanka
           komentari.sort((a, b) => new Date(String(a.created_at).replace(' ', 'T')) - new Date(String(b.created_at).replace(' ', 'T')));
 
           let komentariHtml = '';
