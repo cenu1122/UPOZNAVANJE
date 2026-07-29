@@ -197,6 +197,18 @@
   </footer>
 
   <script>
+    // 1. AUTOMATSKO HVATANJE I PAMĆENJE IZVORA KADA NEKO DOĐE PREKO LINKA (npr. ?izvor=viber_grupa)
+    (function sacuvajDolazniIzvor() {
+      const params = new URLSearchParams(window.location.search);
+      const izvorIzUrl = params.get('izvor');
+
+      if (izvorIzUrl) {
+        localStorage.setItem('dolazni_izvor', izvorIzUrl);
+        console.log("Zapamćen dolazni izvor:", izvorIzUrl);
+      }
+    })();
+
+    // Prijevodi stranice
     const translations = {
       bs: {
         nav_home: "Početna", nav_about: "O nama", nav_why: "Zašto mi", nav_trans: "Prevodilac", nav_reviews: "Iskustva", nav_contact: "Kontakt",
@@ -281,7 +293,6 @@
       });
     }
 
-    // Besplatni API za automatsko prevođenje u realnom vremenu (MyMemory API)
     async function translateMessage() {
       const text = document.getElementById('sourceText').value;
       const targetLang = document.getElementById('partnerLang').value;
