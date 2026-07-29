@@ -144,18 +144,20 @@
     async function inicijalizujStranicu() {
       if (!_supabase) return;
 
-      // 1. Provjera da li je prijavljeni korisnik Admin
+      // 1. Provjera da li je prijavljeni korisnik Admin (admin@gmail.com)
       try {
         const { data: { user } } = await _supabase.auth.getUser();
-        if (user) {
+        if (user && user.email) {
+          const mojEmail = user.email.trim().toLowerCase();
+
           const { data: profile } = await _supabase
             .from('UPOZNAVANJ_KORISNICI')
-            .select('ROLE, MAIL')
-            .or(`USER.eq.${user.id},MAIL.eq.${user.email}`)
+            .select('ROLE')
+            .or(`USER.eq.${user.id},MAIL.eq.${mojEmail}`)
             .maybeSingle();
 
-          // Ako je role 'admin' ili mail odgovara tvojoj admin adresi, prikaži Admin Panel
-          if ((profile && profile.ROLE === 'admin') || (user.email && user.email.includes('admin'))) {
+          // Prikazuje admin panel ako je email admin@gmail.com ILI ako u bazi ima ROLE === 'admin'
+          if (mojEmail === 'admin@gmail.com' || (profile && profile.ROLE === 'admin')) {
             document.getElementById('adminPanel').style.display = 'block';
           }
         }
