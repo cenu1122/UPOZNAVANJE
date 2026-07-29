@@ -47,9 +47,11 @@
     .comments-title { font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 10px; }
     
     .comment-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
-    .comment-item { background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px solid #e0e0e0; font-size: 0.85rem; }
-    .comment-author { font-weight: bold; color: #2b2d42; margin-right: 6px; }
-    .comment-text { color: #444; }
+    .comment-item { background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px solid #e0e0e0; font-size: 0.85rem; display: flex; flex-direction: column; gap: 2px; }
+    .comment-header-info { display: flex; justify-content: space-between; align-items: center; }
+    .comment-author { font-weight: bold; color: #2b2d42; }
+    .comment-time { font-size: 0.7rem; color: #999; }
+    .comment-text { color: #444; margin-top: 2px; }
 
     .add-comment-box { display: flex; gap: 8px; }
     .add-comment-box input { flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.85rem; outline: none; }
@@ -115,14 +117,14 @@
     <div class="notification-icon">🔔</div>
     <div class="notification-body">
       <strong id="toastTitle">Novi komentar!</strong>
-      <p id="toastMessage">Neko je właśnie odgovorio na forumu.</p>
+      <p id="toastMessage">Neko je upravo odgovorio na forumu.</p>
     </div>
   </div>
 
   <div class="main-container">
 
     <div class="create-post-card">
-      <h2>🗣️ Zapocni novu temu na forumu</h2>
+      <h2>🗣️ Započni novu temu na forumu</h2>
       <div class="form-group">
         <input type="text" id="postTitleInput" placeholder="Naslov teme..." />
       </div>
@@ -159,6 +161,23 @@
     let korisnikIme = "Član";
     let jePrvoUcitavanje = true;
 
+    // Pomoćna funkcija za sigurno i tačno formatiranje datuma
+    function formatirajVrijeme(rawDatum) {
+      if (!rawDatum) return '';
+      // Zamjena ' ' sa 'T' osigurava da JS ispravno pročita UTC i pretvori u lokalno vrijeme
+      const str = String(rawDatum).replace(' ', 'T');
+      const d = new Date(str);
+      if (isNaN(d.getTime())) return String(rawDatum);
+
+      const dan = String(d.getDate()).padStart(2, '0');
+      const mjesec = String(d.getMonth() + 1).padStart(2, '0');
+      const godina = d.getFullYear();
+      const sati = String(d.getHours()).padStart(2, '0');
+      const minute = String(d.getMinutes()).padStart(2, '0');
+
+      return `${dan}.${mjesec}.${godina}. ${sati}:${minute}`;
+    }
+
     async function inicijalizujForum() {
       if (!_supabase) return;
 
@@ -184,7 +203,7 @@
       }
 
       await ucitajSveTeme();
-      jePrvoUcitavanje = false; // Nakon prvog učitavanja, aktiviramo pop-up notifikacije
+      jePrvoUcitavanje = false;
       slusajPromjeneNaForumu();
     }
 
@@ -209,15 +228,22 @@
           const postBox = document.createElement('div');
           postBox.className = 'post-card';
 
-          const datum = new Date(post.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+          const datum = formatirajVrijeme(post.created_at);
           const komentari = post.FORUM_KOMENTARI || [];
+
+          // Sortiramo komentare po vremenu nastanka
+          komentari.sort((a, b) => new Date(String(a.created_at).replace(' ', 'T')) - new Date(String(b.created_at).replace(' ', 'T')));
 
           let komentariHtml = '';
           komentari.forEach(k => {
+            const kDatum = formatirajVrijeme(k.created_at);
             komentariHtml += `
               <div class="comment-item">
-                <span class="comment-author">${k.autor_ime}:</span>
-                <span class="comment-text">${k.sadrzaj}</span>
+                <div class="comment-header-info">
+                  <span class="comment-author">${k.autor_ime}</span>
+                  <span class="comment-time">${kDatum}</span>
+                </div>
+                <div class="comment-text">${k.sadrzaj}</div>
               </div>
             `;
           });
@@ -286,7 +312,6 @@
         sadrzajInput.value = '';
         await ucitajSveTeme();
 
-        // Pozivamo AI pozadinsku funkciju
         if (noviPost && noviPost.id) {
           pozoviGroqZaForumOdgovor(noviPost.id, sadrzaj, "tema");
         }
@@ -317,7 +342,6 @@
         input.value = '';
         await ucitajSveTeme();
 
-        // Pozivamo AI pozadinsku funkciju
         pozoviGroqZaForumOdgovor(postId, tekst, "komentar");
 
       } catch (e) {
@@ -335,7 +359,6 @@
       }
     }
 
-    // FUNKCIJA ZA PRIKAZ NOTIFIKACIJE U GORNJEM DESNOM UGLU
     function prikaziNotifikaciju(naslov, poruka) {
       const toast = document.getElementById('toastNotification');
       document.getElementById('toastTitle').innerText = naslov;
@@ -345,10 +368,9 @@
 
       setTimeout(() => {
         toast.classList.remove('show');
-      }, 4500); // Sakriva se nakon 4.5 sekundi
+      }, 4500);
     }
 
-    // REALTIME SLUŠALICA SA AUTOMATSKIM POP-UP NOTIFIKACIJAMA
     function slusajPromjeneNaForumu() {
       if (!_supabase) return;
 
