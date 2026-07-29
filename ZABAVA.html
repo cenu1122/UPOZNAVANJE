@@ -7,11 +7,25 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'bs',
+        autoDisplay: false
+      }, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; top: 0 !important; }
+
+    /* Sakrivanje ružne Google trake na vrhu */
+    .goog-te-banner-frame, .skiptranslate, #google_translate_element { display: none !important; }
+    body { top: 0px !important; }
 
     header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
     .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
@@ -19,6 +33,37 @@
     .nav-actions { display: flex; align-items: center; gap: 12px; }
     .btn-nav { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
     .btn-nav:hover { background: #ef233c; }
+
+    /* PADAJUĆI MENI ZA JEZIKE */
+    .lang-dropdown-wrapper { position: relative; display: inline-block; }
+    .lang-btn {
+      background: #3d405b; color: #fff; border: 1px solid #555;
+      padding: 8px 14px; border-radius: 20px; font-weight: bold;
+      font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px;
+      transition: background 0.2s;
+    }
+    .lang-btn:hover { background: #d90429; border-color: #d90429; }
+
+    .lang-dropdown-menu {
+      display: none; position: absolute; right: 0; top: 115%;
+      background: #ffffff; min-width: 240px; border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2); border: 1px solid #eee;
+      z-index: 10000; padding: 10px; flex-direction: column; gap: 8px;
+    }
+    .lang-dropdown-menu.show { display: flex !important; }
+
+    .lang-search-box input {
+      width: 100%; padding: 8px 12px; border: 1px solid #ccc;
+      border-radius: 8px; font-size: 0.85rem; outline: none;
+    }
+    .lang-search-box input:focus { border-color: #d90429; }
+
+    .lang-list { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+    .lang-option {
+      padding: 8px 12px; border-radius: 6px; font-size: 0.85rem;
+      color: #2b2d42; cursor: pointer; transition: background 0.2s;
+    }
+    .lang-option:hover { background: #ffe0e3; color: #d90429; font-weight: bold; }
 
     .main-container { flex: 1; padding: 30px 20px; max-width: 1000px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
 
@@ -78,10 +123,31 @@
 </head>
 <body>
 
+  <div id="google_translate_element"></div>
+
   <header>
     <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik - Zabava</a>
 
     <div class="nav-actions">
+      <div class="lang-dropdown-wrapper" id="langDropdownWrapper">
+        <button class="lang-btn" onclick="toggleLangMenu(event)">
+          🌐 <span id="selectedLangText">Bosanski</span> ▼
+        </button>
+
+        <div class="lang-dropdown-menu" id="langDropdownMenu">
+          <div class="lang-search-box" onclick="event.stopPropagation()">
+            <input 
+              type="text" 
+              id="langSearchInput" 
+              placeholder="🔍 Pretraži jezik..." 
+              oninput="filtrirajJezike(event)"
+              onclick="event.stopPropagation()"
+            />
+          </div>
+          <div class="lang-list" id="langList"></div>
+        </div>
+      </div>
+
       <a href="DASHBOARD.html" class="btn-nav">🏠 Dashboard</a>
     </div>
   </header>
@@ -146,7 +212,7 @@
     <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
   </footer>
 
-<script>
+  <script>
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
 
@@ -154,7 +220,107 @@
     let trenutniKorisnik = null;
     let korisnikIme = "Član";
 
+    // SVI SVJETSKI JEZICI
+    const SVI_JEZICI = [
+      { kod: 'bs', ime: 'Bosanski' },
+      { kod: 'hr', ime: 'Hrvatski' },
+      { kod: 'sr', ime: 'Srpski' },
+      { kod: 'en', ime: 'English (Engleski)' },
+      { kod: 'de', ime: 'Deutsch (Njemački)' },
+      { kod: 'fr', ime: 'Français (Francuski)' },
+      { kod: 'it', ime: 'Italiano (Italijanski)' },
+      { kod: 'es', ime: 'Español (Španski)' },
+      { kod: 'ru', ime: 'Русский (Ruski)' },
+      { kod: 'tr', ime: 'Türkçe (Turski)' },
+      { kod: 'ar', ime: 'العربية (Arapski)' },
+      { kod: 'zh-CN', ime: '中文 (Kineski)' },
+      { kod: 'ja', ime: '日本語 (Japanski)' },
+      { kod: 'pt', ime: 'Português (Portugalski)' },
+      { kod: 'nl', ime: 'Nederlands (Holandski)' },
+      { kod: 'pl', ime: 'Polski (Poljski)' },
+      { kod: 'uk', ime: 'Українська (Ukrajinski)' },
+      { kod: 'sv', ime: 'Svenska (Švedski)' },
+      { kod: 'no', ime: 'Norsk (Norveški)' },
+      { kod: 'fi', ime: 'Suomi (Finski)' },
+      { kod: 'da', ime: 'Dansk (Danski)' },
+      { kod: 'el', ime: 'Ελληνικά (Grčki)' },
+      { kod: 'hu', ime: 'Magyar (Mađarski)' },
+      { kod: 'ro', ime: 'Română (Rumunski)' },
+      { kod: 'bg', ime: 'Български (Bugarski)' },
+      { kod: 'cs', ime: 'Čeština (Češki)' },
+      { kod: 'sk', ime: 'Slovenčina (Slovački)' },
+      { kod: 'sl', ime: 'Slovenščina (Slovenski)' },
+      { kod: 'sq', ime: 'Shqip (Albanski)' },
+      { kod: 'mk', ime: 'Makedonski' }
+    ];
+
+    function popuniListuJezika(lista) {
+      const listEl = document.getElementById('langList');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      if (lista.length === 0) {
+        listEl.innerHTML = '<div style="padding:10px; font-size:0.8rem; color:#888; text-align:center;">Nema rezultata...</div>';
+        return;
+      }
+
+      lista.forEach(j => {
+        const opt = document.createElement('div');
+        opt.className = 'lang-option';
+        opt.innerText = j.ime;
+        opt.onclick = (e) => {
+          e.stopPropagation();
+          izaberiJezik(j.kod, j.ime);
+        };
+        listEl.appendChild(opt);
+      });
+    }
+
+    function toggleLangMenu(e) {
+      if (e) e.stopPropagation();
+      const menu = document.getElementById('langDropdownMenu');
+      if (!menu) return;
+      menu.classList.toggle('show');
+
+      if (menu.classList.contains('show')) {
+        const searchInput = document.getElementById('langSearchInput');
+        if (searchInput) {
+          searchInput.value = '';
+          popuniListuJezika(SVI_JEZICI);
+          setTimeout(() => searchInput.focus(), 100);
+        }
+      }
+    }
+
+    function filtrirajJezike(e) {
+      if (e) e.stopPropagation();
+      const term = e.target.value.toLowerCase().trim();
+      const filtrirani = SVI_JEZICI.filter(j => j.ime.toLowerCase().includes(term));
+      popuniListuJezika(filtrirani);
+    }
+
+    function izaberiJezik(kod, ime) {
+      document.getElementById('selectedLangText').innerText = ime;
+      const menu = document.getElementById('langDropdownMenu');
+      if (menu) menu.classList.remove('show');
+
+      let googleSelect = document.querySelector('.goog-te-combo');
+      if (googleSelect) {
+        googleSelect.value = kod;
+        googleSelect.dispatchEvent(new Event('change'));
+      }
+    }
+
+    document.addEventListener('click', function(e) {
+      const wrapper = document.getElementById('langDropdownWrapper');
+      if (wrapper && !wrapper.contains(e.target)) {
+        const menu = document.getElementById('langDropdownMenu');
+        if (menu) menu.classList.remove('show');
+      }
+    });
+
     async function inicijalizujStranicu() {
+      popuniListuJezika(SVI_JEZICI);
       if (!_supabase) return;
 
       // 1. Dohvatanje korisnika i provjera Admina
@@ -195,7 +361,6 @@
       const jokesGrid = document.getElementById('jokesGrid');
 
       try {
-        // Učitavamo viceve i povezane komentare
         const { data: vicevi, error } = await _supabase
           .from('ZABAVA_VICEVI')
           .select('*, ZABAVA_KOMENTARI(*)')
@@ -218,7 +383,7 @@
           komentari.forEach(k => {
             komentariHtml += `
               <div class="comment-item">
-                <span class="comment-author">${k.autor_ime}:</span>
+                <span class="comment-author">${k.autor_ime || 'Član'}:</span>
                 <span class="comment-text">${k.sadrzaj}</span>
               </div>
             `;
@@ -273,7 +438,6 @@
         input.value = '';
         await ucitajViceve();
 
-        // 🤖 AUTOMATSKI AI ODGOVOR OD GROQ-A SA ODGOĐENIM VREMENOM
         pozoviGroqZaVicKomentar(vicId, tekst);
 
       } catch (e) {
@@ -281,7 +445,6 @@
       }
     }
 
-    // Funkcija koja poziva pozadinsku Supabase Edge funkciju (Groq)
     async function pozoviGroqZaVicKomentar(vicId, tekst) {
       try {
         _supabase.functions.invoke('odgovori-forum-ai', {
@@ -301,7 +464,6 @@
         }).subscribe();
     }
 
-    // ULAZ 1: Uvoz iz Excel (.xlsx, .xls) ili CSV Fajla
     function uploadIzExcela() {
       const fileInput = document.getElementById('excelFileInput');
       const file = fileInput.files[0];
@@ -313,7 +475,6 @@
 
       const fileExt = file.name.split('.').pop().toLowerCase();
 
-      // Ako je pravi Excel fajl (.xlsx ili .xls)
       if (fileExt === 'xlsx' || fileExt === 'xls') {
         const reader = new FileReader();
         reader.onload = async function(e) {
@@ -331,7 +492,6 @@
         };
         reader.readAsArrayBuffer(file);
       } else {
-        // Ako je CSV fajl
         Papa.parse(file, {
           header: true,
           skipEmptyLines: true,
@@ -342,7 +502,6 @@
       }
     }
 
-    // ULAZ 2: Uvoz sa Google Sheets-a via CSV URL
     async function uploadIzGoogleSheets() {
       const url = document.getElementById('sheetsUrlInput').value.trim();
 
@@ -370,10 +529,18 @@
         return;
       }
 
-      const zaUpis = redovi.map(r => ({
-        tekst: r.tekst || r.Vic || r.Tekst || Object.values(r)[0],
-        kategorija: r.kategorija || r.Kategorija || 'Opšte'
-      })).filter(r => r.tekst);
+      const zaUpis = redovi.map(r => {
+        let siroviTekst = r.tekst || r.Vic || r.Tekst || Object.values(r)[0] || '';
+        let sirovaKategorija = r.kategorija || r.Kategorija || 'Opšte';
+
+        let ociscenTekst = String(siroviTekst).replace(/\u0000/g, '').trim();
+        let ociscenaKategorija = String(sirovaKategorija).replace(/\u0000/g, '').trim();
+
+        return {
+          tekst: ociscenTekst,
+          kategorija: ociscenaKategorija || 'Opšte'
+        };
+      }).filter(r => r.tekst.length > 0);
 
       try {
         const { error } = await _supabase.from('ZABAVA_VICEVI').insert(zaUpis);
