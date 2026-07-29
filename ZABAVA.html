@@ -6,6 +6,7 @@
   <title>Zabava i Zanimljivosti | LjubavNaPrviKlik</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -20,7 +21,17 @@
 
     .main-container { flex: 1; padding: 30px 20px; max-width: 1000px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
 
-    /* TABOVI ZABAVE (Vicevi vs Video) */
+    /* ADMIN PANEL (Prikazuje se samo ako je korisnik admin) */
+    .admin-panel { display: none; background: #fff; border: 2px dashed #d90429; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(217, 4, 41, 0.1); }
+    .admin-panel h3 { color: #d90429; font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .admin-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+    .admin-card { background: #fff0f3; padding: 15px; border-radius: 10px; display: flex; flex-direction: column; gap: 10px; }
+    .admin-card label { font-size: 0.85rem; font-weight: bold; color: #800020; }
+    .admin-card input { padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.85rem; }
+    .btn-admin { background: #2b2d42; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+    .btn-admin:hover { background: #d90429; }
+
+    /* TABOVI ZABAVE */
     .tab-navigation { display: flex; justify-content: center; gap: 15px; border-bottom: 2px solid #ffd8df; padding-bottom: 10px; }
     .tab-btn { background: #fff; border: 1px solid #ffd8df; color: #2b2d42; padding: 10px 24px; border-radius: 25px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: all 0.2s ease; }
     .tab-btn:hover, .tab-btn.active { background: #d90429; color: #fff; border-color: #d90429; box-shadow: 0 4px 12px rgba(217, 4, 41, 0.2); }
@@ -40,7 +51,7 @@
     /* SEKCIJA ZA YOUTUBE VIDEA */
     .videos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
     .video-card { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; display: flex; flex-direction: column; }
-    .video-container { position: relative; width: 100%; padding-bottom: 56.25%; /* 16:9 Aspect Ratio */ height: 0; }
+    .video-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; }
     .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
     .video-info { padding: 15px; display: flex; flex-direction: column; gap: 8px; }
     .video-title { font-weight: bold; font-size: 1rem; color: #2b2d42; }
@@ -62,46 +73,33 @@
 
   <div class="main-container">
 
+    <div id="adminPanel" class="admin-panel">
+      <h3>👑 Admin Panel — Masovni Uvoz Viceva</h3>
+      <div class="admin-inputs">
+        
+        <div class="admin-card">
+          <label>📁 Uvezi iz Excel / CSV fajla:</label>
+          <input type="file" id="excelFileInput" accept=".csv, .xlsx, .xls" />
+          <button class="btn-admin" onclick="uploadIzExcela()">Učitaj fajl 🚀</button>
+        </div>
+
+        <div class="admin-card">
+          <label>🌐 Uvezi sa Google Sheets (CSV Link):</label>
+          <input type="text" id="sheetsUrlInput" placeholder="Zalijepi CSV link tabele..." />
+          <button class="btn-admin" onclick="uploadIzGoogleSheets()">Uvezi sa Sheetsa 🔗</button>
+        </div>
+
+      </div>
+    </div>
+
     <div class="tab-navigation">
       <button class="tab-btn active" onclick="prikaziSekciju('viceviTab', this)">📜 Tekstualni Vicevi</button>
       <button class="tab-btn" onclick="prikaziSekciju('videoTab', this)">🎬 YouTube Zabava</button>
     </div>
 
     <div id="viceviTab" class="content-section active">
-      <div class="jokes-grid">
-
-        <div class="joke-card">
-          <span class="joke-badge">Vic Dana</span>
-          <p class="joke-text">Pita Mujo Fatu:<br>– Fato, da li bi radije živjela sa pametnim ili sa lijepim muškarcem?<br>– Ni sa jednim, Mujo, znaš da ja volim samo tebe!</p>
-          <div class="joke-footer">
-            <button class="btn-copy" onclick="kopirajTekst('Pita Mujo Fatu: – Fato, da li bi radije živjela sa pametnim ili sa lijepim muškarcem? – Ni sa jednim, Mujo, znaš da ja volim samo tebe!')">📋 Kopiraj vic</button>
-          </div>
-        </div>
-
-        <div class="joke-card">
-          <span class="joke-badge">Mujo i Haso</span>
-          <p class="joke-text">Gledaju Mujo i Haso zvjezdano nebo i Mujo pita:<br>– Haso, šta ti misliš, ima li života gore na zvijezdama?<br>– Nema sigurno, vidio bi se dječji osmijeh i gorjelo bi svjetlo!</p>
-          <div class="joke-footer">
-            <button class="btn-copy" onclick="kopirajTekst('Gledaju Mujo i Haso zvjezdano nebo i Mujo pita: – Haso, šta ti misliš, ima li života gore na zvijezdama? – Nema sigurno, vidio bi se dječji osmijeh i gorjelo bi svjetlo!')">📋 Kopiraj vic</button>
-          </div>
-        </div>
-
-        <div class="joke-card">
-          <span class="joke-badge">Kratki vic</span>
-          <p class="joke-text">Razgovaraju dvije prijateljice:<br>– Moj muž je pravi anđeo!<br>– Blago tebi, moj je još uvijek živ!</p>
-          <div class="joke-footer">
-            <button class="btn-copy" onclick="kopirajTekst('Razgovaraju dvije prijateljice: – Moj muž je pravi anđeo! – Blago tebi, moj je još uvijek živ!')">📋 Kopiraj vic</button>
-          </div>
-        </div>
-
-        <div class="joke-card">
-          <span class="joke-badge">Ljubavni vic</span>
-          <p class="joke-text">Momak kaže djevojci na spoju:<br>– Znaš, tvoje oči su kao zvijezde... Jedna gleda u nebo, a druga u mene!</p>
-          <div class="joke-footer">
-            <button class="btn-copy" onclick="kopirajTekst('Momak kaže djevojci na spoju: – Znaš, tvoje oči su kao zvijezde... Jedna gleda u nebo, a druga u mene!')">📋 Kopiraj vic</button>
-          </div>
-        </div>
-
+      <div class="jokes-grid" id="jokesGrid">
+        <div style="text-align:center; color:#888; grid-column: 1/-1; padding:20px;">Učitavanje viceva...</div>
       </div>
     </div>
 
@@ -114,7 +112,7 @@
           </div>
           <div class="video-info">
             <div class="video-title">Najsmješniji video snimci i gafovi</div>
-            <a href="https://www.youtube.com/watch?dQw4w9WgXcQ" target="_blank" class="video-link">▶ Open on YouTube</a>
+            <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" class="video-link">▶ Otvori na YouTube-u</a>
           </div>
         </div>
 
@@ -124,17 +122,7 @@
           </div>
           <div class="video-info">
             <div class="video-title">Opuštajuća muzika i smiješne kompilacije</div>
-            <a href="https://www.youtube.com/watch?v=3JZ_D3ELwOQ" target="_blank" class="video-link">▶ Open on YouTube</a>
-          </div>
-        </div>
-
-        <div class="video-card">
-          <div class="video-container">
-            <iframe src="https://www.youtube.com/embed/L_LUpnjgPso" title="YouTube video player" allowfullscreen></iframe>
-          </div>
-          <div class="video-info">
-            <div class="video-title">Kratke komedije i pranks sa balkona</div>
-            <a href="https://www.youtube.com/watch?v=L_LUpnjgPso" target="_blank" class="video-link">▶ Open on YouTube</a>
+            <a href="https://www.youtube.com/watch?v=3JZ_D3ELwOQ" target="_blank" class="video-link">▶ Otvori na YouTube-u</a>
           </div>
         </div>
 
@@ -148,16 +136,154 @@
   </footer>
 
   <script>
+    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+
+    let _supabase = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    async function inicijalizujStranicu() {
+      if (!_supabase) return;
+
+      // 1. Provjera da li je prijavljeni korisnik Admin
+      try {
+        const { data: { user } } = await _supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await _supabase
+            .from('UPOZNAVANJ_KORISNICI')
+            .select('ROLE, MAIL')
+            .or(`USER.eq.${user.id},MAIL.eq.${user.email}`)
+            .maybeSingle();
+
+          // Ako je role 'admin' ili mail odgovara tvojoj admin adresi, prikaži Admin Panel
+          if ((profile && profile.ROLE === 'admin') || (user.email && user.email.includes('admin'))) {
+            document.getElementById('adminPanel').style.display = 'block';
+          }
+        }
+      } catch (e) {
+        console.warn("Greška pri provjeri admina:", e);
+      }
+
+      // 2. Učitavanje viceva iz Supabase baze
+      await ucitajViceve();
+    }
+
+    async function ucitajViceve() {
+      if (!_supabase) return;
+
+      const jokesGrid = document.getElementById('jokesGrid');
+
+      try {
+        const { data: vicevi, error } = await _supabase
+          .from('ZABAVA_VICEVI')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        jokesGrid.innerHTML = '';
+
+        if (error || !vicevi || vicevi.length === 0) {
+          // Prikaz podrazumijevanih viceva ako baza još nema unosa
+          jokesGrid.innerHTML = `
+            <div class="joke-card">
+              <span class="joke-badge">Vic Dana</span>
+              <p class="joke-text">Pita Mujo Fatu:<br>– Fato, da li bi radije živjela sa pametnim ili sa lijepim muškarcem?<br>– Ni sa jednim, Mujo, znaš da ja volim samo tebe!</p>
+              <div class="joke-footer">
+                <button class="btn-copy" onclick="kopirajTekst('Pita Mujo Fatu: – Fato, da li bi radije živjela sa pametnim ili sa lijepim muškarcem? – Ni sa jednim, Mujo, znaš da ja volim samo tebe!')">📋 Kopiraj vic</button>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        vicevi.forEach(v => {
+          const card = document.createElement('div');
+          card.className = 'joke-card';
+          card.innerHTML = `
+            <span class="joke-badge">${v.kategorija || 'Vic'}</span>
+            <p class="joke-text">${v.tekst.replace(/\n/g, '<br>')}</p>
+            <div class="joke-footer">
+              <button class="btn-copy" onclick="kopirajTekst(\`${v.tekst.replace(/`/g, "'")}\`)">📋 Kopiraj vic</button>
+            </div>
+          `;
+          jokesGrid.appendChild(card);
+        });
+
+      } catch (e) {
+        console.error("Greška pri učitavanju viceva:", e);
+      }
+    }
+
+    // ULAZ 1: Uvoz iz Excel / CSV Fajla
+    function uploadIzExcela() {
+      const fileInput = document.getElementById('excelFileInput');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("Molimo odaberite CSV ili Excel fajl!");
+        return;
+      }
+
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: async function(results) {
+          await sacuvajViceveUBazu(results.data);
+        }
+      });
+    }
+
+    // ULAZ 2: Uvoz sa Google Sheets-a via CSV URL
+    async function uploadIzGoogleSheets() {
+      const url = document.getElementById('sheetsUrlInput').value.trim();
+
+      if (!url) {
+        alert("Unesite ispravan CSV link sa Google Sheets-a!");
+        return;
+      }
+
+      Papa.parse(url, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: async function(results) {
+          await sacuvajViceveUBazu(results.data);
+        },
+        error: function(err) {
+          alert("Greška pri preuzimanju tabele sa Google Sheets-a!");
+        }
+      });
+    }
+
+    // Pomoćna funkcija za upis u Supabase bazu
+    async function sacuvajViceveUBazu(redovi) {
+      if (!redovi || redovi.length === 0) {
+        alert("Nema pronađenih podataka u tabeli!");
+        return;
+      }
+
+      // Očekuju se kolone 'tekst' i 'kategorija' u Excelu/Sheets-u
+      const zaUpis = redovi.map(r => ({
+        tekst: r.tekst || r.Vic || r.Tekst || Object.values(r)[0],
+        kategorija: r.kategorija || r.Kategorija || 'Opšte'
+      })).filter(r => r.tekst);
+
+      try {
+        const { error } = await _supabase.from('ZABAVA_VICEVI').insert(zaUpis);
+
+        if (!error) {
+          alert(`Uspješno uvezeno ${zaUpis.length} viceva! 🎉`);
+          await ucitajViceve();
+        } else {
+          alert("Greška pri upisu u bazu: " + error.message);
+        }
+      } catch (e) {
+        console.error("Greška:", e);
+      }
+    }
+
     function prikaziSekciju(tabId, element) {
-      // Sakrij sve sekcije
-      const sekcije = document.querySelectorAll('.content-section');
-      sekcije.forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(d => d.classList.remove('active'));
 
-      // Deaktiviraj sve dugmiće
-      const dugmici = document.querySelectorAll('.tab-btn');
-      dugmici.forEach(d => d.classList.remove('active'));
-
-      // Prikazi odabranu sekciju i aktiviraj dugme
       document.getElementById(tabId).classList.add('active');
       element.classList.add('active');
     }
@@ -165,10 +291,10 @@
     function kopirajTekst(tekst) {
       navigator.clipboard.writeText(tekst).then(() => {
         alert("Vic je uspješno kopiran!");
-      }).catch(err => {
-        console.error("Greška pri kopiranju:", err);
       });
     }
+
+    document.addEventListener('DOMContentLoaded', inicijalizujStranicu);
   </script>
 
 </body>
