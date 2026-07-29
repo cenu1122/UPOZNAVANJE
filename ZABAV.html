@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zabava i Zanimljivosti | LjubavNaPrviKlik</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
+
+    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
+    .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+    .btn-nav { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
+    .btn-nav:hover { background: #ef233c; }
+
+    .main-container { flex: 1; padding: 30px 20px; max-width: 1000px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
+
+    /* TABOVI ZABAVE (Vicevi vs Video) */
+    .tab-navigation { display: flex; justify-content: center; gap: 15px; border-bottom: 2px solid #ffd8df; padding-bottom: 10px; }
+    .tab-btn { background: #fff; border: 1px solid #ffd8df; color: #2b2d42; padding: 10px 24px; border-radius: 25px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: all 0.2s ease; }
+    .tab-btn:hover, .tab-btn.active { background: #d90429; color: #fff; border-color: #d90429; box-shadow: 0 4px 12px rgba(217, 4, 41, 0.2); }
+
+    .content-section { display: none; flex-direction: column; gap: 20px; }
+    .content-section.active { display: flex; }
+
+    /* SEKCIMA ZA VICEVE */
+    .jokes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .joke-card { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
+    .joke-badge { background: #ffe0e3; color: #800020; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; font-weight: bold; align-self: flex-start; }
+    .joke-text { font-size: 0.95rem; line-height: 1.5; color: #333; }
+    .joke-footer { display: flex; justify-content: flex-end; }
+    .btn-copy { background: #f0f0f0; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-weight: bold; color: #555; transition: background 0.2s; }
+    .btn-copy:hover { background: #e0e0e0; }
+
+    /* SEKCIJA ZA YOUTUBE VIDEA */
+    .videos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .video-card { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; display: flex; flex-direction: column; }
+    .video-container { position: relative; width: 100%; padding-bottom: 56.25%; /* 16:9 Aspect Ratio */ height: 0; }
+    .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+    .video-info { padding: 15px; display: flex; flex-direction: column; gap: 8px; }
+    .video-title { font-weight: bold; font-size: 1rem; color: #2b2d42; }
+    .video-link { color: #d90429; font-size: 0.85rem; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; }
+    .video-link:hover { text-decoration: underline; }
+
+    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik - Zabava</a>
+
+    <div class="nav-actions">
+      <a href="DASHBOARD.html" class="btn-nav">🏠 Dashboard</a>
+    </div>
+  </header>
+
+  <div class="main-container">
+
+    <div class="tab-navigation">
+      <button class="tab-btn active" onclick="prikaziSekciju('viceviTab', this)">📜 Tekstualni Vicevi</button>
+      <button class="tab-btn" onclick="prikaziSekciju('videoTab', this)">🎬 YouTube Zabava</button>
+    </div>
+
+    <div id="viceviTab" class="content-section active">
+      <div class="jokes-grid">
+
+        <div class="joke-card">
+          <span class="joke-badge">Vic Dana</span>
+          <p class="joke-text">Pita Mujo Fatu:<br>– Fato, da li bi radije živjela sa pametnim ili sa lijepim muškarcem?<br>– Ni sa jednim, Mujo, znaš da ja volim samo tebe!</p>
+          <div class="joke-footer">
+            <button class="btn-copy" onclick="kopirajTekst('Pita Mujo Fatu: – Fato, da li bi radije živjela sa pametnim ili sa lijepim muškarcem? – Ni sa jednim, Mujo, znaš da ja volim samo tebe!')">📋 Kopiraj vic</button>
+          </div>
+        </div>
+
+        <div class="joke-card">
+          <span class="joke-badge">Mujo i Haso</span>
+          <p class="joke-text">Gledaju Mujo i Haso zvjezdano nebo i Mujo pita:<br>– Haso, šta ti misliš, ima li života gore na zvijezdama?<br>– Nema sigurno, vidio bi se dječji osmijeh i gorjelo bi svjetlo!</p>
+          <div class="joke-footer">
+            <button class="btn-copy" onclick="kopirajTekst('Gledaju Mujo i Haso zvjezdano nebo i Mujo pita: – Haso, šta ti misliš, ima li života gore na zvijezdama? – Nema sigurno, vidio bi se dječji osmijeh i gorjelo bi svjetlo!')">📋 Kopiraj vic</button>
+          </div>
+        </div>
+
+        <div class="joke-card">
+          <span class="joke-badge">Kratki vic</span>
+          <p class="joke-text">Razgovaraju dvije prijateljice:<br>– Moj muž je pravi anđeo!<br>– Blago tebi, moj je još uvijek živ!</p>
+          <div class="joke-footer">
+            <button class="btn-copy" onclick="kopirajTekst('Razgovaraju dvije prijateljice: – Moj muž je pravi anđeo! – Blago tebi, moj je još uvijek živ!')">📋 Kopiraj vic</button>
+          </div>
+        </div>
+
+        <div class="joke-card">
+          <span class="joke-badge">Ljubavni vic</span>
+          <p class="joke-text">Momak kaže djevojci na spoju:<br>– Znaš, tvoje oči su kao zvijezde... Jedna gleda u nebo, a druga u mene!</p>
+          <div class="joke-footer">
+            <button class="btn-copy" onclick="kopirajTekst('Momak kaže djevojci na spoju: – Znaš, tvoje oči su kao zvijezde... Jedna gleda u nebo, a druga u mene!')">📋 Kopiraj vic</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="videoTab" class="content-section">
+      <div class="videos-grid">
+
+        <div class="video-card">
+          <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" allowfullscreen></iframe>
+          </div>
+          <div class="video-info">
+            <div class="video-title">Najsmješniji video snimci i gafovi</div>
+            <a href="https://www.youtube.com/watch?dQw4w9WgXcQ" target="_blank" class="video-link">▶ Open on YouTube</a>
+          </div>
+        </div>
+
+        <div class="video-card">
+          <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/3JZ_D3ELwOQ" title="YouTube video player" allowfullscreen></iframe>
+          </div>
+          <div class="video-info">
+            <div class="video-title">Opuštajuća muzika i smiješne kompilacije</div>
+            <a href="https://www.youtube.com/watch?v=3JZ_D3ELwOQ" target="_blank" class="video-link">▶ Open on YouTube</a>
+          </div>
+        </div>
+
+        <div class="video-card">
+          <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/L_LUpnjgPso" title="YouTube video player" allowfullscreen></iframe>
+          </div>
+          <div class="video-info">
+            <div class="video-title">Kratke komedije i pranks sa balkona</div>
+            <a href="https://www.youtube.com/watch?v=L_LUpnjgPso" target="_blank" class="video-link">▶ Open on YouTube</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
+  </footer>
+
+  <script>
+    function prikaziSekciju(tabId, element) {
+      // Sakrij sve sekcije
+      const sekcije = document.querySelectorAll('.content-section');
+      sekcije.forEach(s => s.classList.remove('active'));
+
+      // Deaktiviraj sve dugmiće
+      const dugmici = document.querySelectorAll('.tab-btn');
+      dugmici.forEach(d => d.classList.remove('active'));
+
+      // Prikazi odabranu sekciju i aktiviraj dugme
+      document.getElementById(tabId).classList.add('active');
+      element.classList.add('active');
+    }
+
+    function kopirajTekst(tekst) {
+      navigator.clipboard.writeText(tekst).then(() => {
+        alert("Vic je uspješno kopiran!");
+      }).catch(err => {
+        console.error("Greška pri kopiranju:", err);
+      });
+    }
+  </script>
+
+</body>
+</html>
