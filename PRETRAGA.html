@@ -1,15 +1,3 @@
-Moja greška, sad te razumijem 100%! Umjesto lansiranja vanjskog Google linka, želio si da to novo dugme fizički otvori/preusmjeri na tvoju drugu HTML datoteku pod nazivom PRETRAGA_INTERNET.html i proslijedi joj unesene parametre iz forme.
-
-Evo kompletnog, tačnog koda za PRETRAGA_NOVA.html.
-🛠️ Šta je tačno promijenjeno:
-
-    Klikom na dugme 🌐 Vanjska Pretraga poziva se funkcija koja otvara tvoju novu stranicu: PRETRAGA_INTERNET.html.
-
-    Svi izabrani filteri (pojam pretrage, platforma, vrijeme, spol, godine) prosljeđuju se u URL-u toj novoj stranici (npr. PRETRAGA_INTERNET.html?q=Sarajevo&platforma=badoo.com...).
-
-Samo prekopiraj kompletan kod ispod u datoteku PRETRAGA_NOVA.html:
-HTML
-
 <!DOCTYPE html>
 <html lang="bs">
 <head>
@@ -42,8 +30,9 @@ HTML
 
     .btn-search { background: #d90429; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
     .btn-search:hover { background: #ef233c; }
-    .btn-ext { background: #2b2d42; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
-    .btn-ext:hover { background: #3d405b; }
+    
+    .btn-ext-file { background: #2b2d42; color: #fff; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+    .btn-ext-file:hover { background: #3d405b; color: #fff; }
 
     .section-header { margin-top: 25px; font-size: 1.1rem; font-weight: bold; color: #2b2d42; border-bottom: 2px solid #d90429; padding-bottom: 5px; }
 
@@ -106,21 +95,6 @@ HTML
       <div class="search-filters">
         <input type="text" id="searchInput" placeholder="Ime, grad, opis..." onkeypress="handleKeyPress(event)">
         
-        <select id="platformaSelect">
-          <option value="ALL">Sve Mreže (Badoo, Tinder...)</option>
-          <option value="badoo.com">Badoo</option>
-          <option value="tinder.com">Tinder</option>
-          <option value="bumble.com">Bumble</option>
-          <option value="twoo.com">Twoo</option>
-        </select>
-
-        <select id="vrijemeSelect">
-          <option value="">Bilo kada</option>
-          <option value="qdr:d">Zadnja 24h</option>
-          <option value="qdr:w">Zadnjih 7 dana</option>
-          <option value="qdr:m">Zadnjih 30 dana</option>
-        </select>
-
         <select id="spolSelect" onchange="filtrirajLokalnuBazu()">
           <option value="ALL" id="optSpolAll">Svi spolovi</option>
           <option value="Musko" id="optSpolM">👨 Muško</option>
@@ -145,7 +119,7 @@ HTML
 
         <button class="btn-search" id="btnSearch" onclick="filtrirajLokalnuBazu()">🔍 Pretraži Bazu</button>
 
-        <button class="btn-ext" onclick="otvoriPretragaInternet()">🌐 PRETRAGA INTERNET</button>
+        <a href="javascript:void(0)" onclick="otvoriFajlInternet()" class="btn-ext-file">🌐 PRETRAGA INTERNET</a>
       </div>
 
       <div id="statusMsg">Učitavanje svih korisnika iz baze...</div>
@@ -365,7 +339,7 @@ HTML
     });
   }
 
-  // AUTOMATSKO UČITAVANJE KORISNIKA PRI POKRETANJU
+  // UČITAVANJE KORISNIKA PRI STRANICI
   async function ucitajSveKorisnikeOdmah() {
     const t = prevodi[trenutniJezik];
     const statusMsg = document.getElementById('statusMsg');
@@ -487,7 +461,7 @@ HTML
     }
   }
 
-  // DUGME 1: FILTRIRANJE KORISNIKA IZ LOKALNE BAZA
+  // FUNKCIJA 1: Pretražuje SAMO bazu na ovoj stranici
   function filtrirajLokalnuBazu() {
     const query = document.getElementById('searchInput').value.trim().toLowerCase();
     const spol = document.getElementById('spolSelect').value;
@@ -573,16 +547,13 @@ HTML
     }
   }
 
-  // DUGME 2: OTVARA PRETRAGA_INTERNET.html SA PROSLIJEĐENIM PARAMETRIMA
-  function otvoriPretragaInternet() {
+  // FUNKCIJA 2: PREUSMJERAVA DIREKTNO NA PRETRAGA_INTERNET.html
+  function otvoriFajlInternet() {
     const query = document.getElementById('searchInput').value.trim();
-    const platforma = document.getElementById('platformaSelect').value;
-    const vrijeme = document.getElementById('vrijemeSelect').value;
     const spol = document.getElementById('spolSelect').value;
     const godine = document.getElementById('godineSelect').value;
 
-    const url = `PRETRAGA_INTERNET.html?q=${encodeURIComponent(query)}&platforma=${encodeURIComponent(platforma)}&vrijeme=${encodeURIComponent(vrijeme)}&spol=${encodeURIComponent(spol)}&godine=${encodeURIComponent(godine)}`;
-    
+    const url = `PRETRAGA_INTERNET.html?q=${encodeURIComponent(query)}&spol=${encodeURIComponent(spol)}&godine=${encodeURIComponent(godine)}`;
     window.location.href = url;
   }
 
