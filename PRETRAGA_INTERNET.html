@@ -106,7 +106,7 @@
 
       <button class="btn-submit" onclick="pokreniVanjskuPretragu()">🚀 Otvori Google Slike Pretragu</button>
 
-      <div id="infoBox">ℹ️ Klikom na dugme otvoriće se Google Slike pretraga filtrirana tačno prema zadanim parametrima.</div>
+      <div id="infoBox">ℹ️ Klikom na dugme otvoriće se Google Slike pretraga filtrirana pametno prema zadanim parametrima.</div>
     </div>
   </div>
 
@@ -132,8 +132,8 @@
     if (vrijemeParam) document.getElementById('vrijemeSelect').value = decodeURIComponent(vrijemeParam);
   }
 
-  // 2. FUNKCIJA KOJA SVODI PODATKE I OTVARA GOOGLE SLIKE
-  functiofunction pokreniVanjskuPretragu() {
+  // 2. FUNKCIJA KOJA SPREMA REZULTATE I OTVARA GOOGLE SLIKE
+  function pokreniVanjskuPretragu() {
     const query = document.getElementById('searchInput').value.trim();
     const platforma = document.getElementById('platformaSelect').value;
     const vrijeme = document.getElementById('vrijemeSelect').value;
@@ -161,7 +161,7 @@
       searchTerms.push("(Musko OR Muskarac OR Male)");
     }
 
-    // 4. Godine - samo kao brojevi
+    // 4. Godine - raspon brojeva
     if (godineRange && godineRange !== 'ALL') {
       if (godineRange === '18-25') searchTerms.push("(18 OR 19 OR 20 OR 21 OR 22 OR 23 OR 24 OR 25)");
       else if (godineRange === '26-35') searchTerms.push("(26 OR 27 OR 28 OR 29 OR 30 OR 31 OR 32 OR 33 OR 34 OR 35)");
@@ -175,9 +175,6 @@
     if (vrijeme) {
       googleUrl += `&tbs=${vrijeme}`;
     }
-
-    window.open(googleUrl, '_blank', 'noopener,noreferrer');
-  }
 
     window.open(googleUrl, '_blank', 'noopener,noreferrer');
   }
