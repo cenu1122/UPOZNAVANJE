@@ -1,3 +1,16 @@
+Evo kompletno posloženog i spakovanog koda u jedan čist fajl.
+
+Sada postoje dva zasebna dugmeta:
+
+    🔍 Pretraži Bazu (Crveno) – Filtrira korisnike samo unutar tvoje lokalne baze na toj istoj stranici.
+
+    🌐 Vanjska Pretraga (Tamno) – Otvara vanjski prozor/tab na Google Slikama za Badoo, Tinder, Bumble, Twoo.
+
+Također, uklonjen je padajući meni izvorSelect da ne stvara zbrku, a zadržano je automatsko učitavanje svih korisnika čim se stranica otvori.
+
+Samo kopiraj i zamijeni čitav kod u datoteci PRETRAGA_NOVA.html:
+HTML
+
 <!DOCTYPE html>
 <html lang="bs">
 <head>
@@ -28,8 +41,10 @@
     .search-filters input[type="text"] { flex: 2; min-width: 180px; }
     .search-filters select { flex: 1; min-width: 130px; }
 
-    .btn-search { background: #d90429; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
+    .btn-search { background: #d90429; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
     .btn-search:hover { background: #ef233c; }
+    .btn-ext { background: #2b2d42; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
+    .btn-ext:hover { background: #3d405b; }
 
     .section-header { margin-top: 25px; font-size: 1.1rem; font-weight: bold; color: #2b2d42; border-bottom: 2px solid #d90429; padding-bottom: 5px; }
 
@@ -87,17 +102,11 @@
   <div class="main-container">
     <div class="card">
       <h2 id="txtMainTitle">🔍 Napredna Pretraga Profila</h2>
-      <p style="color: #666; font-size: 0.9rem; margin-top: 4px;" id="txtMainSub">Lista svih registrovanih korisnika i pretraga po mrežama:</p>
+      <p style="color: #666; font-size: 0.9rem; margin-top: 4px;" id="txtMainSub">Pretražite lokalnu bazu ili otvorite vanjske mreže:</p>
 
       <div class="search-filters">
         <input type="text" id="searchInput" placeholder="Ime, grad, opis..." onkeypress="handleKeyPress(event)">
         
-        <select id="izvorSelect">
-          <option value="BAZA">📁 Samo Naša Baza</option>
-          <option value="SVE">🌐 Sve (Baza + Vanjske)</option>
-          <option value="VANJSKO">🔍 Samo Vanjske Mreže</option>
-        </select>
-
         <select id="platformaSelect">
           <option value="ALL">Sve Mreže (Badoo, Tinder...)</option>
           <option value="badoo.com">Badoo</option>
@@ -113,13 +122,13 @@
           <option value="qdr:m">Zadnjih 30 dana</option>
         </select>
 
-        <select id="spolSelect" onchange="traziSve()">
+        <select id="spolSelect" onchange="filtrirajLokalnuBazu()">
           <option value="ALL" id="optSpolAll">Svi spolovi</option>
           <option value="Musko" id="optSpolM">👨 Muško</option>
           <option value="Zensko" id="optSpolF">👩 Žensko</option>
         </select>
 
-        <select id="godineSelect" onchange="traziSve()">
+        <select id="godineSelect" onchange="filtrirajLokalnuBazu()">
           <option value="ALL" id="optGodAll">Sve godine</option>
           <option value="18-25">18 - 25</option>
           <option value="26-35">26 - 35</option>
@@ -127,7 +136,7 @@
           <option value="50+">50+</option>
         </select>
 
-        <select id="vjeraSelect" onchange="traziSve()">
+        <select id="vjeraSelect" onchange="filtrirajLokalnuBazu()">
           <option value="ALL" id="optVjAll">Sve vjere</option>
           <option value="Islam" id="optVjIsl">Islam</option>
           <option value="Krscanstvo" id="optVjKrs">Kršćanstvo</option>
@@ -135,7 +144,9 @@
           <option value="Ostalo" id="optVjOst">Ostalo / Neizjašnjen</option>
         </select>
 
-        <button class="btn-search" id="btnSearch" onclick="traziSve()">Pretraži</button>
+        <button class="btn-search" id="btnSearch" onclick="filtrirajLokalnuBazu()">🔍 Pretraži Bazu</button>
+
+        <button class="btn-ext" onclick="pokreniVanjskiFile()">🌐 Vanjska Pretraga</button>
       </div>
 
       <div id="statusMsg">Učitavanje svih korisnika iz baze...</div>
@@ -199,7 +210,7 @@
     BS: {
       btnDash: "🏠 Dashboard & Chat",
       mainTitle: "🔍 Napredna Pretraga Profila",
-      mainSub: "Lista svih registrovanih korisnika i pretraga po mrežama:",
+      mainSub: "Pretražite lokalnu bazu ili otvorite vanjske mreže:",
       placeholder: "Ime, grad, opis...",
       optSpolAll: "Svi spolovi",
       optSpolM: "👨 Muško",
@@ -210,7 +221,7 @@
       optVjKrs: "Kršćanstvo",
       optVjPra: "Pravoslavlje",
       optVjOst: "Ostalo / Neizjašnjen",
-      btnSearch: "Pretraži",
+      btnSearch: "🔍 Pretraži Bazu",
       secUsers: "👥 Svi korisnici u bazi (UPOZNAVANJ_KORISNICI)",
       secImages: "🖼️ Profili iz tabele SLIKE",
       about: "O meni:",
@@ -230,7 +241,7 @@
     EN: {
       btnDash: "🏠 Dashboard & Chat",
       mainTitle: "🔍 Advanced Profile Search",
-      mainSub: "List of all registered users and external network search:",
+      mainSub: "Search local database or open external networks:",
       placeholder: "Name, city, description...",
       optSpolAll: "All genders",
       optSpolM: "👨 Male",
@@ -241,7 +252,7 @@
       optVjKrs: "Christianity",
       optVjPra: "Orthodoxy",
       optVjOst: "Other / Undisclosed",
-      btnSearch: "Search",
+      btnSearch: "🔍 Search Database",
       secUsers: "👥 All Database Users (UPOZNAVANJ_KORISNICI)",
       secImages: "🖼️ Profiles from IMAGES Table",
       about: "About me:",
@@ -261,7 +272,7 @@
     DE: {
       btnDash: "🏠 Dashboard & Chat",
       mainTitle: "🔍 Erweiterte Profilsuche",
-      mainSub: "Liste aller registrierten Benutzer und Suche in externen Netzwerken:",
+      mainSub: "Lokale Datenbank durchsuchen oder externe Netzwerke öffnen:",
       placeholder: "Name, Stadt, Beschreibung...",
       optSpolAll: "Alle Geschlechter",
       optSpolM: "👨 Männlich",
@@ -272,7 +283,7 @@
       optVjKrs: "Christentum",
       optVjPra: "Orthodoxie",
       optVjOst: "Sonstiges / Keine Angabe",
-      btnSearch: "Suchen",
+      btnSearch: "🔍 Datenbank Suchen",
       secUsers: "👥 Alle Datenbankbenutzer (UPOZNAVANJ_KORISNICI)",
       secImages: "🖼️ Profile aus der BILDER-Tabelle",
       about: "Über mich:",
@@ -318,7 +329,7 @@
     document.getElementById('mChatBtn').innerText = t.btnStartChat;
     document.getElementById('txtRights').innerText = t.rights;
 
-    traziSve();
+    filtrirajLokalnuBazu();
   }
 
   function getFallbackAvatar(name) {
@@ -355,31 +366,7 @@
     });
   }
 
-  function otvoriVanjskuPretragu(query, spol, godineRange, platforma, vrijeme) {
-    let siteQuery = "";
-    if (platforma === 'ALL') {
-      siteQuery = "(site:badoo.com OR site:tinder.com OR site:bumble.com OR site:twoo.com)";
-    } else {
-      siteQuery = `site:${platforma}`;
-    }
-
-    let searchTerms = [siteQuery];
-
-    if (query) searchTerms.push(`"${query}"`);
-    if (spol && spol !== 'ALL') searchTerms.push(`"${spol}"`);
-    if (godineRange && godineRange !== 'ALL') searchTerms.push(`"${godineRange.replace('-', ' OR ')}"`);
-
-    let finalQuery = searchTerms.join(" ");
-    
-    let googleUrl = `https://www.google.com/search?q=${encodeURIComponent(finalQuery)}&tbm=isch`;
-    if (vrijeme) {
-      googleUrl += `&tbs=${vrijeme}`;
-    }
-
-    window.open(googleUrl, '_blank', 'noopener,noreferrer');
-  }
-
-  // AUTOMATSKO UČITAVANJE SVIH KORISNIKA ČIM SE OTVORI STRANICA
+  // AUTOMATSKO UČITAVANJE KORISNIKA PRI POKRETANJU
   async function ucitajSveKorisnikeOdmah() {
     const t = prevodi[trenutniJezik];
     const statusMsg = document.getElementById('statusMsg');
@@ -501,38 +488,13 @@
     }
   }
 
-  // GLAVNA FUNKCIJA KOJA ODLUČUJE DA LI DIRA SAMO LOKALNU BAZU ILI OTVARA VANJSKI TAB
-  async function traziSve() {
-    const izvor = document.getElementById('izvorSelect').value;
+  // 1. DUGME 1: FILTRIRANJE LOKALNE BAZA
+  function filtrirajLokalnuBazu() {
     const query = document.getElementById('searchInput').value.trim().toLowerCase();
     const spol = document.getElementById('spolSelect').value;
     const godineRange = document.getElementById('godineSelect').value;
     const vjera = document.getElementById('vjeraSelect').value;
-    const platforma = document.getElementById('platformaSelect').value;
-    const vrijeme = document.getElementById('vrijemeSelect').value;
 
-    const statusMsg = document.getElementById('statusMsg');
-
-    if (izvor === 'BAZA') {
-      statusMsg.style.color = '#0056b3';
-      statusMsg.innerText = '🔍 Pretražujem lokalnu bazu...';
-      filtrirajLokalnuBazu(query, spol, godineRange, vjera);
-    } 
-    else if (izvor === 'VANJSKO') {
-      statusMsg.style.color = '#0056b3';
-      statusMsg.innerText = '🌐 Otvaram vanjsku pretragu u novom tabu...';
-      otvoriVanjskuPretragu(query, spol, godineRange, platforma, vrijeme);
-    } 
-    else if (izvor === 'SVE') {
-      statusMsg.style.color = '#0056b3';
-      statusMsg.innerText = '🔄 Pretražujem lokalnu bazu i otvaram vanjske mreže...';
-      filtrirajLokalnuBazu(query, spol, godineRange, vjera);
-      otvoriVanjskuPretragu(query, spol, godineRange, platforma, vrijeme);
-    }
-  }
-
-  // FILTRIRANJE KORISNIKA NA SAMOJ STRANICI BEZ OTVARANJA GOOGLE-A
-  function filtrirajLokalnuBazu(query, spol, godineRange, vjera) {
     const korisniciList = document.getElementById('korisniciList');
     const statusMsg = document.getElementById('statusMsg');
     const t = prevodi[trenutniJezik];
@@ -610,6 +572,37 @@
       statusMsg.style.color = '#d90429';
       statusMsg.innerText = 'Nema rezultata u lokalnoj bazi.';
     }
+  }
+
+  // 2. DUGME 2: POKRETANJE ZASEBNE VANJSKE PRETRAGE U NOVOM TABU
+  function pokreniVanjskiFile() {
+    const query = document.getElementById('searchInput').value.trim();
+    const platforma = document.getElementById('platformaSelect').value;
+    const vrijeme = document.getElementById('vrijemeSelect').value;
+    const spol = document.getElementById('spolSelect').value;
+    const godineRange = document.getElementById('godineSelect').value;
+
+    let siteQuery = "";
+    if (platforma === 'ALL') {
+      siteQuery = "(site:badoo.com OR site:tinder.com OR site:bumble.com OR site:twoo.com)";
+    } else {
+      siteQuery = `site:${platforma}`;
+    }
+
+    let searchTerms = [siteQuery];
+
+    if (query) searchTerms.push(`"${query}"`);
+    if (spol && spol !== 'ALL') searchTerms.push(`"${spol}"`);
+    if (godineRange && godineRange !== 'ALL') searchTerms.push(`"${godineRange.replace('-', ' OR ')}"`);
+
+    let finalQuery = searchTerms.join(" ");
+    
+    let googleUrl = `https://www.google.com/search?q=${encodeURIComponent(finalQuery)}&tbm=isch`;
+    if (vrijeme) {
+      googleUrl += `&tbs=${vrijeme}`;
+    }
+
+    window.open(googleUrl, '_blank', 'noopener,noreferrer');
   }
 
   async function otvoriProfilModal(index) {
@@ -733,7 +726,7 @@
 
   function handleKeyPress(event) {
     if (event.key === 'Enter') {
-      traziSve();
+      filtrirajLokalnuBazu();
     }
   }
 
