@@ -142,26 +142,32 @@
 
     let searchTerms = [];
 
-    // 1. Dodavanje platforme
-    if (platforma === 'ALL') {
-      searchTerms.push("(site:badoo.com OR site:tinder.com OR site:bumble.com OR site:twoo.com)");
+    // 1. Ciljanje profilnih pod-domena i stranica radi izbjegavanja blogova/reklama
+    if (platforma === 'badoo.com') {
+      searchTerms.push("site:badoo.com/profile OR site:badoo.com/en-gb/profile OR site:badoo.com/bs/");
+    } else if (platforma === 'tinder.com') {
+      searchTerms.push("site:tinder.com/@* OR site:tinder.com/en/");
+    } else if (platforma === 'bumble.com') {
+      searchTerms.push("site:bumble.com/get-started OR site:bumble.com/en/");
     } else {
-      searchTerms.push(`site:${platforma}`);
+      searchTerms.push("(site:badoo.com/profile OR site:tinder.com/@* OR site:bumble.com OR site:twoo.com)");
     }
 
-    // 2. Uneseni pojam (Ime ili Grad)
+    // 2. Uneseni pojam (Ako je prazno, dodajemo riječ "profile" da suzi na ljude)
     if (query) {
-      searchTerms.push(query);
+      searchTerms.push(`"${query}"`);
+    } else {
+      searchTerms.push("profile");
     }
 
-    // 3. Spol - fleksibilni pojmovi (bez strogih navodnika)
+    // 3. Spol - ciljanje riječima koje pišu na javnim profilima
     if (spol === 'Zensko') {
-      searchTerms.push("(Zensko OR Zena OR Female)");
+      searchTerms.push("(Zensko OR Zena OR Female OR Woman)");
     } else if (spol === 'Musko') {
-      searchTerms.push("(Musko OR Muskarac OR Male)");
+      searchTerms.push("(Musko OR Muskarac OR Male OR Man)");
     }
 
-    // 4. Godine - raspon brojeva
+    // 4. Godine
     if (godineRange && godineRange !== 'ALL') {
       if (godineRange === '18-25') searchTerms.push("(18 OR 19 OR 20 OR 21 OR 22 OR 23 OR 24 OR 25)");
       else if (godineRange === '26-35') searchTerms.push("(26 OR 27 OR 28 OR 29 OR 30 OR 31 OR 32 OR 33 OR 34 OR 35)");
@@ -178,7 +184,6 @@
 
     window.open(googleUrl, '_blank', 'noopener,noreferrer');
   }
-
   function handleKeyPress(event) {
     if (event.key === 'Enter') {
       pokreniVanjskuPretragu();
