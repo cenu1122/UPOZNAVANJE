@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Asistent za Intervju - Web Pisala PRO</title>
+    <title>AI Asistent za Poslovni Intervju | Portal</title>
     <style>
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
+        *, *::before, *::after { box-sizing: border-box; }
         body {
             margin: 0;
             padding: 0;
@@ -16,11 +14,11 @@
             color: #333;
         }
         .container {
-            max-width: 700px;
-            margin: 40px auto;
+            max-width: 750px;
+            margin: 30px auto;
             background: #ffffff;
             border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
             overflow: hidden;
             border: 1px solid #e1e4e8;
         }
@@ -31,11 +29,18 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .header h2 {
             margin: 0;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 600;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         .credits-badge {
             background: rgba(255, 255, 255, 0.1);
@@ -47,18 +52,25 @@
             gap: 8px;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .credits-badge button {
+        .credits-badge button, .btn-account {
             background: #3b82f6;
             color: white;
             border: none;
-            padding: 3px 8px;
-            border-radius: 4px;
+            padding: 5px 10px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: bold;
+            transition: background 0.2s;
         }
-        .credits-badge button:hover {
+        .credits-badge button:hover, .btn-account:hover {
             background: #2563eb;
+        }
+        .btn-account {
+            background: #0d9488;
+        }
+        .btn-account:hover {
+            background: #0f766e;
         }
         .control-bar {
             padding: 15px 25px;
@@ -81,7 +93,7 @@
             font-size: 13px;
         }
         .chat-box {
-            height: 380px;
+            height: 400px;
             padding: 20px;
             overflow-y: auto;
             display: flex;
@@ -90,9 +102,9 @@
             background: #ffffff;
         }
         .message {
-            padding: 10px 14px;
+            padding: 12px 16px;
             border-radius: 8px;
-            max-width: 75%;
+            max-width: 80%;
             font-size: 14px;
             line-height: 1.5;
         }
@@ -116,7 +128,7 @@
         }
         .input-area input {
             flex: 1;
-            padding: 10px 14px;
+            padding: 12px 14px;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
             font-size: 14px;
@@ -130,7 +142,7 @@
             background: #0f172a;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 22px;
             border-radius: 6px;
             font-weight: 600;
             cursor: pointer;
@@ -139,16 +151,73 @@
         .input-area button:hover {
             background: #1e293b;
         }
+
+        /* Stil za Modal / Iskačući prozor sa brojem računa */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: left;
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            color: #0f172a;
+            font-size: 18px;
+        }
+        .modal-content p {
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.6;
+        }
+        .account-box {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px dashed #cbd5e1;
+            font-family: monospace;
+            font-size: 15px;
+            color: #1e293b;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .modal-close {
+            background: #0f172a;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            float: right;
+        }
+        .modal-close:hover {
+            background: #1e293b;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h2>AI Asistent za Intervju</h2>
-        <div class="credits-badge">
-            <span>Krediti: <strong id="user-credits">1500</strong> znakova</span>
-            <button onclick="topUpCredits()">Dopuni (PayPal)</button>
+        <h2>AI Asistent za Poslovni Intervju</h2>
+        <div class="header-actions">
+            <button class="btn-account" onclick="otvoriRacunModal()">📄 Moj Broj Računa</button>
+            <div class="credits-badge">
+                <span>Krediti: <strong id="user-credits">1500</strong> znakova</span>
+                <button onclick="topUpCredits()">Dopuni (PayPal)</button>
+            </div>
         </div>
     </div>
 
@@ -161,25 +230,49 @@
     </div>
 
     <div class="chat-box" id="chat-box">
-        <div class="message ai">Pozdrav! Ja sam tvoj AI asistent za pripremu intervjua. Izaberi ulogu ili mi postavi pitanje pa da počnemo sa vježbom!</div>
+        <div class="message ai">Pozdrav! Ja sam vaš profesionalni regruter i poslovni asistent. Spremio sam pitanja za procjenu vaših vještina iz mašinske industrije, investicionih projekata i softverskog razvoja. Možemo li početi sa razgovorom?</div>
     </div>
 
     <div class="input-area">
-        <input type="text" id="user-input" placeholder="Napiši svoj odgovor ovdje..." onkeypress="handleKeyPress(event)">
+        <input type="text" id="user-input" placeholder="Napišite svoj profesionalni odgovor..." onkeypress="handleKeyPress(event)">
         <button onclick="sendMessage()">Pošalji</button>
     </div>
 </div>
 
+<div class="modal-overlay" id="racunModal">
+    <div class="modal-content">
+        <h3>Podaci za uplatu / direktnu kupovinu kredita</h3>
+        <p>Ukoliko želite direktnu uplatu na bankovni račun radi dopune kredita, koristite sljedeće podatke:</p>
+        
+        <div class="account-box">
+            Broj računa: <strong>1610000000000000</strong><br>
+            Banka: Vaša Banka d.d.<br>
+            Primalac: Vaše Ime / Firma
+        </div>
+
+        <p style="font-size: 12px; color: #64748b;">Nakon izvršene uplate, pošaljite potvrdu putem kontakt forme i krediti će vam biti ručno dodati na račun.</p>
+        
+        <button class="modal-close" onclick="zatvoriRacunModal()">Zatvori</button>
+    </div>
+</div>
+
 <script>
-    let userCredits = 1500; // Početni broj besplatnih karaktera na računu
+    let userCredits = 1500;
+
+    function otvoriRacunModal() {
+        document.getElementById('racunModal').style.display = 'flex';
+    }
+
+    function zatvoriRacunModal() {
+        document.getElementById('racunModal').style.display = 'none';
+    }
 
     function updateCreditsDisplay() {
         document.getElementById('user-credits').innerText = userCredits;
     }
 
     function topUpCredits() {
-        // Simulacija PayPal uplate i dopune kredita
-        let amount = prompt("Unesi iznos karaktera za dopunu (npr. 10000):", "10000");
+        let amount = prompt("Unesite iznos karaktera za dopunu preko PayPala (npr. 10000):", "10000");
         if (amount && !isNaN(amount)) {
             userCredits += parseInt(amount);
             updateCreditsDisplay();
@@ -201,29 +294,25 @@
 
         if (!text) return;
 
-        // Prikaz korisnikove poruke
         chatBox.innerHTML += `<div class="message user">${escapeHtml(text)}</div>`;
         inputField.value = '';
         chatBox.scrollTop = chatBox.scrollHeight;
 
-        // Provjera karaktera ako je odabran premium glas
         if (voiceType === 'premium') {
             const requiredCredits = text.length;
             if (userCredits < requiredCredits) {
-                alert("Nemate dovoljno karaktera na računu za Premium glas! Dopunite kredit preko PayPal-a.");
+                alert("Nemate dovoljno karaktera na računu za Premium glas! Dopunite kredit preko PayPal-a ili direktno na račun.");
                 return;
             }
             userCredits -= requiredCredits;
             updateCreditsDisplay();
         }
 
-        // Simulacija AI odgovora (ovdje se kasnije spaja na Groq API)
         setTimeout(() => {
-            const aiReply = "Odlično zvuči! Možeš li mi preciznije objasniti kako rješavaš tehničke probleme pod pritiskom u radionici ili na projektu?";
+            const aiReply = "Hvala na preciznom odgovoru. Recite mi kako pristupate rješavanju složenih tehničkih izazova kada radite na automatskim sistemima i industrijskom održavanju?";
             chatBox.innerHTML += `<div class="message ai">${escapeHtml(aiReply)}</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Pokretanje glasa
             if (voiceType === 'browser') {
                 playBrowserVoice(aiReply);
             } else {
@@ -235,16 +324,13 @@
     function playBrowserVoice(text) {
         if ('speechSynthesis' in window) {
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'bs-BA'; // Podrazumevani jezik
+            utterance.lang = 'bs-BA';
             window.speechSynthesis.speak(utterance);
-        } else {
-            console.log("Browser Speech Synthesis nije podržan.");
         }
     }
 
     function playElevenLabsVoice(text) {
         console.log("Poziv ElevenLabs API-ju za tekst dužine:", text.length);
-        // Ovdje ide fetch() prema tvom backend serveru koji komunicira sa ElevenLabs-om
     }
 
     function escapeHtml(unsafe) {
@@ -259,6 +345,3 @@
 
 </body>
 </html>
-
-ai_asistent_intervju.html
-Prikazuje se ai_asistent_intervju.html.
