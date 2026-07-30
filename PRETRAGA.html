@@ -1,14 +1,13 @@
-Evo kompletno posloženog i spakovanog koda u jedan čist fajl.
+Moja greška, sad te razumijem 100%! Umjesto lansiranja vanjskog Google linka, želio si da to novo dugme fizički otvori/preusmjeri na tvoju drugu HTML datoteku pod nazivom PRETRAGA_INTERNET.html i proslijedi joj unesene parametre iz forme.
 
-Sada postoje dva zasebna dugmeta:
+Evo kompletnog, tačnog koda za PRETRAGA_NOVA.html.
+🛠️ Šta je tačno promijenjeno:
 
-    🔍 Pretraži Bazu (Crveno) – Filtrira korisnike samo unutar tvoje lokalne baze na toj istoj stranici.
+    Klikom na dugme 🌐 Vanjska Pretraga poziva se funkcija koja otvara tvoju novu stranicu: PRETRAGA_INTERNET.html.
 
-    🌐 Vanjska Pretraga (Tamno) – Otvara vanjski prozor/tab na Google Slikama za Badoo, Tinder, Bumble, Twoo.
+    Svi izabrani filteri (pojam pretrage, platforma, vrijeme, spol, godine) prosljeđuju se u URL-u toj novoj stranici (npr. PRETRAGA_INTERNET.html?q=Sarajevo&platforma=badoo.com...).
 
-Također, uklonjen je padajući meni izvorSelect da ne stvara zbrku, a zadržano je automatsko učitavanje svih korisnika čim se stranica otvori.
-
-Samo kopiraj i zamijeni čitav kod u datoteci PRETRAGA_NOVA.html:
+Samo prekopiraj kompletan kod ispod u datoteku PRETRAGA_NOVA.html:
 HTML
 
 <!DOCTYPE html>
@@ -146,7 +145,7 @@ HTML
 
         <button class="btn-search" id="btnSearch" onclick="filtrirajLokalnuBazu()">🔍 Pretraži Bazu</button>
 
-        <button class="btn-ext" onclick="pokreniVanjskiFile()">🌐 Vanjska Pretraga</button>
+        <button class="btn-ext" onclick="otvoriPretragaInternet()">🌐 PRETRAGA INTERNET</button>
       </div>
 
       <div id="statusMsg">Učitavanje svih korisnika iz baze...</div>
@@ -488,7 +487,7 @@ HTML
     }
   }
 
-  // 1. DUGME 1: FILTRIRANJE LOKALNE BAZA
+  // DUGME 1: FILTRIRANJE KORISNIKA IZ LOKALNE BAZA
   function filtrirajLokalnuBazu() {
     const query = document.getElementById('searchInput').value.trim().toLowerCase();
     const spol = document.getElementById('spolSelect').value;
@@ -574,35 +573,17 @@ HTML
     }
   }
 
-  // 2. DUGME 2: POKRETANJE ZASEBNE VANJSKE PRETRAGE U NOVOM TABU
-  function pokreniVanjskiFile() {
+  // DUGME 2: OTVARA PRETRAGA_INTERNET.html SA PROSLIJEĐENIM PARAMETRIMA
+  function otvoriPretragaInternet() {
     const query = document.getElementById('searchInput').value.trim();
     const platforma = document.getElementById('platformaSelect').value;
     const vrijeme = document.getElementById('vrijemeSelect').value;
     const spol = document.getElementById('spolSelect').value;
-    const godineRange = document.getElementById('godineSelect').value;
+    const godine = document.getElementById('godineSelect').value;
 
-    let siteQuery = "";
-    if (platforma === 'ALL') {
-      siteQuery = "(site:badoo.com OR site:tinder.com OR site:bumble.com OR site:twoo.com)";
-    } else {
-      siteQuery = `site:${platforma}`;
-    }
-
-    let searchTerms = [siteQuery];
-
-    if (query) searchTerms.push(`"${query}"`);
-    if (spol && spol !== 'ALL') searchTerms.push(`"${spol}"`);
-    if (godineRange && godineRange !== 'ALL') searchTerms.push(`"${godineRange.replace('-', ' OR ')}"`);
-
-    let finalQuery = searchTerms.join(" ");
+    const url = `PRETRAGA_INTERNET.html?q=${encodeURIComponent(query)}&platforma=${encodeURIComponent(platforma)}&vrijeme=${encodeURIComponent(vrijeme)}&spol=${encodeURIComponent(spol)}&godine=${encodeURIComponent(godine)}`;
     
-    let googleUrl = `https://www.google.com/search?q=${encodeURIComponent(finalQuery)}&tbm=isch`;
-    if (vrijeme) {
-      googleUrl += `&tbs=${vrijeme}`;
-    }
-
-    window.open(googleUrl, '_blank', 'noopener,noreferrer');
+    window.location.href = url;
   }
 
   async function otvoriProfilModal(index) {
