@@ -53,7 +53,7 @@
     .btn-invite { background: #25d366; color: #fff; border: none; padding: 10px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     .btn-invite:hover { background: #20ba5a; }
 
-    #statusMsg { margin-top: 10px; font-size: 0.9rem; font-weight: 600; color: #666; }
+    #statusMsg { margin-top: 10px; font-size: 0.9rem; font-weight: 600; color: #0056b3; }
 
     /* MODAL STILOVI */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; padding: 15px; }
@@ -87,14 +87,14 @@
   <div class="main-container">
     <div class="card">
       <h2 id="txtMainTitle">🔍 Napredna Pretraga Profila</h2>
-      <p style="color: #666; font-size: 0.9rem; margin-top: 4px;" id="txtMainSub">Filtrirajte po lokalnoj bazi ili pretražite vanjske platforme sa slikama:</p>
+      <p style="color: #666; font-size: 0.9rem; margin-top: 4px;" id="txtMainSub">Lista svih registrovanih korisnika i pretraga po mrežama:</p>
 
       <div class="search-filters">
         <input type="text" id="searchInput" placeholder="Ime, grad, opis..." onkeypress="handleKeyPress(event)">
         
         <select id="izvorSelect">
-          <option value="SVE">🌐 Sve (Baza + Vanjske)</option>
           <option value="BAZA">📁 Samo Naša Baza</option>
+          <option value="SVE">🌐 Sve (Baza + Vanjske)</option>
           <option value="VANJSKO">🔍 Samo Vanjske Mreže</option>
         </select>
 
@@ -138,12 +138,12 @@
         <button class="btn-search" id="btnSearch" onclick="traziSve()">Pretraži</button>
       </div>
 
-      <div id="statusMsg">Učitavanje podataka...</div>
+      <div id="statusMsg">Učitavanje svih korisnika iz baze...</div>
 
-      <div class="section-header" id="txtSecUsers">👤 Profil korisnici (UPOZNAVANJ_KORISNICI)</div>
+      <div class="section-header" id="txtSecUsers">👥 Svi korisnici u bazi (UPOZNAVANJ_KORISNICI)</div>
       <div id="korisniciList" class="results-container"></div>
 
-      <div class="section-header" style="margin-top: 35px;" id="txtSecImages">🖼️ Jedinstveni Profili po Slikama (SLIKE)</div>
+      <div class="section-header" style="margin-top: 35px;" id="txtSecImages">🖼️ Profili iz tabele SLIKE</div>
       <div id="slikeList" class="results-container"></div>
 
     </div>
@@ -199,7 +199,7 @@
     BS: {
       btnDash: "🏠 Dashboard & Chat",
       mainTitle: "🔍 Napredna Pretraga Profila",
-      mainSub: "Filtrirajte po lokalnoj bazi ili pretražite vanjske platforme sa slikama:",
+      mainSub: "Lista svih registrovanih korisnika i pretraga po mrežama:",
       placeholder: "Ime, grad, opis...",
       optSpolAll: "Svi spolovi",
       optSpolM: "👨 Muško",
@@ -211,8 +211,8 @@
       optVjPra: "Pravoslavlje",
       optVjOst: "Ostalo / Neizjašnjen",
       btnSearch: "Pretraži",
-      secUsers: "👤 Profil korisnici (UPOZNAVANJ_KORISNICI)",
-      secImages: "🖼️ Jedinstveni Profili po Slikama (SLIKE)",
+      secUsers: "👥 Svi korisnici u bazi (UPOZNAVANJ_KORISNICI)",
+      secImages: "🖼️ Profili iz tabele SLIKE",
       about: "O meni:",
       lookingFor: "Tražim:",
       btnView: "👁️ Pregledaj",
@@ -220,17 +220,17 @@
       btnStartChat: "💬 Započni Chat",
       btnClose: "Zatvori",
       userPics: "📸 Slike korisnika:",
-      loading: "Pretraživanje u toku...",
+      loading: "Učitavanje korisnika...",
       loadingData: "Učitavanje podataka...",
       noUsers: "Nema pronađenih profila u bazi korisnika.",
       noImages: "Nema unosa u tabeli SLIKE.",
-      searchDone: "Pretraga završena.",
+      searchDone: "Prikazani svi korisnici iz baze.",
       rights: "Sva prava zadržana."
     },
     EN: {
       btnDash: "🏠 Dashboard & Chat",
       mainTitle: "🔍 Advanced Profile Search",
-      mainSub: "Filter local database or search external platforms with images:",
+      mainSub: "List of all registered users and external network search:",
       placeholder: "Name, city, description...",
       optSpolAll: "All genders",
       optSpolM: "👨 Male",
@@ -242,8 +242,8 @@
       optVjPra: "Orthodoxy",
       optVjOst: "Other / Undisclosed",
       btnSearch: "Search",
-      secUsers: "👤 User Profiles (UPOZNAVANJ_KORISNICI)",
-      secImages: "🖼️ Unique Image Profiles (SLIKE)",
+      secUsers: "👥 All Database Users (UPOZNAVANJ_KORISNICI)",
+      secImages: "🖼️ Profiles from IMAGES Table",
       about: "About me:",
       lookingFor: "Looking for:",
       btnView: "👁️ View",
@@ -251,17 +251,17 @@
       btnStartChat: "💬 Start Chat",
       btnClose: "Close",
       userPics: "📸 User Pictures:",
-      loading: "Searching in progress...",
+      loading: "Loading users...",
       loadingData: "Loading data...",
       noUsers: "No profiles found in the database.",
       noImages: "No entries in IMAGES table.",
-      searchDone: "Search completed.",
+      searchDone: "All database users displayed.",
       rights: "All rights reserved."
     },
     DE: {
       btnDash: "🏠 Dashboard & Chat",
       mainTitle: "🔍 Erweiterte Profilsuche",
-      mainSub: "Lokale Datenbank filtern oder externe Plattformen nach Bildern durchsuchen:",
+      mainSub: "Liste aller registrierten Benutzer und Suche in externen Netzwerken:",
       placeholder: "Name, Stadt, Beschreibung...",
       optSpolAll: "Alle Geschlechter",
       optSpolM: "👨 Männlich",
@@ -273,8 +273,8 @@
       optVjPra: "Orthodoxie",
       optVjOst: "Sonstiges / Keine Angabe",
       btnSearch: "Suchen",
-      secUsers: "👤 Benutzerprofile (UPOZNAVANJ_KORISNICI)",
-      secImages: "🖼️ Eindeutige Bildprofile (SLIKE)",
+      secUsers: "👥 Alle Datenbankbenutzer (UPOZNAVANJ_KORISNICI)",
+      secImages: "🖼️ Profile aus der BILDER-Tabelle",
       about: "Über mich:",
       lookingFor: "Ich suche:",
       btnView: "👁️ Ansehen",
@@ -282,11 +282,11 @@
       btnStartChat: "💬 Chat Starten",
       btnClose: "Schließen",
       userPics: "📸 Benutzerbilder:",
-      loading: "Suche läuft...",
+      loading: "Benutzer werden geladen...",
       loadingData: "Daten werden geladen...",
       noUsers: "Keine Profile in der Datenbank gefunden.",
       noImages: "Keine Einträge in der BILDER-Tabelle.",
-      searchDone: "Suche abgeschlossen.",
+      searchDone: "Alle Datenbankbenutzer angezeigt.",
       rights: "Alle Rechte vorbehalten."
     }
   };
@@ -325,7 +325,6 @@
     return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name || 'User')}`;
   }
 
-  // KOPIRANJE POZIVNICE NA VIŠE JEZIKA
   function kopirajVišejezičnuPozivnicu(ime) {
     const oslovljavanjeIme = (ime && ime !== 'N/A' && !ime.includes('User')) ? ime : '';
 
@@ -356,7 +355,6 @@
     });
   }
 
-  // OTVARANJE VANJSKE PRETRAGE NA GOOGLE SLIKAMA
   function otvoriVanjskuPretragu(query, spol, godineRange, platforma, vrijeme) {
     let siteQuery = "";
     if (platforma === 'ALL') {
@@ -381,28 +379,12 @@
     window.open(googleUrl, '_blank', 'noopener,noreferrer');
   }
 
-  async function traziSve() {
+  // AUTOMATSKO UČITAVANJE SVIH KORISNIKA ČIM SE OTVORI STRANICA
+  async function ucitajSveKorisnikeOdmah() {
     const t = prevodi[trenutniJezik];
-    const query = document.getElementById('searchInput').value.trim();
-    const izvor = document.getElementById('izvorSelect').value;
-    const platforma = document.getElementById('platformaSelect').value;
-    const vrijeme = document.getElementById('vrijemeSelect').value;
-    const spol = document.getElementById('spolSelect').value;
-    const godineRange = document.getElementById('godineSelect').value;
-    const vjera = document.getElementById('vjeraSelect').value;
-
     const statusMsg = document.getElementById('statusMsg');
     const korisniciList = document.getElementById('korisniciList');
     const slikeList = document.getElementById('slikeList');
-
-    if (izvor === 'VANJSKO' || (izvor === 'SVE' && query.length > 0)) {
-      otvoriVanjskuPretragu(query, spol, godineRange, platforma, vrijeme);
-      if (izvor === 'VANJSKO') {
-        statusMsg.style.color = '#28a745';
-        statusMsg.innerText = "🔍 Otvorena je vanjska pretraga slika u novoj kartici!";
-        return;
-      }
-    }
 
     statusMsg.style.color = '#0056b3';
     statusMsg.innerText = t.loading;
@@ -410,21 +392,11 @@
     slikeList.innerHTML = '';
 
     try {
-      let qKorisnici = _supabase.from('UPOZNAVANJ_KORISNICI').select('*').order('created_at', { ascending: false });
-
-      if (query.length > 0) {
-        qKorisnici = qKorisnici.or(`IME.ilike.%${query}%,MAIL.ilike.%${query}%,JA.ilike.%${query}%,TRAZIM.ilike.%${query}%`);
-      }
-
-      if (spol !== 'ALL') qKorisnici = qKorisnici.eq('SPOL', spol);
-      if (vjera !== 'ALL') qKorisnici = qKorisnici.ilike('VJERA', `%${vjera}%`);
-
-      if (godineRange === '18-25') qKorisnici = qKorisnici.gte('GODINE', 18).lte('GODINE', 25);
-      else if (godineRange === '26-35') qKorisnici = qKorisnici.gte('GODINE', 26).lte('GODINE', 35);
-      else if (godineRange === '36-50') qKorisnici = qKorisnici.gte('GODINE', 36).lte('GODINE', 50);
-      else if (godineRange === '50+') qKorisnici = qKorisnici.gte('GODINE', 50);
-
-      const { data: users, error: errUsers } = await qKorisnici.limit(50);
+      const { data: users, error: errUsers } = await _supabase
+        .from('UPOZNAVANJ_KORISNICI')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
 
       if (errUsers) console.error('Greška UPOZNAVANJ_KORISNICI:', errUsers);
 
@@ -471,13 +443,11 @@
         korisniciList.innerHTML = `<p style="color:#777; padding:10px;">${t.noUsers}</p>`;
       }
 
-      let qSlike = _supabase.from('SLIKE').select('*').order('created_at', { ascending: false });
-
-      if (query.length > 0) {
-        qSlike = qSlike.ilike('url', `%${query}%`);
-      }
-
-      const { data: slike, error: errSlike } = await qSlike.limit(100);
+      const { data: slike, error: errSlike } = await _supabase
+        .from('SLIKE')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
 
       if (errSlike) console.error('Greška SLIKE:', errSlike);
 
@@ -522,11 +492,123 @@
         slikeList.innerHTML = `<p style="color:#777; padding:10px;">${t.noImages}</p>`;
       }
 
+      statusMsg.style.color = '#28a745';
       statusMsg.innerText = t.searchDone;
 
     } catch (err) {
       statusMsg.style.color = 'red';
       statusMsg.innerText = 'Error: ' + err.message;
+    }
+  }
+
+  // GLAVNA FUNKCIJA KOJA ODLUČUJE DA LI DIRA SAMO LOKALNU BAZU ILI OTVARA VANJSKI TAB
+  async function traziSve() {
+    const izvor = document.getElementById('izvorSelect').value;
+    const query = document.getElementById('searchInput').value.trim().toLowerCase();
+    const spol = document.getElementById('spolSelect').value;
+    const godineRange = document.getElementById('godineSelect').value;
+    const vjera = document.getElementById('vjeraSelect').value;
+    const platforma = document.getElementById('platformaSelect').value;
+    const vrijeme = document.getElementById('vrijemeSelect').value;
+
+    const statusMsg = document.getElementById('statusMsg');
+
+    if (izvor === 'BAZA') {
+      statusMsg.style.color = '#0056b3';
+      statusMsg.innerText = '🔍 Pretražujem lokalnu bazu...';
+      filtrirajLokalnuBazu(query, spol, godineRange, vjera);
+    } 
+    else if (izvor === 'VANJSKO') {
+      statusMsg.style.color = '#0056b3';
+      statusMsg.innerText = '🌐 Otvaram vanjsku pretragu u novom tabu...';
+      otvoriVanjskuPretragu(query, spol, godineRange, platforma, vrijeme);
+    } 
+    else if (izvor === 'SVE') {
+      statusMsg.style.color = '#0056b3';
+      statusMsg.innerText = '🔄 Pretražujem lokalnu bazu i otvaram vanjske mreže...';
+      filtrirajLokalnuBazu(query, spol, godineRange, vjera);
+      otvoriVanjskuPretragu(query, spol, godineRange, platforma, vrijeme);
+    }
+  }
+
+  // FILTRIRANJE KORISNIKA NA SAMOJ STRANICI BEZ OTVARANJA GOOGLE-A
+  function filtrirajLokalnuBazu(query, spol, godineRange, vjera) {
+    const korisniciList = document.getElementById('korisniciList');
+    const statusMsg = document.getElementById('statusMsg');
+    const t = prevodi[trenutniJezik];
+
+    korisniciList.innerHTML = '';
+
+    if (!sviKorisniciCache || sviKorisniciCache.length === 0) {
+      korisniciList.innerHTML = `<p style="color:#777; padding:10px;">${t.noUsers}</p>`;
+      return;
+    }
+
+    const filtrirani = sviKorisniciCache.filter(u => {
+      const mail = (u.MAIL || u.mail || '').toLowerCase();
+      const ime = (u.IME || u.ime || '').toLowerCase();
+      const ja = (u.JA || u.ja || '').toLowerCase();
+      const trazim = (u.TRAZIM || u.trazim || '').toLowerCase();
+      const uSpol = u.SPOL || u.spol || '';
+      const uGodine = parseInt(u.GODINE || u.godine || 0);
+      const uVjera = u.VJERA || u.vjera || '';
+
+      const udesavaQuery = !query || ime.includes(query) || mail.includes(query) || ja.includes(query) || trazim.includes(query);
+      const udesavaSpol = (spol === 'ALL') || (uSpol === spol);
+      const udesavaVjeru = (vjera === 'ALL') || (uVjera === vjera);
+
+      let udesavaGodine = true;
+      if (godineRange === '18-25') udesavaGodine = (uGodine >= 18 && uGodine <= 25);
+      else if (godineRange === '26-35') udesavaGodine = (uGodine >= 26 && uGodine <= 35);
+      else if (godineRange === '36-50') udesavaGodine = (uGodine >= 36 && uGodine <= 50);
+      else if (godineRange === '50+') udesavaGodine = (uGodine > 50);
+
+      return udesavaQuery && udesavaSpol && udesavaVjeru && udesavaGodine;
+    });
+
+    if (filtrirani.length > 0) {
+      filtrirani.forEach((u, idx) => {
+        const mail = (u.MAIL && u.MAIL !== 'AA') ? u.MAIL : ((u.mail && u.mail !== 'AA') ? u.mail : 'N/A');
+        const ime = (u.IME && u.IME !== 'AA') ? u.IME : ((u.ime && u.ime !== 'AA') ? u.ime : mail.split('@')[0]);
+        const telefon = u.TELEFON || u.TELEDON || u.telefon || u.teledon || 'N/A';
+        const ja = u.JA || u.ja || '-';
+        const trazim = u.TRAZIM || u.trazim || '-';
+        const uSpol = u.SPOL || u.spol || 'N/A';
+        const uGodine = u.GODINE || u.godine || 'N/A';
+        const uVjera = u.VJERA || u.vjera || 'N/A';
+        
+        let rawSlika = u.SLIKE_URL || u.slike_url;
+        let slika = (rawSlika && rawSlika.trim().length > 5 && !rawSlika.includes('AA')) 
+                    ? rawSlika 
+                    : getFallbackAvatar(ime);
+
+        const card = document.createElement('div');
+        card.className = 'user-card';
+        card.innerHTML = `
+          <img src="${slika}" class="user-avatar" alt="${ime}" onerror="this.onerror=null; this.src='${getFallbackAvatar(ime)}';">
+          
+          <div class="user-details">
+            <h3>${ime} <span class="badge">${uSpol}</span> <span class="badge">${uGodine} god.</span> <span class="badge">${uVjera}</span></h3>
+            <div class="user-info">📧 <strong>Email:</strong> ${mail} | 📞 <strong>Tel:</strong> ${telefon}</div>
+            
+            <div class="user-box"><strong>${t.about}</strong> ${ja}</div>
+            <div class="user-box"><strong>${t.lookingFor}</strong> ${trazim}</div>
+          </div>
+
+          <div class="card-buttons">
+            <button class="btn-view" onclick="otvoriProfilModal(${idx})">${t.btnView}</button>
+            <button class="btn-chat" onclick="pokreniChat('${mail}')">${t.btnChat}</button>
+            <button class="btn-invite" onclick="kopirajVišejezičnuPozivnicu('${ime}')">📋 Pozivnica</button>
+          </div>
+        `;
+        korisniciList.appendChild(card);
+      });
+      statusMsg.style.color = '#28a745';
+      statusMsg.innerText = `Pronađeno korisnika u bazi: ${filtrirani.length}`;
+    } else {
+      korisniciList.innerHTML = `<p style="color:#777; padding:10px;">Nema korisnika koji odgovaraju zadanim filterima.</p>`;
+      statusMsg.style.color = '#d90429';
+      statusMsg.innerText = 'Nema rezultata u lokalnoj bazi.';
     }
   }
 
@@ -544,7 +626,6 @@
     const uGodine = u.GODINE || u.godine || 'N/A';
     const uVjera = u.VJERA || u.vjera || 'N/A';
     
-    // POPRAVLJENO: Sigurna provjera glavne slike u modalu
     let rawSlikaGl = u.SLIKE_URL || u.slike_url;
     let slikaGl = (rawSlikaGl && rawSlikaGl.trim().length > 5 && !rawSlikaGl.includes('AA')) 
                   ? rawSlikaGl 
@@ -656,7 +737,7 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', traziSve);
+  document.addEventListener('DOMContentLoaded', ucitajSveKorisnikeOdmah);
 </script>
 
 </body>
