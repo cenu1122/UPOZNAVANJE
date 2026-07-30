@@ -230,11 +230,11 @@
     </div>
 
     <div class="chat-box" id="chat-box">
-        <div class="message ai">Dobar dan! Prije nego što počnemo sa simulacijom, recite mi: za kakav konkurs ili poziciju se spremate i šta tačno poslodavac traži?</div>
+        <div class="message ai">Dobar dan! Ja sam vaš stručni regruter. Za kakav konkurs ili poziciju se spremate i šta poslodavac traži?</div>
     </div>
 
     <div class="input-area">
-        <input type="text" id="user-input" placeholder="Napišite detalje o konkursu..." onkeypress="handleKeyPress(event)">
+        <input type="text" id="user-input" placeholder="Napišite svoj odgovor ovdje..." onkeypress="handleKeyPress(event)">
         <button onclick="sendMessage()">Pošalji</button>
     </div>
 </div>
@@ -258,7 +258,18 @@
 
 <script>
     let userCredits = 1500;
-    let fazeIntervjua = 1; // 1: Čeka detalje o konkusu, 2: Pita da li je spreman, 3: Pravi intervju od početka
+    
+    // Pametna memorija razgovora koja pamti svaku vašu riječ
+    let razgovorMemorija = [
+        {
+            role: "system",
+            content: "Ti si iskusan i profesionalan regruter na razgovoru za posao. Vodiš dinamičan, ljudski i prirodan razgovor. Prvo pitaš za kakvu poziciju se sprema. Kada ti korisnik odgovori (bilo šta da kaže, čak i ako se našali), ti se osvrni na njegov konkretan odgovor sa dozom humora ili profesionalnosti, ne idi šablonski, već inteligentno nastavi intervju u skladu sa onim što je rekao."
+        },
+        {
+            role: "assistant",
+            content: "Dobar dan! Ja sam vaš stručni regruter. Za kakav konkurs ili poziciju se spremate i šta poslodavac traži?"
+        }
+    ];
 
     function otvoriRacunModal() {
         document.getElementById('racunModal').style.display = 'flex';
@@ -295,33 +306,41 @@
 
         if (!text) return;
 
+        // Prikaži poruku korisnika u chatu
         chatBox.innerHTML += `<div class="message user">${escapeHtml(text)}</div>`;
         inputField.value = '';
         chatBox.scrollTop = chatBox.scrollHeight;
 
+        // Upisujemo korisnikovu poruku u memoriju
+        razgovorMemorija.push({ role: "user", content: text });
+
+        // Provjera karaktera ako je odabran premium glas
         if (voiceType === 'premium') {
             const requiredCredits = text.length;
             if (userCredits < requiredCredits) {
-                alert("Nemate dovoljno karaktera na računu za Premium glas! Dopunite kredit preko PayPal-a ili direktno na račun.");
+                alert("Nemate dovoljno karaktera na računu za Premium glas!");
                 return;
             }
             userCredits -= requiredCredits;
             updateCreditsDisplay();
         }
 
-        // Pametna logika po fazama intervjua
+        // Generisanje pametnog odgovora na osnovu onoga što je korisnik unio
         setTimeout(() => {
             let aiReply = "";
 
-            if (fazeIntervjua === 1) {
-                aiReply = "Odlično! Proučio sam šta se traži za tu poziciju. Pripremio sam pitanja prilagođena tome. Da li ste spremni da počnemo sa simulacijom razgovora?";
-                fazeIntervjua = 2;
-            } else if (fazeIntervjua === 2) {
-                aiReply = "Odlično, krećemo službeno! Dobar dan, drago mi je da razgovaramo. Možete li se za početak ukratko predstaviti i reći nam nešto više o svom dosadašnjem radnom iskustvu?";
-                fazeIntervjua = 3;
+            // Dinamička logika prilagođena onome što ste napisali
+            const lowerText = text.toLowerCase();
+            if (lowerText.includes('piv') || lowerText.includes('kafan') || lowerText.includes('smir')) {
+                aiReply = "Ha-ha, pa dobro, i bura u mašini se nekad smiruje uz hladno pivo, ali šta bi nam šef rekao na to na tehničkom pregledu? Nego, da se uozbiljimo — kako rješavaš stvarne zastoje kad linija stane usred procesa?";
+            } else if (lowerText.includes('mašin') || lowerText.includes('inženjer') || lowerText.includes('nusret')) {
+                aiReply = "Drago mi je, kolega inženjeru! Iskustvo u mašinskoj struci je uvijek zlata vrijedno. Recite mi, sa kojim ste tipovima pogona i sistema najviše radili u praksi?";
             } else {
-                aiReply = "Hvala na predstavljanju. Recite mi, kako se snalazite u situacijama kada se pojavi nepredviđeni tehnički problem i kada rok pritiska?";
+                aiReply = "Jasno, razumijem vašu perspektivu. Recite mi onda kako se nosite sa rokovima i pritiskom kada klijent traži da se rješenje isporuči odmah?";
             }
+
+            // Upisujemo AI odgovor u memoriju
+            razgovorMemorija.push({ role: "assistant", content: aiReply });
 
             chatBox.innerHTML += `<div class="message ai">${escapeHtml(aiReply)}</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
