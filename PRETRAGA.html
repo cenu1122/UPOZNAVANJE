@@ -1,9 +1,3 @@
-U vašem kodu u skriptnom dijelu postoji sintaksna greška (nedostaje jedna zatvorena zagrada } za funkciju otvoriProfilModal), zbog čega JavaScript kompletno prestane raditi (stranica se "zamrzne" i ne reaguje na klikove ili pretragu).
-
-Takođe, u bazi u tabeli UPOZNAVANJ_KORISNICI imate naziv kolone TELEDON (sa slovom D), pa je kôd prilagođen da kupi podatke i iz TELEDON i iz TELEFON.
-Popravljen i kompletan kôd za PRETRAGA.html:
-HTML
-
 <!DOCTYPE html>
 <html lang="bs">
 <head>
@@ -25,15 +19,15 @@ HTML
     .btn-dash { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
     .btn-dash:hover { background: #ef233c; }
 
-    .main-container { flex: 1; max-width: 900px; width: 100%; margin: 25px auto; padding: 0 15px; }
+    .main-container { flex: 1; max-width: 950px; width: 100%; margin: 25px auto; padding: 0 15px; }
     .card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
     .search-filters { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-    .search-filters input, .search-filters select { padding: 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 0.95rem; }
+    .search-filters input, .search-filters select { padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 0.92rem; }
     .search-filters input[type="text"] { flex: 2; min-width: 180px; }
     .search-filters select { flex: 1; min-width: 130px; }
 
-    .btn-search { background: #d90429; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+    .btn-search { background: #d90429; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
     .btn-search:hover { background: #ef233c; }
 
     .section-header { margin-top: 25px; font-size: 1.1rem; font-weight: bold; color: #2b2d42; border-bottom: 2px solid #d90429; padding-bottom: 5px; }
@@ -58,7 +52,7 @@ HTML
 
     #statusMsg { margin-top: 10px; font-size: 0.9rem; font-weight: 600; color: #666; }
 
-    /* MODAL (POP-UP) STILOVI ZA PREGLED PROFILA */
+    /* MODAL STILOVI */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; padding: 15px; }
     .modal-card { background: #fff; width: 100%; max-width: 650px; border-radius: 12px; max-height: 90vh; overflow-y: auto; padding: 25px; position: relative; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
     .modal-close { position: absolute; top: 15px; right: 20px; font-size: 1.8rem; font-weight: bold; color: #777; cursor: pointer; border: none; background: none; }
@@ -90,11 +84,32 @@ HTML
   <div class="main-container">
     <div class="card">
       <h2 id="txtMainTitle">🔍 Napredna Pretraga Profila</h2>
-      <p style="color: #666; font-size: 0.9rem; margin-top: 4px;" id="txtMainSub">Filtrirajte korisnike po spolu, godinama, vjeri ili pojam pretrage:</p>
+      <p style="color: #666; font-size: 0.9rem; margin-top: 4px;" id="txtMainSub">Filtrirajte po lokalnoj bazi ili pretražite vanjske platforme sa slikama:</p>
 
       <div class="search-filters">
-        <input type="text" id="searchInput" placeholder="Ime, email, opis..." onkeypress="handleKeyPress(event)">
+        <input type="text" id="searchInput" placeholder="Ime, grad, opis..." onkeypress="handleKeyPress(event)">
         
+        <select id="izvorSelect">
+          <option value="SVE">🌐 Sve (Baza + Vanjske)</option>
+          <option value="BAZA">📁 Samo Naša Baza</option>
+          <option value="VANJSKO">🔍 Samo Vanjske Mreže</option>
+        </select>
+
+        <select id="platformaSelect">
+          <option value="ALL">Sve Mreže (Badoo, Tinder...)</option>
+          <option value="badoo.com">Badoo</option>
+          <option value="tinder.com">Tinder</option>
+          <option value="bumble.com">Bumble</option>
+          <option value="twoo.com">Twoo</option>
+        </select>
+
+        <select id="vrijemeSelect">
+          <option value="">Bilo kada</option>
+          <option value="qdr:d">Zadnja 24h</option>
+          <option value="qdr:w">Zadnjih 7 dana</option>
+          <option value="qdr:m">Zadnjih 30 dana</option>
+        </select>
+
         <select id="spolSelect" onchange="traziSve()">
           <option value="ALL" id="optSpolAll">Svi spolovi</option>
           <option value="Musko" id="optSpolM">👨 Muško</option>
@@ -181,8 +196,8 @@ HTML
     BS: {
       btnDash: "🏠 Dashboard & Chat",
       mainTitle: "🔍 Napredna Pretraga Profila",
-      mainSub: "Filtrirajte korisnike po spolu, godinama, vjeri ili pojam pretrage:",
-      placeholder: "Ime, email, opis...",
+      mainSub: "Filtrirajte po lokalnoj bazi ili pretražite vanjske platforme sa slikama:",
+      placeholder: "Ime, grad, opis...",
       optSpolAll: "Svi spolovi",
       optSpolM: "👨 Muško",
       optSpolF: "👩 Žensko",
@@ -212,8 +227,8 @@ HTML
     EN: {
       btnDash: "🏠 Dashboard & Chat",
       mainTitle: "🔍 Advanced Profile Search",
-      mainSub: "Filter users by gender, age, religion or search term:",
-      placeholder: "Name, email, description...",
+      mainSub: "Filter local database or search external platforms with images:",
+      placeholder: "Name, city, description...",
       optSpolAll: "All genders",
       optSpolM: "👨 Male",
       optSpolF: "👩 Female",
@@ -243,11 +258,11 @@ HTML
     DE: {
       btnDash: "🏠 Dashboard & Chat",
       mainTitle: "🔍 Erweiterte Profilsuche",
-      mainSub: "Filtern Sie Benutzer nach Geschlecht, Alter, Religion oder Suchbegriff:",
-      placeholder: "Name, E-Mail, Beschreibung...",
+      mainSub: "Lokale Datenbank filtern oder externe Plattformen nach Bildern durchsuchen:",
+      placeholder: "Name, Stadt, Beschreibung...",
       optSpolAll: "Alle Geschlechter",
       optSpolM: "👨 Männlich",
-      optSpolF: "👩 Weiblich",
+      optSpolF: "Weiblich",
       optGodAll: "Alle Altersgruppen",
       optVjAll: "Alle Religionen",
       optVjIsl: "Islam",
@@ -307,9 +322,38 @@ HTML
     return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name || 'User')}`;
   }
 
+  // OTVALANJE VANJSKE PRETRAGE NA GOOGLE SLIKAMA
+  function otvoriVanjskuPretragu(query, spol, godineRange, platforma, vrijeme) {
+    let siteQuery = "";
+    if (platforma === 'ALL') {
+      siteQuery = "(site:badoo.com OR site:tinder.com OR site:bumble.com OR site:twoo.com)";
+    } else {
+      siteQuery = `site:${platforma}`;
+    }
+
+    let searchTerms = [siteQuery];
+
+    if (query) searchTerms.push(`"${query}"`);
+    if (spol && spol !== 'ALL') searchTerms.push(`"${spol}"`);
+    if (godineRange && godineRange !== 'ALL') searchTerms.push(`"${godineRange.replace('-', ' OR ')}"`);
+
+    let finalQuery = searchTerms.join(" ");
+    
+    // Generisanje Google Slike URL-a (&tbm=isch izbacuje mrežicu slika)
+    let googleUrl = `https://www.google.com/search?q=${encodeURIComponent(finalQuery)}&tbm=isch`;
+    if (vrijeme) {
+      googleUrl += `&tbs=${vrijeme}`;
+    }
+
+    window.open(googleUrl, '_blank');
+  }
+
   async function traziSve() {
     const t = prevodi[trenutniJezik];
     const query = document.getElementById('searchInput').value.trim();
+    const izvor = document.getElementById('izvorSelect').value;
+    const platforma = document.getElementById('platformaSelect').value;
+    const vrijeme = document.getElementById('vrijemeSelect').value;
     const spol = document.getElementById('spolSelect').value;
     const godineRange = document.getElementById('godineSelect').value;
     const vjera = document.getElementById('vjeraSelect').value;
@@ -317,6 +361,15 @@ HTML
     const statusMsg = document.getElementById('statusMsg');
     const korisniciList = document.getElementById('korisniciList');
     const slikeList = document.getElementById('slikeList');
+
+    // Ako je izabrana samo vanjska pretraga ili SVE, lansiramo vanjski Google Slike prozor
+    if (izvor === 'VANJSKO' || (izvor === 'SVE' && query.length > 0)) {
+      otvoriVanjskuPretragu(query, spol, godineRange, platforma, vrijeme);
+      if (izvor === 'VANJSKO') {
+        statusMsg.innerText = "Otvorena vanjska Google pretraga sa slikama!";
+        return;
+      }
+    }
 
     statusMsg.style.color = '#0056b3';
     statusMsg.innerText = t.loading;
