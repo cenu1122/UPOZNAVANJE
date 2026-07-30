@@ -152,7 +152,7 @@
             background: #1e293b;
         }
 
-        /* Stil za Modal / Iskačući prozor sa brojem računa */
+        /* Modal za broj računa */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -230,11 +230,11 @@
     </div>
 
     <div class="chat-box" id="chat-box">
-        <div class="message ai">Pozdrav! Ja sam vaš profesionalni regruter i poslovni asistent. Spremio sam pitanja za procjenu vaših vještina iz mašinske industrije, investicionih projekata i softverskog razvoja. Možemo li početi sa razgovorom?</div>
+        <div class="message ai">Dobar dan! Prije nego što počnemo sa simulacijom, recite mi: za kakav konkurs ili poziciju se spremate i šta tačno poslodavac traži?</div>
     </div>
 
     <div class="input-area">
-        <input type="text" id="user-input" placeholder="Napišite svoj profesionalni odgovor..." onkeypress="handleKeyPress(event)">
+        <input type="text" id="user-input" placeholder="Napišite detalje o konkursu..." onkeypress="handleKeyPress(event)">
         <button onclick="sendMessage()">Pošalji</button>
     </div>
 </div>
@@ -258,6 +258,7 @@
 
 <script>
     let userCredits = 1500;
+    let fazeIntervjua = 1; // 1: Čeka detalje o konkusu, 2: Pita da li je spreman, 3: Pravi intervju od početka
 
     function otvoriRacunModal() {
         document.getElementById('racunModal').style.display = 'flex';
@@ -308,8 +309,20 @@
             updateCreditsDisplay();
         }
 
+        // Pametna logika po fazama intervjua
         setTimeout(() => {
-            const aiReply = "Hvala na preciznom odgovoru. Recite mi kako pristupate rješavanju složenih tehničkih izazova kada radite na automatskim sistemima i industrijskom održavanju?";
+            let aiReply = "";
+
+            if (fazeIntervjua === 1) {
+                aiReply = "Odlično! Proučio sam šta se traži za tu poziciju. Pripremio sam pitanja prilagođena tome. Da li ste spremni da počnemo sa simulacijom razgovora?";
+                fazeIntervjua = 2;
+            } else if (fazeIntervjua === 2) {
+                aiReply = "Odlično, krećemo službeno! Dobar dan, drago mi je da razgovaramo. Možete li se za početak ukratko predstaviti i reći nam nešto više o svom dosadašnjem radnom iskustvu?";
+                fazeIntervjua = 3;
+            } else {
+                aiReply = "Hvala na predstavljanju. Recite mi, kako se snalazite u situacijama kada se pojavi nepredviđeni tehnički problem i kada rok pritiska?";
+            }
+
             chatBox.innerHTML += `<div class="message ai">${escapeHtml(aiReply)}</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
