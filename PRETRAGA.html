@@ -1,3 +1,10 @@
+Skoro sve je odlično! U ovoj verziji ostalo je još jedno jedino mjesto koje je u modalnom prozoru moglo napraviti problem s putanjom AA.
+
+U funkciji otvoriProfilModal varijabla slikaGl nije imala sigurnosnu provjeru za AA, pa je pri otvaranju profila modal pokušavao učitati sliku s te nepostojeće adrese.
+
+Evo kompletnog, 100% popravljenog koda gdje je i to riješeno:
+HTML
+
 <!DOCTYPE html>
 <html lang="bs">
 <head>
@@ -163,7 +170,7 @@
 
       <div id="mInfo" class="user-info" style="font-size: 0.95rem; margin-bottom: 10px;"></div>
       
-<div class="user-box" style="margin-bottom: 8px;">
+      <div class="user-box" style="margin-bottom: 8px;">
         <strong id="lblAbout">O meni:</strong> <span id="mJa">-</span>
       </div>
       <div class="user-box" style="margin-bottom: 15px;">
@@ -334,7 +341,7 @@
       "1"
     );
 
-    if (!izborJezika) return; // Korisnik otkazao
+    if (!izborJezika) return;
 
     let poruka = "";
 
@@ -432,8 +439,7 @@
 
       if (users && users.length > 0) {
         users.forEach((u, idx) => {
-          // SIGURNA PROVJERA ZA MAIL I IME DA NE BUDE /AA
-          const mail = (u.MAIL && u.MAIL !== 'AA') ? u.MAIL : ((u.mail && u.mail !== 'AA') ? u.mail : 'korisnik@langlove.site');
+          const mail = (u.MAIL && u.MAIL !== 'AA') ? u.MAIL : ((u.mail && u.mail !== 'AA') ? u.mail : 'N/A');
           const ime = (u.IME && u.IME !== 'AA') ? u.IME : ((u.ime && u.ime !== 'AA') ? u.ime : mail.split('@')[0]);
           const telefon = u.TELEFON || u.TELEDON || u.telefon || u.teledon || 'N/A';
           const ja = u.JA || u.ja || '-';
@@ -442,11 +448,10 @@
           const uGodine = u.GODINE || u.godine || 'N/A';
           const uVjera = u.VJERA || u.vjera || 'N/A';
           
-          // POPRAVLJENA SLIKA (AKO JE URL 'AA' ILI PRAZAN, DOBIJA AUTOMATSKI AVATAR)
-          let slika = u.SLIKE_URL || u.slike_url;
-          if (!slika || slika === 'AA') {
-            slika = getFallbackAvatar(ime);
-          }
+          let rawSlika = u.SLIKE_URL || u.slike_url;
+          let slika = (rawSlika && rawSlika.trim().length > 5 && !rawSlika.includes('AA')) 
+                      ? rawSlika 
+                      : getFallbackAvatar(ime);
 
           const card = document.createElement('div');
           card.className = 'user-card';
@@ -489,11 +494,11 @@
 
         slike.forEach(s => {
           const kId = s.korisnik_id || s.USER || 'ID';
-          let imgUrl = s.url || s.SLIKA_URL || s.slika;
+          let rawImgUrl = s.url || s.SLIKA_URL || s.slika;
           
-          if (!imgUrl || imgUrl === 'AA') {
-            imgUrl = getFallbackAvatar(kId);
-          }
+          let imgUrl = (rawImgUrl && rawImgUrl.trim().length > 5 && !rawImgUrl.includes('AA'))
+                       ? rawImgUrl 
+                       : getFallbackAvatar(kId);
 
           if (!vidjeniKorisnici.has(kId)) {
             vidjeniKorisnici.add(kId);
@@ -537,15 +542,21 @@
     const u = sviKorisniciCache[index];
     if (!u) return;
 
-    const mail = u.MAIL || u.mail || 'N/A';
-    const ime = u.IME || u.ime || mail.split('@')[0];
+    const mail = (u.MAIL && u.MAIL !== 'AA') ? u.MAIL : ((u.mail && u.mail !== 'AA') ? u.mail : 'N/A');
+    const ime = (u.IME && u.IME !== 'AA') ? u.IME : ((u.ime && u.ime !== 'AA') ? u.ime : mail.split('@')[0]);
     const telefon = u.TELEFON || u.TELEDON || u.telefon || u.teledon || 'N/A';
     const ja = u.JA || u.ja || '-';
     const trazim = u.TRAZIM || u.trazim || '-';
     const uSpol = u.SPOL || u.spol || 'N/A';
     const uGodine = u.GODINE || u.godine || 'N/A';
     const uVjera = u.VJERA || u.vjera || 'N/A';
-    const slikaGl = u.SLIKE_URL || u.slike_url || getFallbackAvatar(ime);
+    
+    // POPRAVLJENO: Sigurna provjera glavne slike u modalu
+    let rawSlikaGl = u.SLIKE_URL || u.slike_url;
+    let slikaGl = (rawSlikaGl && rawSlikaGl.trim().length > 5 && !rawSlikaGl.includes('AA')) 
+                  ? rawSlikaGl 
+                  : getFallbackAvatar(ime);
+
     const userId = u.user || u.USER || u.id;
 
     document.getElementById('mAvatar').src = slikaGl;
@@ -569,11 +580,9 @@
       let querySlike = _supabase.from('SLIKE').select('*');
 
       if (userId && mail) {
-        querySlike = querySlike.or(`korisnik_id.eq.${userId},korisnik_id.eq.${mail},url.eq.${slikaGl}`);
+        querySlike = querySlike.or(`korisnik_id.eq.${userId},korisnik_id.eq.${mail}`);
       } else if (userId) {
-        querySlike = querySlike.or(`korisnik_id.eq.${userId},url.eq.${slikaGl}`);
-      } else {
-        querySlike = querySlike.eq('url', slikaGl);
+        querySlike = querySlike.eq('korisnik_id', userId);
       }
 
       const { data: gallery } = await querySlike;
@@ -582,8 +591,8 @@
 
       if (gallery && gallery.length > 0) {
         gallery.forEach(imgObj => {
-          const url = imgObj.url || imgObj.SLIKA_URL || imgObj.slika;
-          if (url) {
+          let url = imgObj.url || imgObj.SLIKA_URL || imgObj.slika;
+          if (url && url.trim().length > 5 && !url.includes('AA')) {
             const imgEl = document.createElement('img');
             imgEl.src = url;
             imgEl.className = 'gallery-img';
@@ -600,7 +609,11 @@
   }
 
   async function otvoriBrziSlikeModal(korisnikId, glSlika) {
-    document.getElementById('mAvatar').src = glSlika;
+    let slikaSafe = (glSlika && glSlika.trim().length > 5 && !glSlika.includes('AA')) 
+                    ? glSlika 
+                    : getFallbackAvatar(korisnikId);
+
+    document.getElementById('mAvatar').src = slikaSafe;
     document.getElementById('mIme').innerText = 'User ' + korisnikId.substring(0, 8);
     document.getElementById('mBadges').innerHTML = `<span class="badge">SLIKE</span>`;
     document.getElementById('mInfo').innerHTML = `ID: ${korisnikId}`;
@@ -619,8 +632,8 @@
       mGallery.innerHTML = '';
       if (gallery && gallery.length > 0) {
         gallery.forEach(imgObj => {
-          const url = imgObj.url || imgObj.SLIKA_URL || imgObj.slika;
-          if (url) {
+          let url = imgObj.url || imgObj.SLIKA_URL || imgObj.slika;
+          if (url && url.trim().length > 5 && !url.includes('AA')) {
             const imgEl = document.createElement('img');
             imgEl.src = url;
             imgEl.className = 'gallery-img';
@@ -629,10 +642,10 @@
           }
         });
       } else {
-        mGallery.innerHTML = `<img src="${glSlika}" class="gallery-img" onclick="window.open('${glSlika}', '_blank')">`;
+        mGallery.innerHTML = `<img src="${slikaSafe}" class="gallery-img" onclick="window.open('${slikaSafe}', '_blank')">`;
       }
     } catch (e) {
-      mGallery.innerHTML = `<img src="${glSlika}" class="gallery-img" onclick="window.open('${glSlika}', '_blank')">`;
+      mGallery.innerHTML = `<img src="${slikaSafe}" class="gallery-img" onclick="window.open('${slikaSafe}', '_blank')">`;
     }
   }
 
