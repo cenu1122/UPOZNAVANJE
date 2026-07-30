@@ -432,15 +432,21 @@
 
       if (users && users.length > 0) {
         users.forEach((u, idx) => {
-          const mail = u.MAIL || u.mail || 'N/A';
-          const ime = u.IME || u.ime || mail.split('@')[0];
+          // SIGURNA PROVJERA ZA MAIL I IME DA NE BUDE /AA
+          const mail = (u.MAIL && u.MAIL !== 'AA') ? u.MAIL : ((u.mail && u.mail !== 'AA') ? u.mail : 'korisnik@langlove.site');
+          const ime = (u.IME && u.IME !== 'AA') ? u.IME : ((u.ime && u.ime !== 'AA') ? u.ime : mail.split('@')[0]);
           const telefon = u.TELEFON || u.TELEDON || u.telefon || u.teledon || 'N/A';
           const ja = u.JA || u.ja || '-';
           const trazim = u.TRAZIM || u.trazim || '-';
           const uSpol = u.SPOL || u.spol || 'N/A';
           const uGodine = u.GODINE || u.godine || 'N/A';
           const uVjera = u.VJERA || u.vjera || 'N/A';
-          const slika = u.SLIKE_URL || u.slike_url || getFallbackAvatar(ime);
+          
+          // POPRAVLJENA SLIKA (AKO JE URL 'AA' ILI PRAZAN, DOBIJA AUTOMATSKI AVATAR)
+          let slika = u.SLIKE_URL || u.slike_url;
+          if (!slika || slika === 'AA') {
+            slika = getFallbackAvatar(ime);
+          }
 
           const card = document.createElement('div');
           card.className = 'user-card';
@@ -483,7 +489,11 @@
 
         slike.forEach(s => {
           const kId = s.korisnik_id || s.USER || 'ID';
-          const imgUrl = s.url || s.SLIKA_URL || s.slika || getFallbackAvatar(kId);
+          let imgUrl = s.url || s.SLIKA_URL || s.slika;
+          
+          if (!imgUrl || imgUrl === 'AA') {
+            imgUrl = getFallbackAvatar(kId);
+          }
 
           if (!vidjeniKorisnici.has(kId)) {
             vidjeniKorisnici.add(kId);
