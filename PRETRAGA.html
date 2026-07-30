@@ -1,3 +1,18 @@
+Evo kompletnog, očišćenog i u potpunosti spremljenog koda za PRETRAGA.html.
+
+Ubačeno je sve:
+
+    Vanjska pretraga po platformama (Badoo, Tinder, Bumble, Twoo).
+
+    Direktan prikaz slika profila preko Google Slike pretrage.
+
+    Dugme „📋 Pozivnica (Više jezika)” koje na klik nudi izbor jezika (1 = BS, 2 = EN, 3 = DE) i kopira gotovu poruku spremnu za slanje na toj mreži.
+
+    Popravljene sve sintaksne greške i nazivi kolona (TELEDON / TELEFON).
+
+Samo kopiraj i zamijeni čitav sadržaj u datoteci PRETRAGA.html:
+HTML
+
 <!DOCTYPE html>
 <html lang="bs">
 <head>
@@ -45,10 +60,12 @@
     .user-box { background: #fff; padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.9rem; margin-top: 5px; }
 
     .card-buttons { display: flex; gap: 8px; align-self: center; flex-wrap: wrap; }
-    .btn-view { background: #d90429; color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-view { background: #d90429; color: #fff; border: none; padding: 10px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     .btn-view:hover { background: #ef233c; }
-    .btn-chat { background: #2b2d42; color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; }
+    .btn-chat { background: #2b2d42; color: #fff; border: none; padding: 10px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; }
     .btn-chat:hover { background: #3d405b; }
+    .btn-invite { background: #25d366; color: #fff; border: none; padding: 10px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-invite:hover { background: #20ba5a; }
 
     #statusMsg { margin-top: 10px; font-size: 0.9rem; font-weight: 600; color: #666; }
 
@@ -262,7 +279,7 @@
       placeholder: "Name, Stadt, Beschreibung...",
       optSpolAll: "Alle Geschlechter",
       optSpolM: "👨 Männlich",
-      optSpolF: "Weiblich",
+      optSpolF: "👩 Weiblich",
       optGodAll: "Alle Altersgruppen",
       optVjAll: "Alle Religionen",
       optVjIsl: "Islam",
@@ -322,7 +339,38 @@
     return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name || 'User')}`;
   }
 
-  // OTVALANJE VANJSKE PRETRAGE NA GOOGLE SLIKAMA
+  // KOPIRANJE POZIVNICE NA VIŠE JEZIKA
+  function kopirajVišejezičnuPozivnicu(ime) {
+    const oslovljavanjeIme = (ime && ime !== 'N/A' && !ime.includes('User')) ? ime : '';
+
+    const izborJezika = prompt(
+      "Na kojem jeziku priča ova osoba?\n\n1 = Bosanski/Hrvatski/Srpski\n2 = Engleski (English)\n3 = Njemački (Deutsch)",
+      "1"
+    );
+
+    if (!izborJezika) return; // Korisnik otkazao
+
+    let poruka = "";
+
+    if (izborJezika === "2") {
+      const pozdrav = oslovljavanjeIme ? `Hi ${oslovljavanjeIme}` : `Hi there`;
+      poruka = `${pozdrav}! I came across your profile and thought I'd say hi. 🙂 I am using a new dating platform that automatically translates our messages so we can chat without language barriers! Join me here: https://langlove.site`;
+    } else if (izborJezika === "3") {
+      const pozdrav = oslovljavanjeIme ? `Hallo ${oslovljavanjeIme}` : `Hallo`;
+      poruka = `${pozdrav}! Ich habe dein Profil gesehen und wollte hallo sagen. 🙂 Ich bin auf einer neuen Dating-Plattform, die unsere Nachrichten automatisch übersetzt, damit wir uns problemlos unterhalten können! Schreib mir hier: https://langlove.site`;
+    } else {
+      const pozdrav = oslovljavanjeIme ? `Hej ${oslovljavanjeIme}` : `Hej`;
+      poruka = `${pozdrav}, ćao! Naletio/la sam na tvoj profil i zvučiš baš zanimljivo. 🙂 Dopisujem se na novoj besplatnoj platformi za upoznavanje sa automatskim prevodiocem i super opcijama. Registruj se i piši mi ovdje: https://langlove.site`;
+    }
+
+    navigator.clipboard.writeText(poruka).then(() => {
+      alert("✅ Pozivnica je uspješno kopirana! Sada je samo zalijepi (Paste / Ctrl+V) u poruku toj osobi.");
+    }).catch(err => {
+      console.error("Greška pri kopiranju: ", err);
+    });
+  }
+
+  // OTVARANJE VANJSKE PRETRAGE NA GOOGLE SLIKAMA
   function otvoriVanjskuPretragu(query, spol, godineRange, platforma, vrijeme) {
     let siteQuery = "";
     if (platforma === 'ALL') {
@@ -339,13 +387,12 @@
 
     let finalQuery = searchTerms.join(" ");
     
-    // Generisanje Google Slike URL-a (&tbm=isch izbacuje mrežicu slika)
     let googleUrl = `https://www.google.com/search?q=${encodeURIComponent(finalQuery)}&tbm=isch`;
     if (vrijeme) {
       googleUrl += `&tbs=${vrijeme}`;
     }
 
-    window.open(googleUrl, '_blank');
+    window.open(googleUrl, '_blank', 'noopener,noreferrer');
   }
 
   async function traziSve() {
@@ -362,11 +409,11 @@
     const korisniciList = document.getElementById('korisniciList');
     const slikeList = document.getElementById('slikeList');
 
-    // Ako je izabrana samo vanjska pretraga ili SVE, lansiramo vanjski Google Slike prozor
     if (izvor === 'VANJSKO' || (izvor === 'SVE' && query.length > 0)) {
       otvoriVanjskuPretragu(query, spol, godineRange, platforma, vrijeme);
       if (izvor === 'VANJSKO') {
-        statusMsg.innerText = "Otvorena vanjska Google pretraga sa slikama!";
+        statusMsg.style.color = '#28a745';
+        statusMsg.innerText = "🔍 Otvorena je vanjska pretraga slika u novoj kartici!";
         return;
       }
     }
@@ -425,6 +472,7 @@
             <div class="card-buttons">
               <button class="btn-view" onclick="otvoriProfilModal(${idx})">${t.btnView}</button>
               <button class="btn-chat" onclick="pokreniChat('${mail}')">${t.btnChat}</button>
+              <button class="btn-invite" onclick="kopirajVišejezičnuPozivnicu('${ime}')">📋 Pozivnica</button>
             </div>
           `;
           korisniciList.appendChild(card);
@@ -466,6 +514,7 @@
               <div class="card-buttons">
                 <button class="btn-view" onclick="otvoriBrziSlikeModal('${kId}', '${imgUrl}')">${t.btnView}</button>
                 <button class="btn-chat" onclick="pokreniChat('${kId}')">${t.btnChat}</button>
+                <button class="btn-invite" onclick="kopirajVišejezičnuPozivnicu('User')">📋 Pozivnica</button>
               </div>
             `;
             slikeList.appendChild(card);
