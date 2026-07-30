@@ -97,7 +97,12 @@
         <p id="tileChatDesc">Pregledajte vaše aktivne razgovore i nove poruke.</p>
       </a>
 
-      <!-- NOVO DUGME ZA UCENJE JEZIKA -->
+      <a href="INTERVJU.html" class="dash-tile">
+        <div class="icon">🎙️</div>
+        <h3 id="tileInterviewTitle">AI Vježba Intervjua</h3>
+        <p id="tileInterviewDesc">Vježbajte intervjue i konverzaciju sa AI asistentom uz naplatu po karakteru.</p>
+      </a>
+
       <a href="JEZICI.html" class="dash-tile">
         <div class="icon">🎓</div>
         <h3 id="tileLangTitle">Učenje Jezika</h3>
@@ -117,6 +122,7 @@
   <footer>
     <p>© 2026 LjubavNaPrviKlik. <span id="txtRights">Sva prava zadržana.</span></p>
   </footer>
+
 <script>
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
@@ -135,6 +141,7 @@
         tProfileTitle: "Moj Profil", tProfileDesc: "Uredite svoje podatke, fotografije i postavke privatnosti.",
         tSearchTitle: "Pretraga Profila", tSearchDesc: "Pronađite članove prema godinama, lokaciji i interesovanjima.",
         tChatTitle: "Poruke & Dopisivanje", tChatDesc: "Pregledajte vaše aktivne razgovore i nove poruke.",
+        tInterviewTitle: "AI Vježba Intervjua", tInterviewDesc: "Vježbajte intervjue i konverzaciju sa AI asistentom uz naplatu po karakteru.",
         tLangTitle: "Učenje Jezika", tLangDesc: "Vježbajte strane jezike sa AI Profesorom kroz lekcije i konverzaciju.",
         tSupportTitle: "Korisnička Podrška", tSupportDesc: "Imate pitanje ili problem? Javite se našem timu.",
         tForumTitle: "Forum", tForumDesc: "Diskutujte o temama, dijelite iskustva i postavljajte pitanja.",
@@ -147,6 +154,7 @@
         tProfileTitle: "My Profile", tProfileDesc: "Edit your details, photos, and privacy settings.",
         tSearchTitle: "Search Profiles", tSearchDesc: "Find members by age, location, and interests.",
         tChatTitle: "Messages & Chat", tChatDesc: "Check your active chats and new messages.",
+        tInterviewTitle: "AI Interview Practice", tInterviewDesc: "Practice interviews and conversation with AI assistant with character-based billing.",
         tLangTitle: "Language Learning", tLangDesc: "Practice foreign languages with AI Teacher through lessons and chat.",
         tSupportTitle: "Customer Support", tSupportDesc: "Have a question or issue? Contact our team.",
         tForumTitle: "Forum", tForumDesc: "Discuss topics, share experiences, and ask questions.",
@@ -159,6 +167,7 @@
         tProfileTitle: "Mein Profil", tProfileDesc: "Bearbeiten Sie Ihre Daten, Fotos und Einstellungen.",
         tSearchTitle: "Mitglieder Suchen", tSearchDesc: "Finden Sie Mitglieder nach Alter, Ort und Interessen.",
         tChatTitle: "Nachrichten & Chat", tChatDesc: "Überprüfen Sie Ihre aktiven Chats und Nachrichten.",
+        tInterviewTitle: "KI-Interview-Übung", tInterviewDesc: "Üben Sie Interviews und Konversation mit dem KI-Assistenten.",
         tLangTitle: "Sprachen Lernen", tLangDesc: "Üben Sie Fremdsprachen mit dem KI-Lehrer durch Lektionen und Chat.",
         tSupportTitle: "Kundensupport", tSupportDesc: "Haben Sie eine Frage? Kontaktieren Sie uns.",
         tForumTitle: "Forum", tForumDesc: "Diskutieren Sie Themen, teilen Sie Erfahrungen und stellen Sie Fragen.",
@@ -180,6 +189,8 @@
       document.getElementById('tileSearchDesc').innerText = t.tSearchDesc;
       document.getElementById('tileChatTitle').innerText = t.tChatTitle;
       document.getElementById('tileChatDesc').innerText = t.tChatDesc;
+      document.getElementById('tileInterviewTitle').innerText = t.tInterviewTitle;
+      document.getElementById('tileInterviewDesc').innerText = t.tInterviewDesc;
       document.getElementById('tileLangTitle').innerText = t.tLangTitle;
       document.getElementById('tileLangDesc').innerText = t.tLangDesc;
       document.getElementById('tileSupportTitle').innerText = t.tSupportTitle;
