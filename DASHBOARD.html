@@ -15,14 +15,11 @@
     .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
 
     .nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .lang-select { padding: 8px 14px; border-radius: 20px; border: 2px solid #d90429; background: #fff; font-weight: bold; font-size: 0.9rem; color: #2b2d42; outline: none; cursor: pointer; }
     .btn-nav { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
     .btn-nav:hover { background: #ef233c; }
     .btn-logout { background: #6c757d; }
     .btn-logout:hover { background: #495057; }
-
-    /* Stil za Google Translate widget da se uklopi u dizajn */
-    #google_translate_element { display: inline-block; }
-    .goog-te-combo { padding: 6px 10px; border-radius: 20px; border: 1px solid #d90429; background: #fff; font-weight: bold; font-size: 0.85rem; color: #2b2d42; outline: none; cursor: pointer; }
 
     .main-container { flex: 1; padding: 30px 20px; max-width: 1000px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
 
@@ -47,7 +44,11 @@
     <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
 
     <div class="nav-actions">
-      <div id="google_translate_element"></div>
+      <select id="langSelect" class="lang-select" onchange="promijeniJezik(this.value)">
+        <option value="BS" selected>🌐 Bosanski (BS)</option>
+        <option value="EN">🌐 English (EN)</option>
+        <option value="DE">🌐 Deutsch (DE)</option>
+      </select>
 
       <a href="KONTAKT.html" class="btn-nav" id="txtBtnContact">📩 Podrška & Kontakt</a>
       <button class="btn-nav btn-logout" onclick="odjava()" id="txtBtnLogout">🚪 Odjava</button>
@@ -134,18 +135,6 @@
     <p>© 2026 LjubavNaPrviKlik. <span id="txtRights">Sva prava zadržana.</span></p>
   </footer>
 
-  <script type="text/javascript">
-    function googleTranslateElementInit() {
-      new google.translate.TranslateElement({
-        pageLanguage: 'bs',
-        includedLanguages: 'en,de,fr,es,it,tr,ar,zh-CN,ru,bs,hr,sr',
-        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-        autoDisplay: false
-      }, 'google_translate_element');
-    }
-  </script>
-  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
 <script>
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
@@ -153,6 +142,86 @@
     let _supabase;
     if (typeof supabase !== 'undefined') {
       _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+
+    let trenutniJezik = 'BS';
+
+    const prevodi = {
+      BS: {
+        btnContact: "📩 Podrška & Kontakt", btnLogout: "🚪 Odjava", welcome: "Dobrodošli nazad! 👋",
+        subWelcome: "Pronađite srodnu dušu i započnite novi razgovor već danas.",
+        tProfileTitle: "Moj Profil", tProfileDesc: "Uredite svoje podatke, fotografije i postavke privatnosti.",
+        tSearchTitle: "Pretraga Profila", tSearchDesc: "Pronađite članove prema godinama, lokaciji i interesovanjima.",
+        tChatTitle: "Poruke & Dopisivanje", tChatDesc: "Pregledajte vaše aktivne razgovore i nove poruke.",
+        tInterviewTitle: "AI Vježba Intervjua", tInterviewDesc: "Vježbajte intervjue i konverzaciju sa AI asistentom uz naplatu po karakteru.",
+        tLangTitle: "Učenje Jezika", tLangDesc: "Vježbajte strane jezike sa AI Profesorom kroz lekcije i konverzaciju.",
+        tJobTitle: "Posao & Karijera", tJobDesc: "Pregledajte ponude za posao, oglase i prilike za saradnju.",
+        tTestTitle: "Test & Provjera", tTestDesc: "Pokrenite testove kompatibilnosti, vještina ili sistemske provjere.",
+        tSupportTitle: "Korisnička Podrška", tSupportDesc: "Imate pitanje ili problem? Javite se našem timu.",
+        tForumTitle: "Forum", tForumDesc: "Diskutujte o temama, dijelite iskustva i postavljajte pitanja.",
+        tFunTitle: "Zabava i Zanimljivosti", tFunDesc: "Pročitajte zanimljive članke, viceve i opustite se uz zabavan sadržaj.",
+        rights: "Sva prava zadržana."
+      },
+      EN: {
+        btnContact: "📩 Support & Contact", btnLogout: "🚪 Logout", welcome: "Welcome back! 👋",
+        subWelcome: "Find your soulmate and start a conversation today.",
+        tProfileTitle: "My Profile", tProfileDesc: "Edit your details, photos, and privacy settings.",
+        tSearchTitle: "Search Profiles", tSearchDesc: "Find members by age, location, and interests.",
+        tChatTitle: "Messages & Chat", tChatDesc: "Check your active chats and new messages.",
+        tInterviewTitle: "AI Interview Practice", tInterviewDesc: "Practice interviews and conversation with AI assistant with character-based billing.",
+        tLangTitle: "Language Learning", tLangDesc: "Practice foreign languages with AI Teacher through lessons and chat.",
+        tJobTitle: "Jobs & Career", tJobDesc: "Browse job offers, listings, and collaboration opportunities.",
+        tTestTitle: "Tests & Check", tTestDesc: "Run compatibility, skill tests, or system checks.",
+        tSupportTitle: "Customer Support", tSupportDesc: "Have a question or issue? Contact our team.",
+        tForumTitle: "Forum", tForumDesc: "Discuss topics, share experiences, and ask questions.",
+        tFunTitle: "Fun & Entertainment", tFunDesc: "Read interesting articles, jokes, and relax with fun content.",
+        rights: "All rights reserved."
+      },
+      DE: {
+        btnContact: "📩 Support & Kontakt", btnLogout: "🚪 Abmelden", welcome: "Willkommen zurück! 👋",
+        subWelcome: "Finden Sie Ihren Seelenverwandten noch heute.",
+        tProfileTitle: "Mein Profil", tProfileDesc: "Bearbeiten Sie Ihre Daten, Fotos und Einstellungen.",
+        tSearchTitle: "Mitglieder Suchen", tSearchDesc: "Finden Sie Mitglieder nach Alter, Ort und Interessen.",
+        tChatTitle: "Nachrichten & Chat", tChatDesc: "Überprüfen Sie Ihre aktiven Chats und Nachrichten.",
+        tInterviewTitle: "KI-Interview-Übung", tInterviewDesc: "Üben Sie Interviews und Konversation mit dem KI-Assistenten.",
+        tLangTitle: "Sprachen Lernen", tLangDesc: "Üben Sie Fremdsprachen mit dem KI-Lehrer durch Lektionen und Chat.",
+        tJobTitle: "Jobs & Karriere", tJobDesc: "Durchsuchen Sie Jobangebote und Kooperationsmöglichkeiten.",
+        tTestTitle: "Test & Prüfung", tTestDesc: "Führen Sie Kompatibilitäts- oder Leistungstests durch.",
+        tSupportTitle: "Kundensupport", tSupportDesc: "Haben Sie eine Frage? Kontaktieren Sie uns.",
+        tForumTitle: "Forum", tForumDesc: "Diskutieren Sie Themen, teilen Sie Erfahrungen und stellen Sie Fragen.",
+        tFunTitle: "Unterhaltung & Fun", tFunDesc: "Lesen Sie interessante Artikel, Witze und entspannen Sie sich.",
+        rights: "Alle Rechte vorbehalten."
+      }
+    };
+
+    function promijeniJezik(lang) {
+      trenutniJezik = lang;
+      const t = prevodi[lang];
+      document.getElementById('txtBtnContact').innerText = t.btnContact;
+      document.getElementById('txtBtnLogout').innerText = t.btnLogout;
+      document.getElementById('txtWelcome').innerText = t.welcome;
+      document.getElementById('txtSubWelcome').innerText = t.subWelcome;
+      document.getElementById('tileProfileTitle').innerText = t.tProfileTitle;
+      document.getElementById('tileProfileDesc').innerText = t.tProfileDesc;
+      document.getElementById('tileSearchTitle').innerText = t.tSearchTitle;
+      document.getElementById('tileSearchDesc').innerText = t.tSearchDesc;
+      document.getElementById('tileChatTitle').innerText = t.tChatTitle;
+      document.getElementById('tileChatDesc').innerText = t.tChatDesc;
+      document.getElementById('tileInterviewTitle').innerText = t.tInterviewTitle;
+      document.getElementById('tileInterviewDesc').innerText = t.tInterviewDesc;
+      document.getElementById('tileLangTitle').innerText = t.tLangTitle;
+      document.getElementById('tileLangDesc').innerText = t.tLangDesc;
+      document.getElementById('tileJobTitle').innerText = t.tJobTitle;
+      document.getElementById('tileJobDesc').innerText = t.tJobDesc;
+      document.getElementById('tileTestTitle').innerText = t.tTestTitle;
+      document.getElementById('tileTestDesc').innerText = t.tTestDesc;
+      document.getElementById('tileSupportTitle').innerText = t.tSupportTitle;
+      document.getElementById('tileSupportDesc').innerText = t.tSupportDesc;
+      document.getElementById('tileForumTitle').innerText = t.tForumTitle;
+      document.getElementById('tileForumDesc').innerText = t.tForumDesc;
+      document.getElementById('tileFunTitle').innerText = t.tFunTitle;
+      document.getElementById('tileFunDesc').innerText = t.tFunDesc;
+      document.getElementById('txtRights').innerText = t.rights;
     }
 
     async function ucitajProfilKorisnika() {
