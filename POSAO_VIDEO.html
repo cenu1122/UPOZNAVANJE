@@ -180,7 +180,7 @@
 
       try {
         const { error } = await _supabase
-          .from('VIDEOR')
+          .from('videor')
           .insert([
             {
               URL: url,
@@ -238,7 +238,7 @@
 
       try {
         const { data, error } = await _supabase
-          .from('VIDEOR') 
+          .from('videor') 
           .select('*');
 
         if (error) throw error;
