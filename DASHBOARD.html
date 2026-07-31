@@ -1,3 +1,8 @@
+Izvini, sada te potpuno razumijem! Htio si onaj veliki sistem sa svim svjetskim jezicima iz Google Translate-a, ali da unutar tog istog sistema imaš i naše nove kartice za Posao (POSAO.html) i Test (TEST.html), kao i dugme za odjavu i sve funkcije na broju.
+
+Evo ga kompletan kod od vrha do dna koji koristi zvanični Google Translate widget (koji automatski podržava sve svjetske jezike i prevodi čitavu stranicu), a u njega su ubačene sve naše nove kartice i funkcije:
+HTML
+
 <!DOCTYPE html>
 <html lang="bs">
 <head>
@@ -14,13 +19,12 @@
     header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
     .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
 
-    .nav-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     
-    /* Stil za pretragu i padajući meni jezika */
-    .lang-container { display: flex; align-items: center; gap: 5px; background: #fff; padding: 4px 10px; border-radius: 20px; border: 2px solid #d90429; }
-    .lang-search { border: none; outline: none; font-size: 0.85rem; width: 80px; background: transparent; color: #2b2d42; }
-    .lang-select { border: none; background: transparent; font-weight: bold; font-size: 0.85rem; color: #2b2d42; outline: none; cursor: pointer; }
-
+    /* Stil za Google Translate da izgleda uredno na traci */
+    .lang-wrapper { display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 10px; border-radius: 20px; border: 2px solid #d90429; }
+    #google_translate_element select { padding: 4px 8px; border: none; background: transparent; font-weight: bold; font-size: 0.85rem; color: #2b2d42; outline: none; cursor: pointer; }
+    
     .btn-nav { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
     .btn-nav:hover { background: #ef233c; }
     .btn-logout { background: #6c757d; }
@@ -49,18 +53,9 @@
     <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
 
     <div class="nav-actions">
-      <div class="lang-container">
+      <div class="lang-wrapper">
         <span>🌐</span>
-        <input type="text" id="langSearchInput" class="lang-search" placeholder="Traži..." onkeyup="filtrirajJezike()" title="Ukucaj dio naziva jezika da filtriraš listu">
-        <select id="langSelect" class="lang-select" onchange="promijeniJezik(this.value)">
-          <option value="BS" selected>Bosanski (BS)</option>
-          <option value="EN">English (EN)</option>
-          <option value="DE">Deutsch (DE)</option>
-          <option value="FR">Français (FR)</option>
-          <option value="ES">Español (ES)</option>
-          <option value="IT">Italiano (IT)</option>
-          <option value="TR">Türkçe (TR)</option>
-        </select>
+        <div id="google_translate_element"></div>
       </div>
 
       <a href="KONTAKT.html" class="btn-nav" id="txtBtnContact">📩 Podrška & Kontakt</a>
@@ -82,62 +77,62 @@
       
       <a href="PROFIL.html" class="dash-tile">
         <div class="icon">👤</div>
-        <h3 id="tileProfileTitle">Moj Profil</h3>
-        <p id="tileProfileDesc">Uredite svoje podatke, fotografije i postavke privatnosti.</p>
+        <h3>Moj Profil</h3>
+        <p>Uredite svoje podatke, fotografije i postavke privatnosti.</p>
       </a>
 
       <a href="PRETRAGA.html" class="dash-tile">
         <div class="icon">🔍</div>
-        <h3 id="tileSearchTitle">Pretraga Profila</h3>
-        <p id="tileSearchDesc">Pronađite članove prema godinama, lokaciji i interesovanjima.</p>
+        <h3>Pretraga Profila</h3>
+        <p>Pronađite članove prema godinama, lokaciji i interesovanjima.</p>
       </a>
 
       <a href="FORUM.html" class="dash-tile">
         <div class="icon">🗣️</div>
-        <h3 id="tileForumTitle">Forum</h3>
-        <p id="tileForumDesc">Diskutujte o temama, dijelite iskustva i postavljajte pitanja.</p>
+        <h3>Forum</h3>
+        <p>Diskutujte o temama, dijelite iskustva i postavljajte pitanja.</p>
       </a>
 
       <a href="ZABAVA.html" class="dash-tile">
         <div class="icon">🎉</div>
-        <h3 id="tileFunTitle">Zabava i Zanimljivosti</h3>
-        <p id="tileFunDesc">Pročitajte zanimljive članke, viceve i opustite se uz zabavan sadržaj.</p>
+        <h3>Zabava i Zanimljivosti</h3>
+        <p>Pročitajte zanimljive članke, viceve i opustite se uz zabavan sadržaj.</p>
       </a>
 
       <a href="PORUKE.html" class="dash-tile">
         <div class="icon">💬</div>
-        <h3 id="tileChatTitle">Poruke & Dopisivanje</h3>
-        <p id="tileChatDesc">Pregledajte vaše aktivne razgovore i nove poruke.</p>
+        <h3>Poruke & Dopisivanje</h3>
+        <p>Pregledajte vaše aktivne razgovore i nove poruke.</p>
       </a>
 
       <a href="INTERVJU.html" class="dash-tile">
         <div class="icon">🎙️</div>
-        <h3 id="tileInterviewTitle">AI Vježba Intervjua</h3>
-        <p id="tileInterviewDesc">Vježbajte intervjue i konverzaciju sa AI asistentom uz naplatu po karakteru.</p>
+        <h3>AI Vježba Intervjua</h3>
+        <p>Vježbajte intervjue i konverzaciju sa AI asistentom uz naplatu po karakteru.</p>
       </a>
 
       <a href="JEZICI.html" class="dash-tile">
         <div class="icon">🎓</div>
-        <h3 id="tileLangTitle">Učenje Jezika</h3>
-        <p id="tileLangDesc">Vježbajte strane jezike sa AI Profesorom kroz lekcije i konverzaciju.</p>
+        <h3>Učenje Jezika</h3>
+        <p>Vježbajte strane jezike sa AI Profesorom kroz lekcije i konverzaciju.</p>
       </a>
 
       <a href="POSAO.html" class="dash-tile">
         <div class="icon">💼</div>
-        <h3 id="tileJobTitle">Posao & Karijera</h3>
-        <p id="tileJobDesc">Pregledajte ponude za posao, oglase i prilike za saradnju.</p>
+        <h3>Posao & Karijera</h3>
+        <p>Pregledajte ponude za posao, oglase i prilike za saradnju.</p>
       </a>
 
       <a href="TEST.html" class="dash-tile">
         <div class="icon">🧪</div>
-        <h3 id="tileTestTitle">Test & Provjera</h3>
-        <p id="tileTestDesc">Pokrenite testove kompatibilnosti, vještina ili sistemske provjere.</p>
+        <h3>Test & Provjera</h3>
+        <p>Pokrenite testove kompatibilnosti, vještina ili sistemske provjere.</p>
       </a>
 
       <a href="KONTAKT.html" class="dash-tile">
         <div class="icon">📩</div>
-        <h3 id="tileSupportTitle">Korisnička Podrška</h3>
-        <p id="tileSupportDesc">Imate pitanje ili problem? Javite se našem timu.</p>
+        <h3>Korisnička Podrška</h3>
+        <p>Imate pitanje ili problem? Javite se našem timu.</p>
       </a>
 
     </div>
@@ -145,178 +140,27 @@
   </div>
 
   <footer>
-    <p>© 2026 LjubavNaPrviKlik. <span id="txtRights">Sva prava zadržana.</span></p>
+    <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
   </footer>
 
-<script>
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'bs',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+        autoDisplay: false
+      }, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+  <script>
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
 
     let _supabase;
     if (typeof supabase !== 'undefined') {
       _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    }
-
-    let trenutniJezik = 'BS';
-
-    const prevodi = {
-      BS: {
-        btnContact: "📩 Podrška & Kontakt", btnLogout: "🚪 Odjava", welcome: "Dobrodošli nazad! 👋",
-        subWelcome: "Pronađite srodnu dušu i započnite novi razgovor već danas.",
-        tProfileTitle: "Moj Profil", tProfileDesc: "Uredite svoje podatke, fotografije i postavke privatnosti.",
-        tSearchTitle: "Pretraga Profila", tSearchDesc: "Pronađite članove prema godinama, lokaciji i interesovanjima.",
-        tChatTitle: "Poruke & Dopisivanje", tChatDesc: "Pregledajte vaše aktivne razgovore i nove poruke.",
-        tInterviewTitle: "AI Vježba Intervjua", tInterviewDesc: "Vježbajte intervjue i konverzaciju sa AI asistentom uz naplatu po karakteru.",
-        tLangTitle: "Učenje Jezika", tLangDesc: "Vježbajte strane jezike sa AI Profesorom kroz lekcije i konverzaciju.",
-        tJobTitle: "Posao & Karijera", tJobDesc: "Pregledajte ponude za posao, oglase i prilike za saradnju.",
-        tTestTitle: "Test & Provjera", tTestDesc: "Pokrenite testove kompatibilnosti, vještina ili sistemske provjere.",
-        tSupportTitle: "Korisnička Podrška", tSupportDesc: "Imate pitanje ili problem? Javite se našem timu.",
-        tForumTitle: "Forum", tForumDesc: "Diskutujte o temama, dijelite iskustva i postavljajte pitanja.",
-        tFunTitle: "Zabava i Zanimljivosti", tFunDesc: "Pročitajte zanimljive članke, viceve i opustite se uz zabavan sadržaj.",
-        rights: "Sva prava zadržana."
-      },
-      EN: {
-        btnContact: "📩 Support & Contact", btnLogout: "🚪 Logout", welcome: "Welcome back! 👋",
-        subWelcome: "Find your soulmate and start a conversation today.",
-        tProfileTitle: "My Profile", tProfileDesc: "Edit your details, photos, and privacy settings.",
-        tSearchTitle: "Search Profiles", tSearchDesc: "Find members by age, location, and interests.",
-        tChatTitle: "Messages & Chat", tChatDesc: "Check your active chats and new messages.",
-        tInterviewTitle: "AI Interview Practice", tInterviewDesc: "Practice interviews and conversation with AI assistant with character-based billing.",
-        tLangTitle: "Language Learning", tLangDesc: "Practice foreign languages with AI Teacher through lessons and chat.",
-        tJobTitle: "Jobs & Career", tJobDesc: "Browse job offers, listings, and collaboration opportunities.",
-        tTestTitle: "Tests & Check", tTestDesc: "Run compatibility, skill tests, or system checks.",
-        tSupportTitle: "Customer Support", tSupportDesc: "Have a question or issue? Contact our team.",
-        tForumTitle: "Forum", tForumDesc: "Discuss topics, share experiences, and ask questions.",
-        tFunTitle: "Fun & Entertainment", tFunDesc: "Read interesting articles, jokes, and relax with fun content.",
-        rights: "All rights reserved."
-      },
-      DE: {
-        btnContact: "📩 Support & Kontakt", btnLogout: "🚪 Abmelden", welcome: "Willkommen zurück! 👋",
-        subWelcome: "Finden Sie Ihren Seelenverwandten noch heute.",
-        tProfileTitle: "Mein Profil", tProfileDesc: "Bearbeiten Sie Ihre Daten, Fotos und Einstellungen.",
-        tSearchTitle: "Mitglieder Suchen", tSearchDesc: "Finden Sie Mitglieder nach Alter, Ort und Interessen.",
-        tChatTitle: "Nachrichten & Chat", tChatDesc: "Überprüfen Sie Ihre aktiven Chats und Nachrichten.",
-        tInterviewTitle: "KI-Interview-Übung", tInterviewDesc: "Üben Sie Interviews und Konversation mit dem KI-Assistenten.",
-        tLangTitle: "Sprachen Lernen", tLangDesc: "Üben Sie Fremdsprachen mit dem KI-Lehrer durch Lektionen und Chat.",
-        tJobTitle: "Jobs & Karriere", tJobDesc: "Durchsuchen Sie Jobangebote und Kooperationsmöglichkeiten.",
-        tTestTitle: "Test & Prüfung", tTestDesc: "Führen Sie Kompatibilitäts- oder Leistungstests durch.",
-        tSupportTitle: "Kundensupport", tSupportDesc: "Haben Sie eine Frage? Kontaktieren Sie uns.",
-        tForumTitle: "Forum", tForumDesc: "Diskutieren Sie Themen, teilen Sie Erfahrungen und stellen Sie Fragen.",
-        tFunTitle: "Unterhaltung & Fun", tFunDesc: "Lesen Sie interessante Artikel, Witze und entspannen Sie sich.",
-        rights: "Alle Rechte vorbehalten."
-      },
-      FR: {
-        btnContact: "📩 Support & Contact", btnLogout: "🚪 Déconnexion", welcome: "Bon retour ! 👋",
-        subWelcome: "Trouvez votre âme sœur et commencez une conversation dès aujourd'hui.",
-        tProfileTitle: "Mon Profil", tProfileDesc: "Modifiez vos informations, photos et paramètres de confidentialité.",
-        tSearchTitle: "Rechercher", tSearchDesc: "Trouvez des membres par âge, lieu et centres d'intérêt.",
-        tChatTitle: "Messages & Chat", tChatDesc: "Consultez vos discussions actives et vos nouveaux messages.",
-        tInterviewTitle: "Pratique d'Entretien IA", tInterviewDesc: "Pratiquez des entretiens avec un assistant IA.",
-        tLangTitle: "Apprentissage des Langues", tLangDesc: "Pratiquez des langues étrangères avec un professeur IA.",
-        tJobTitle: "Emploi & Carrière", tJobDesc: "Parcourez les offres d'emploi et opportunités.",
-        tTestTitle: "Tests & Vérifications", tTestDesc: "Exécutez des tests de compatibilité ou de compétences.",
-        tSupportTitle: "Support Client", tSupportDesc: "Une question ou un problème ? Contactez notre équipe.",
-        tForumTitle: "Forum", tForumDesc: "Discutez de sujets et partagez vos expériences.",
-        tFunTitle: "Divertissement", tFunDesc: "Lisez des articles intéressants et détendez-vous.",
-        rights: "Tous droits réservés."
-      },
-      ES: {
-        btnContact: "📩 Soporte y Contacto", btnLogout: "🚪 Cerrar Sesión", welcome: "¡Bienvenido de nuevo! 👋",
-        subWelcome: "Encuentra a tu alma gemela y comienza una conversación hoy.",
-        tProfileTitle: "Mi Perfil", tProfileDesc: "Edita tus datos, fotos y configuración de privacidad.",
-        tSearchTitle: "Buscar Perfiles", tSearchDesc: "Encuentra miembros por edad, ubicación e intereses.",
-        tChatTitle: "Mensajes y Chat", tChatDesc: "Revisa tus chats activos y nuevos mensajes.",
-        tInterviewTitle: "Práctica de Entrevista IA", tInterviewDesc: "Practica entrevistas con el asistente de IA.",
-        tLangTitle: "Aprendizaje de Idiomas", tLangDesc: "Practica idiomas extranjeros con un profesor de IA.",
-        tJobTitle: "Empleo y Carrera", tJobDesc: "Explora ofertas de empleo y oportunidades.",
-        tTestTitle: "Pruebas y Verificación", tTestDesc: "Realiza pruebas de compatibilidad o habilidades.",
-        tSupportTitle: "Soporte Técnico", tSupportDesc: "¿Tienes alguna pregunta? Contacta a nuestro equipo.",
-        tForumTitle: "Foro", tForumDesc: "Discute temas y comparte experiencias.",
-        tFunTitle: "Entretenimiento", tFunDesc: "Lee artículos interesantes y relájate.",
-        rights: "Todos los derechos reservados."
-      },
-      IT: {
-        btnContact: "📩 Supporto e Contatti", btnLogout: "🚪 Esci", welcome: "Bentornato! 👋",
-        subWelcome: "Trova la tua anima gemella e inizia una conversazione oggi.",
-        tProfileTitle: "Il mio Profilo", tProfileDesc: "Modifica i tuoi dati, foto e impostazioni di privacy.",
-        tSearchTitle: "Cerca Profili", tSearchDesc: "Trova membri per età, posizione e interessi.",
-        tChatTitle: "Messaggi e Chat", tChatDesc: "Controlla le tue chat attive e i nuovi messaggi.",
-        tInterviewTitle: "Pratica Colloquio IA", tInterviewDesc: "Pratica colloqui con l'assistente IA.",
-        tLangTitle: "Apprendimento Lingue", tLangDesc: "Pratica lingue straniere con un insegnante IA.",
-        tJobTitle: "Lavoro e Carriera", tJobDesc: "Sfoglia offerte di lavoro e opportunità.",
-        tTestTitle: "Test e Verifica", tTestDesc: "Esegui test di compatibilità o abilità.",
-        tSupportTitle: "Assistenza Clienti", tSupportDesc: "Hai una domanda? Contatta il nostro team.",
-        tForumTitle: "Forum", tForumDesc: "Discuti argomenti e condividi esperienze.",
-        tFunTitle: "Divertimento", tFunDesc: "Leggi articoli interessanti e rilassati.",
-        rights: "Tutti i diritti riservati."
-      },
-      TR: {
-        btnContact: "📩 Destek ve İletişim", btnLogout: "🚪 Çıkış Yap", welcome: "Tekrar hoş geldiniz! 👋",
-        subWelcome: "Ruh eşinizi bulun ve bugün yeni bir sohbete başlayın.",
-        tProfileTitle: "Profilim", tProfileDesc: "Bilgilerinizi, fotoğraflarınızı ve gizlilik ayarlarınızı düzenleyin.",
-        tSearchTitle: "Profil Arama", tSearchDesc: "Üyeleri yaşa, konuma ve ilgi alanlarına göre bulun.",
-        tChatTitle: "Mesajlar ve Sohbet", tChatDesc: "Aktif sohbetlerinizi ve yeni mesajlarınızı inceleyin.",
-        tInterviewTitle: "Yapay Zeka Mülakat Pratiği", tInterviewDesc: "Yapay zeka asistanı ile mülakat yapın.",
-        tLangTitle: "Dil Eğitimi", tInterviewDesc: "Yapay zeka öğretmeni ile yabancı dil pratikleri yapın.",
-        tJobTitle: "İş ve Kariyer", tJobDesc: "İş tekliflerini ve ilanları inceleyin.",
-        tTestTitle: "Test ve Kontrol", tTestDesc: "Uyumluluk ve beceri testlerini başlatın.",
-        tSupportTitle: "Müşteri Desteği", tSupportDesc: "Bir sorunuz mu var? Ekibimizle iletişime geçin.",
-        tForumTitle: "Forum", tForumDesc: "Konuları tartışın ve deneyimlerinizi paylaşın.",
-        tFunTitle: "Eğlence", tFunDesc: "İlginç makaleler okuyun ve rahatlayın.",
-        rights: "Tüm hakları saklıdır."
-      }
-    };
-
-    function promijeniJezik(lang) {
-      if (!prevodi[lang]) return;
-      trenutniJezik = lang;
-      const t = prevodi[lang];
-      document.getElementById('txtBtnContact').innerText = t.btnContact;
-      document.getElementById('txtBtnLogout').innerText = t.btnLogout;
-      document.getElementById('txtWelcome').innerText = t.welcome;
-      document.getElementById('txtSubWelcome').innerText = t.subWelcome;
-      document.getElementById('tileProfileTitle').innerText = t.tProfileTitle;
-      document.getElementById('tileProfileDesc').innerText = t.tProfileDesc;
-      document.getElementById('tileSearchTitle').innerText = t.tSearchTitle;
-      document.getElementById('tileSearchDesc').innerText = t.tSearchDesc;
-      document.getElementById('tileChatTitle').innerText = t.tChatTitle;
-      document.getElementById('tileChatDesc').innerText = t.tChatDesc;
-      document.getElementById('tileInterviewTitle').innerText = t.tInterviewTitle;
-      document.getElementById('tileInterviewDesc').innerText = t.tInterviewDesc;
-      document.getElementById('tileLangTitle').innerText = t.tLangTitle;
-      document.getElementById('tileLangDesc').innerText = t.tLangDesc;
-      document.getElementById('tileJobTitle').innerText = t.tJobTitle;
-      document.getElementById('tileJobDesc').innerText = t.tJobDesc;
-      document.getElementById('tileTestTitle').innerText = t.tTestTitle;
-      document.getElementById('tileTestDesc').innerText = t.tTestDesc;
-      document.getElementById('tileSupportTitle').innerText = t.tSupportTitle;
-      document.getElementById('tileSupportDesc').innerText = t.tSupportDesc;
-      document.getElementById('tileForumTitle').innerText = t.tForumTitle;
-      document.getElementById('tileForumDesc').innerText = t.tForumDesc;
-      document.getElementById('tileFunTitle').innerText = t.tFunTitle;
-      document.getElementById('tileFunDesc').innerText = t.tFunDesc;
-      document.getElementById('txtRights').innerText = t.rights;
-    }
-
-    // Funkcija za brzo filtriranje/pretragu opcija u padajućem meniju jezika
-    function filtrirajJezike() {
-      const unos = document.getElementById('langSearchInput').value.toLowerCase();
-      const select = document.getElementById('langSelect');
-      const opcije = select.options;
-
-      for (let i = 0; i < opcije.length; i++) {
-        const tekstOpcije = opcije[i].text.toLowerCase();
-        if (tekstOpcije.includes(unos)) {
-          opcije[i].style.display = "";
-          // Ako korisnik traži i nađe, automatski ga izaberi da olakšamo
-          if (unos.length >= 2 && tekstOpcije.includes(unos) && !opcije[i].selected) {
-            opcije[i].selected = true;
-            promijeniJezik(opcije[i].value);
-          }
-        } else {
-          opcije[i].style.display = "none";
-        }
-      }
     }
 
     async function ucitajProfilKorisnika() {
