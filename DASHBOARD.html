@@ -33,11 +33,23 @@
     .user-badge { background: #ffe0e3; color: #d90429; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
 
     .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-    .dash-tile { background: #fff; padding: 25px; border-radius: 16px; text-decoration: none; color: #2b2d42; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #f0f0f0; }
+    .dash-tile { background: #fff; padding: 25px; border-radius: 16px; text-decoration: none; color: #2b2d42; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #f0f0f0; cursor: pointer; }
     .dash-tile:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(217, 4, 41, 0.15); border-color: #ffccd5; }
     .dash-tile .icon { font-size: 2.5rem; }
     .dash-tile h3 { color: #800020; font-size: 1.2rem; }
     .dash-tile p { font-size: 0.85rem; color: #777; }
+
+    /* Modal (Novi prozor) za unutrašnje kartice dokumenata iz foldera DOCS */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+    .modal-overlay.active { display: flex; }
+    .modal-content { background: #fff; width: 100%; max-width: 700px; padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 20px; position: relative; animation: modalIn 0.3s ease-out; }
+    @keyframes modalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; }
+    .modal-header h2 { color: #800020; font-size: 1.5rem; }
+    .btn-close-modal { background: #ef4444; color: #fff; border: none; width: 35px; height: 35px; border-radius: 50%; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; }
+    .btn-close-modal:hover { background: #dc2626; }
+    
+    .modal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
 
     footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
   </style>
@@ -124,23 +136,11 @@
         <p>Pokrenite testove kompatibilnosti, vještina ili sistemske provjere.</p>
       </a>
 
-      <a href="DDOCS/word.html" class="dash-tile">
-        <div class="icon">📄</div>
-        <h3>Word Dokumenti</h3>
-        <p>Kreirajte i uređujte tekstualne dokumente i izvještaje.</p>
-      </a>
-
-      <a href="DDOCS/excel.html" class="dash-tile">
-        <div class="icon">📈</div>
-        <h3>Excel tabele</h3>
-        <p>Upravljajte tabelama, podacima i formulama.</p>
-      </a>
-
-      <a href="DDOCS/powerpoint.html" class="dash-tile">
-        <div class="icon">📊</div>
-        <h3>PowerPoint Prezentacije</h3>
-        <p>Kreirajte i pripremite vizuelne prezentacije.</p>
-      </a>
+      <div class="dash-tile" onclick="otvoriModalDokumenata()">
+        <div class="icon">📁</div>
+        <h3>Dokumenti</h3>
+        <p>Otvorite meni za Word, Excel i PowerPoint dokumente iz foldera DOCS.</p>
+      </div>
 
       <a href="KONTAKT.html" class="dash-tile">
         <div class="icon">📩</div>
@@ -150,6 +150,36 @@
 
     </div>
 
+  </div>
+
+  <div class="modal-overlay" id="DOCSModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📂 Izaberite tip dokumenta</h2>
+        <button class="btn-close-modal" onclick="zatvoriModalDokumenata()">✕</button>
+      </div>
+      <p style="color: #666; font-size: 0.95rem;">Izaberite alat koji želite da pokrenete iz foldera <strong>DOCS</strong>:</p>
+      
+      <div class="modal-grid">
+        <a href="DOCS/word.html" class="dash-tile">
+          <div class="icon">📄</div>
+          <h3>Word</h3>
+          <p>Tekstualni dokumenti</p>
+        </a>
+
+        <a href="DOCS/excel.html" class="dash-tile">
+          <div class="icon">📈</div>
+          <h3>Excel</h3>
+          <p>Tabele i podaci</p>
+        </a>
+
+        <a href="DOCS/powerpoint.html" class="dash-tile">
+          <div class="icon">📊</div>
+          <h3>PowerPoint</h3>
+          <p>Prezentacije</p>
+        </a>
+      </div>
+    </div>
   </div>
 
   <footer>
@@ -174,6 +204,23 @@
     let _supabase;
     if (typeof supabase !== 'undefined') {
       _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+
+    // Funkcije za otvaranje i zatvaranje modala sa dokumentima
+    function otvoriModalDokumenata() {
+      document.getElementById('DOCSModal').classList.add('active');
+    }
+
+    function zatvoriModalDokumenata() {
+      document.getElementById('DOCSModal').classList.remove('active');
+    }
+
+    // Zatvaranje modala klikom izvan prozora
+    window.onclick = function(event) {
+      const modal = document.getElementById('DOCSModal');
+      if (event.target === modal) {
+        zatvoriModalDokumenata();
+      }
     }
 
     async function ucitajProfilKorisnika() {
