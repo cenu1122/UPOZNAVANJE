@@ -1,8 +1,3 @@
-Izvini, sada te potpuno razumijem! Htio si onaj veliki sistem sa svim svjetskim jezicima iz Google Translate-a, ali da unutar tog istog sistema imaš i naše nove kartice za Posao (POSAO.html) i Test (TEST.html), kao i dugme za odjavu i sve funkcije na broju.
-
-Evo ga kompletan kod od vrha do dna koji koristi zvanični Google Translate widget (koji automatski podržava sve svjetske jezike i prevodi čitavu stranicu), a u njega su ubačene sve naše nove kartice i funkcije:
-HTML
-
 <!DOCTYPE html>
 <html lang="bs">
 <head>
@@ -21,7 +16,7 @@ HTML
 
     .nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     
-    /* Stil za Google Translate da izgleda uredno na traci */
+    /* Stil za Google Translate */
     .lang-wrapper { display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 10px; border-radius: 20px; border: 2px solid #d90429; }
     #google_translate_element select { padding: 4px 8px; border: none; background: transparent; font-weight: bold; font-size: 0.85rem; color: #2b2d42; outline: none; cursor: pointer; }
     
@@ -127,6 +122,24 @@ HTML
         <div class="icon">🧪</div>
         <h3>Test & Provjera</h3>
         <p>Pokrenite testove kompatibilnosti, vještina ili sistemske provjere.</p>
+      </a>
+
+      <a href="DDOCS/word.html" class="dash-tile">
+        <div class="icon">📄</div>
+        <h3>Word Dokumenti</h3>
+        <p>Kreirajte i uređujte tekstualne dokumente i izvještaje.</p>
+      </a>
+
+      <a href="DDOCS/excel.html" class="dash-tile">
+        <div class="icon">📈</div>
+        <h3>Excel tabele</h3>
+        <p>Upravljajte tabelama, podacima i formulama.</p>
+      </a>
+
+      <a href="DDOCS/powerpoint.html" class="dash-tile">
+        <div class="icon">📊</div>
+        <h3>PowerPoint Prezentacije</h3>
+        <p>Kreirajte i pripremite vizuelne prezentacije.</p>
       </a>
 
       <a href="KONTAKT.html" class="dash-tile">
