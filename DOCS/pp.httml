@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PowerPoint Prezentacije | DDOCS</title>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; color: #1e293b; display: flex; flex-direction: column; min-height: 100vh; overflow: hidden; }
+
+    header { background-color: #2b2d42; color: #fff; padding: 12px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 100; }
+    .logo { font-size: 1.3rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .btn-nav { background: #d90429; color: #fff; text-decoration: none; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; transition: background 0.2s; border: none; cursor: pointer; }
+    .btn-nav:hover { background: #ef233c; }
+
+    /* Glavni Layout */
+    .app-container { display: flex; flex: 1; overflow: hidden; }
+
+    /* Sidebar sa slajdovima */
+    .sidebar { width: 220px; background: #fff; border-right: 1px solid #cbd5e1; display: flex; flex-direction: column; padding: 15px; gap: 15px; overflow-y: auto; }
+    .sidebar h4 { font-size: 0.9rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+    .slide-thumb { width: 100%; aspect-ratio: 16/9; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #94a3b8; transition: all 0.2s; position: relative; font-size: 0.8rem; }
+    .slide-thumb:hover { border-color: #cbd5e1; background: #f1f5f9; }
+    .slide-thumb.active { border-color: #d90429; background: #fff0f3; color: #d90429; box-shadow: 0 4px 10px rgba(217, 4, 41, 0.1); }
+    .btn-add-slide { width: 100%; padding: 10px; background: #2b2d42; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
+
+    /* Centralni dio - Editor */
+    .editor-zone { flex: 1; display: flex; flex-direction: column; background: #e2e8f0; padding: 20px; gap: 20px; align-items: center; overflow-y: auto; }
+    
+    .toolbar { background: #fff; width: 100%; max-width: 900px; padding: 10px; border-radius: 10px; display: flex; flex-wrap: wrap; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); align-items: center; }
+    .tool-group { display: flex; gap: 5px; border-right: 1px solid #e2e8f0; padding-right: 10px; }
+    .tool-btn { background: #f8fafc; border: 1px solid #cbd5e1; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.85rem; }
+    .tool-btn:hover { background: #f1f5f9; }
+    .tool-color { width: 28px; height: 28px; border: 1px solid #cbd5e1; border-radius: 5px; cursor: pointer; }
+
+    /* Canvas (Slajd) */
+    .slide-canvas { 
+      width: 100%; 
+      max-width: 900px; 
+      aspect-ratio: 16/9; 
+      background: white; 
+      box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+      border-radius: 4px; 
+      padding: 60px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 30px; 
+      outline: none; 
+      transition: background 0.3s;
+    }
+    .slide-title { font-size: 2.5rem; font-weight: bold; border-bottom: 2px dashed #cbd5e1; padding-bottom: 10px; color: #2b2d42; outline: none; }
+    .slide-body { font-size: 1.2rem; line-height: 1.6; color: #475569; flex: 1; outline: none; }
+
+    /* Fullscreen Mode */
+    .slide-canvas:fullscreen { width: 100vw; height: 100vh; max-width: none; aspect-ratio: auto; border-radius: 0; padding: 10%; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
+
+    @media print {
+      header, .sidebar, .toolbar, .btn-add-slide { display: none; }
+      body, .editor-zone { background: white; overflow: visible; }
+      .slide-canvas { box-shadow: none; border: 1px solid #eee; break-after: page; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="../DASHBOARD.html" class="logo">📊 PowerPoint Prezentacije</a>
+    <div style="display: flex; gap: 10px;">
+      <button class="btn-nav" onclick="pokreniPrezentaciju()" style="background: #10b981;">▶️ Pokreni Prezentaciju</button>
+      <a href="../DASHBOARD.html" class="btn-nav">🏠 Dashboard</a>
+    </div>
+  </header>
+
+  <div class="app-container">
+    
+    <div class="sidebar">
+      <h4>Slajdovi</h4>
+      <div id="slideList">
+        </div>
+      <button class="btn-add-slide" onclick="noviSlajd()">➕ Dodaj Slajd</button>
+    </div>
+
+    <div class="editor-zone">
+      
+      <div class="toolbar">
+        <div class="tool-group">
+          <button class="tool-btn" onclick="formatiraj('bold')">B</button>
+          <button class="tool-btn" onclick="formatiraj('italic')">I</button>
+          <button class="tool-btn" onclick="formatiraj('underline')">U</button>
+        </div>
+        <div class="tool-group">
+          <button class="tool-btn" onclick="formatiraj('justifyLeft')">⬅️</button>
+          <button class="tool-btn" onclick="formatiraj('justifyCenter')">⬛</button>
+          <button class="tool-btn" onclick="formatiraj('justifyRight')">➡️</button>
+        </div>
+        <div class="tool-group">
+          <span style="font-size: 0.8rem;">Pozadina: </span>
+          <input type="color" class="tool-color" onchange="promijeniPozadinu(this.value)" value="#ffffff">
+        </div>
+        <div class="tool-group" style="margin-left: auto; border: none;">
+          <button class="tool-btn" onclick="window.print()" style="color: #10b981;">📥 Save PDF</button>
+          <button class="tool-btn" onclick="obrisiTrenutniSlajd()" style="color: #d90429;">🗑️ Obriši Slajd</button>
+        </div>
+      </div>
+
+      <div id="slideCanvas" class="slide-canvas">
+        <div id="slideTitle" class="slide-title" contenteditable="true" oninput="sacuvajPromjene()">Naslov Slajda</div>
+        <div id="slideBody" class="slide-body" contenteditable="true" oninput="sacuvajPromjene()">Ovdje unesite sadržaj vaše prezentacije...</div>
+      </div>
+
+      <div style="font-size: 0.8rem; color: #64748b;">Savjet: Koristite Enter za nove redove. Sve promjene se automatski čuvaju u sesiji.</div>
+
+    </div>
+
+  </div>
+
+  <script>
+    let slides = [
+      { title: "Dobrodošli", body: "Ovo je vaš prvi slajd. Kliknite i počnite pisati.", bg: "#ffffff" }
+    ];
+    let currentSlideIndex = 0;
+
+    // Inicijalizacija
+    function init() {
+      renderThumbnails();
+      ucitajSlajd(0);
+    }
+
+    function renderThumbnails() {
+      const list = document.getElementById('slideList');
+      list.innerHTML = '';
+      slides.forEach((slide, index) => {
+        const thumb = document.createElement('div');
+        thumb.className = `slide-thumb ${index === currentSlideIndex ? 'active' : ''}`;
+        thumb.innerHTML = `<span>${index + 1}</span>`;
+        thumb.onclick = () => ucitajSlajd(index);
+        list.appendChild(thumb);
+      });
+    }
+
+    function ucitajSlajd(index) {
+      currentSlideIndex = index;
+      const slide = slides[index];
+      document.getElementById('slideTitle').innerHTML = slide.title;
+      document.getElementById('slideBody').innerHTML = slide.body;
+      document.getElementById('slideCanvas').style.backgroundColor = slide.bg;
+      
+      // Ažuriraj thumbnail selekciju
+      renderThumbnails();
+    }
+
+    function sacuvajPromjene() {
+      slides[currentSlideIndex].title = document.getElementById('slideTitle').innerHTML;
+      slides[currentSlideIndex].body = document.getElementById('slideBody').innerHTML;
+    }
+
+    function noviSlajd() {
+      slides.push({ title: "Novi Naslov", body: "Sadržaj novog slajda...", bg: "#ffffff" });
+      ucitajSlajd(slides.length - 1);
+    }
+
+    function obrisiTrenutniSlajd() {
+      if (slides.length > 1) {
+        slides.splice(currentSlideIndex, 1);
+        let nextIndex = Math.max(0, currentSlideIndex - 1);
+        ucitajSlajd(nextIndex);
+      } else {
+        alert("Prezentacija mora imati bar jedan slajd!");
+      }
+    }
+
+    function promijeniPozadinu(boja) {
+      slides[currentSlideIndex].bg = boja;
+      document.getElementById('slideCanvas').style.backgroundColor = boja;
+    }
+
+    function formatiraj(komanda) {
+      document.execCommand(komanda, false, null);
+      sacuvajPromjene();
+    }
+
+    function pokreniPrezentaciju() {
+      const canvas = document.getElementById('slideCanvas');
+      if (canvas.requestFullscreen) {
+        canvas.requestFullscreen();
+      } else if (canvas.webkitRequestFullscreen) { /* Safari */
+        canvas.webkitRequestFullscreen();
+      } else if (canvas.msRequestFullscreen) { /* IE11 */
+        canvas.msRequestFullscreen();
+      }
+    }
+
+    // Navigacija tastaturom unutar Fullscreen-a (Lijevo/Desno strelice)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === "ArrowRight") {
+        if (currentSlideIndex < slides.length - 1) ucitajSlajd(currentSlideIndex + 1);
+      } else if (e.key === "ArrowLeft") {
+        if (currentSlideIndex > 0) ucitajSlajd(currentSlideIndex - 1);
+      }
+    });
+
+    window.onload = init;
+  </script>
+
+</body>
+</html>
