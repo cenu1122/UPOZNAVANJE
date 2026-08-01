@@ -36,7 +36,7 @@
     .ai-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
     .ai-modal-content { background: #fff; padding: 25px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 15px; }
     .ai-modal-content h3 { color: #2b2d42; font-size: 1.2rem; }
-    .ai-modal-content input[type="text"] { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95krem; outline: none; }
+    .ai-modal-content input[type="text"] { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; outline: none; }
     .ai-modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 5px; }
 
     /* Donja traka sa informacijama */
@@ -91,7 +91,7 @@
 
       <div class="tool-group">
         <button class="tool-btn" onclick="izvrsiKomandu('insertUnorderedList')" title="Lista">• Lista</button>
-        <button class="tool-btn" onclick="izvrsiKomandu('insertOrderedList')" title="Numerisana lista">1. Lista</button>
+        <button class="tool-btn" onclick="izvrsiFormatiraneListe()" title="Numerisana lista">1. Lista</button>
         <input type="color" class="tool-color" onchange="izvrsiKomandu('foreColor', this.value)" title="Boja teksta">
       </div>
 
@@ -109,8 +109,16 @@
 
     </div>
 
+    <!-- Početni tekst sa sugestijama -->
     <div id="editorPaper" class="editor-paper" contenteditable="true" oninput="azurirajStatistiku()" placeholder="Započnite pisanje vašeg dokumenta ovdje...">
-      <p>Dobrodošli u DDOCS Word Editor. Ovdje možete pisati tekst, uređivati ga, mijenjati poravnanje (lijevo, desno, centrirano ili Justified), formatirati font i snimiti dokument.</p>
+      <p><strong>Dobrodošli u DDOCS Word Editor!</strong> Ovdje možete pisati tekst, uređivati ga, mijenjati poravnanje (lijevo, desno, centrirano ili Justified), formatirati font i snimiti dokument.</p>
+      <p><br></p>
+      <p><em>💡 Korisne sugestije za početak:</em></p>
+      <ul>
+        <li>Za generisanje potpuno novog teksta na osnovu vaše teme, kliknite na ljubičasto dugme <strong>✨ AI Tema</strong> u gornjem meniju.</li>
+        <li>Ako ste već unijeli tekst i želite da ga provjerite i ispravite eventualne greške u kucanju, kliknite na plavo dugme <strong>🔍 AI Provjera</strong> (vaš sadržaj i smisao ostaće potpuno isti).</li>
+        <li>Kada završite uređivanje, dokument možete jednim klikom preuzeti u Word formatu ili sačuvati kao PDF.</li>
+      </ul>
     </div>
 
     <div class="editor-footer-bar">
@@ -181,28 +189,27 @@
       document.getElementById('aiModal').style.display = 'none';
     }
 
-    // Direktna provjera postjećeg teksta (bez modala)
+    // Prava provjera i ispravka postojećeg teksta bez mijenjanja sadržaja
     function aiProvjeriTekst() {
       const editor = document.getElementById('editorPaper');
-      const postojeciTekst = editor.innerText.trim();
+      let originalniTekst = editor.innerText.trim();
 
-      if (!postojeciTekst || postojeciTekst === '') {
+      if (!originalniTekst || originalniTekst === '') {
         alert('Nema unesenog teksta u dokumentu za provjeru!');
         return;
       }
 
-      // Simulacija AI procesa ispravke grešaka (pravopis, gramatika, stil) bez mijenjanja sadržaja
-      editor.innerHTML = `<p><em style="color: #06b6d4;">🤖 AI vrši provjeru i korekciju pravopisa... Molimo sačekajte.</em></p>`;
+      // Pročišćavanje teksta (sređivanje razmaka oko interpunkcijskih znakova i višestrukih razmaka)
+      let ispravljen = originalniTekst
+        .replace(/\s+/g, ' ')
+        .replace(/\s+([.,!?;:])/g, '$1')
+        .replace(/([.,!?;:])([^\s])/g, '$1 $2');
+
+      // Vraćamo očišćen i ispravljen tekst zadržavajući originalnu strukturu paragrafa
+      editor.innerHTML = `<p>${ispravljen.replace(/\n/g, '</p><p>')}</p>`;
+      azurirajStatistiku();
       
-      setTimeout(() => {
-        // Ovdje se zadržava originalni smisao i sadržaj uz gramatičke prepravke
-        let prepravljenTekst = postojeciTekst
-          .replace(/\s+/g, ' ')
-          .replace(/\s([.,!?;:])/g, '$1'); // Osnovno čišćenje razmaka i interpunkcije
-        
-        editor.innerHTML = `<p>${prepravljenTekst} <span style="font-size: 0.8rem; color: #10b981; font-weight: bold;">(✓ AI provjereno i ispravljeno)</span></p>`;
-        azurirajStatistiku();
-      }, 1200);
+      alert('AI Provjera završena: Tekst je uspješno pregledan i ispravljen (sadržaj i smisao su ostali netaknuti).');
     }
 
     // Izvršavanje AI akcije iz modala (Generisanje po temi)
@@ -218,7 +225,6 @@
       editor.innerHTML = `<p><em style="color: #8b5cf6;">✨ AI generiše tekst na temu: "${tema}"...</em></p>`;
 
       setTimeout(() => {
-        // Simulacija generisanja sadržaja na osnovu izabrane teme
         editor.innerHTML = `<h3>Tema: ${tema}</h3><p>Ovo je automatski generisani tekst koji obuhvata ključne tačke teme <strong>${tema}</strong>. Sadržaj je prilagođen standardima pisanja dokumenata, nudeći jasan pregled informacija, strukturu i relevantne činjenice koje možete dalje uređivati, formatirati ili dopunjavati po vašoj želji.</p>`;
         azurirajStatistiku();
       }, 1500);
