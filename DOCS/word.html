@@ -1,1 +1,171 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Dokumenti | DDOCS</title>
 
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; color: #1e293b; display: flex; flex-direction: column; min-height: 100vh; }
+
+    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
+    .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+
+    .nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .btn-nav { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
+    .btn-nav:hover { background: #ef233c; }
+
+    .main-container { flex: 1; padding: 30px 20px; max-width: 900px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 20px; }
+
+    /* Traka sa alatima (Toolbar) */
+    .editor-toolbar { background: #fff; padding: 12px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; border: 1px solid #e2e8f0; }
+    
+    .tool-group { display: flex; align-items: center; gap: 4px; border-right: 1px solid #cbd5e1; padding-right: 8px; }
+    .tool-group:last-child { border-right: none; }
+
+    .tool-btn { background: #f8fafc; border: 1px solid #cbd5e1; color: #334155; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+    .tool-btn:hover { background: #e2e8f0; border-color: #94a3b8; }
+    .tool-select { padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; font-size: 0.9rem; cursor: pointer; outline: none; }
+    .tool-color { width: 32px; height: 32px; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; background: transparent; padding: 0; }
+
+    /* Radna površina (A4 papir simulacija) */
+    .editor-paper { background: #fff; min-height: 600px; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; outline: none; font-size: 1rem; line-height: 1.6; color: #2b2d42; }
+
+    /* Donja traka sa informacijama */
+    .editor-footer-bar { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #64748b; padding: 0 5px; }
+
+    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
+
+    @media print {
+      header, .editor-toolbar, .editor-footer-bar, footer { display: none; }
+      body { background: #fff; }
+      .editor-paper { box-shadow: none; border: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="../DASHBOARD.html" class="logo">📄 Word Dokument Editor</a>
+    <div class="nav-actions">
+      <a href="../DASHBOARD.html" class="btn-nav">🏠 Nazad na Dashboard</a>
+    </div>
+  </header>
+
+  <div class="main-container">
+
+    <div class="editor-toolbar">
+      
+      <div class="tool-group">
+        <select class="tool-select" onchange="izvrsiKomandu('fontSize', this.value)" title="Veličina fonta">
+          <option value="3">Normalno</option>
+          <option value="1">Malo (1)</option>
+          <option value="4">Srednje (2)</option>
+          <option value="5">Veliko (3)</option>
+          <option value="6">Naslov (4)</option>
+          <option value="7">Ekstra veliko</option>
+        </select>
+      </div>
+
+      <div class="tool-group">
+        <button class="tool-btn" onclick="izvrsiKomandu('bold')" title="Podebljaj (Bold)"><b>B</b></button>
+        <button class="tool-btn" onclick="izvrsiKomandu('italic')" title="Kurziv (Italic)"><i>I</i></button>
+        <button class="tool-btn" onclick="izvrsiKomandu('underline')" title="Podcrtaj (Underline)"><u>U</u></button>
+        <button class="tool-btn" onclick="izvrsiKomandu('strikeThrough')" title="Precrtaj"><s>S</s></button>
+      </div>
+
+      <div class="tool-group">
+        <button class="tool-btn" onclick="izvrsiKomandu('justifyLeft')" title="Poravnaj lijevo">⬅️</button>
+        <button class="tool-btn" onclick="izvrsiKomandu('justifyCenter')" title="Centriraj">⬛</button>
+        <button class="tool-btn" onclick="izvrsiKomandu('justifyRight')" title="Poravnaj desno">➡️</button>
+        <button class="tool-btn" onclick="izvrsiKomandu('justifyFull')" title="Obostrano poravnanje (Justified)">📄↔️</button>
+      </div>
+
+      <div class="tool-group">
+        <button class="tool-btn" onclick="izvrsiKomandu('insertUnorderedList')" title="Lista">• Lista</button>
+        <button class="tool-btn" onclick="izvrsiKomandu('insertOrderedList')" title="Numerisana lista">1. Lista</button>
+        <input type="color" class="tool-color" onchange="izvrsiKomandu('foreColor', this.value)" title="Boja teksta">
+      </div>
+
+      <div class="tool-group" style="margin-left: auto;">
+        <button class="tool-btn" onclick="snimiKaoWord()" style="background: #2563eb; color: #fff; border-color: #1d4ed8;" title="Preuzmi kao Word fajl">💾 Save Word</button>
+        <button class="tool-btn" onclick="snimiKaoPDF()" style="background: #10b981; color: #fff; border-color: #059669;" title="Sačuvaj kao PDF / Štampaj">📥 Save PDF</button>
+        <button class="tool-btn" onclick="obrisiSve()" style="background: #ef4444; color: #fff; border-color: #dc2626;" title="Novi dokument">🗑️ Novi</button>
+      </div>
+
+    </div>
+
+    <div id="editorPaper" class="editor-paper" contenteditable="true" oninput="azurirajStatistiku()" placeholder="Započnite pisanje vašeg dokumenta ovdje...">
+      <p>Dobrodošli u DDOCS Word Editor. Ovdje možete pisati tekst, uređivati ga, mijenjati poravnanje (lijevo, desno, centrirano ili Justified), formatirati font i snimiti dokument.</p>
+    </div>
+
+    <div class="editor-footer-bar">
+      <span id="wordCount">Riječi: 0</span>
+      <span id="charCount">Karaktera: 0</span>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>© 2026 LjubavNaPrviKlik. DDOCS Word Modul.</p>
+  </footer>
+
+  <script>
+    // Funkcija za izvršavanje komandi u editoru
+    function izvrsiKomandu(komanda, vrijednost = null) {
+      document.execCommand(komanda, false, vrijednost);
+      document.getElementById('editorPaper').focus();
+      azurirajStatistiku();
+    }
+
+    // Statistika riječi i karaktera u realnom vremenu
+    function azurirajStatistiku() {
+      const tekst = document.getElementById('editorPaper').innerText.trim();
+      const riječi = tekst === '' ? 0 : tekst.split(/\s+/).length;
+      const karakteri = tekst.length;
+
+      document.getElementById('wordCount').innerText = `Riječi: ${riječi}`;
+      document.getElementById('charCount').innerText = `Karaktera: ${karakteri}`;
+    }
+
+    // Snimanje dokumenta kao Word (.doc fajl)
+    function snimiKaoWord() {
+      const sadržajHtml = document.getElementById('editorPaper').innerHTML;
+      const headerHtml = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Dokument</title></head><body>";
+      const footerHtml = "</body></html>";
+      
+      const kompletanHtml = headerHtml + sadržajHtml + footerHtml;
+      
+      const blob = new Blob(['\ufeff' + kompletanHtml], {
+        type: 'application/msword'
+      });
+      
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Dokument_' + new Date().toISOString().slice(0,10) + '.doc';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Snimanje dokumenta kao PDF (preko prozora za štampanje)
+    function snimiKaoPDF() {
+      window.print();
+    }
+
+    // Brisanje sadržaja / Novi dokument
+    function obrisiSve() {
+      if (confirm('Da li ste sigurni da želite obrisati sav tekst i započeti novi dokument?')) {
+        document.getElementById('editorPaper').innerHTML = '<p><br></p>';
+        azurirajStatistiku();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', azurirajStatistiku);
+  </script>
+
+</body>
+</html>
