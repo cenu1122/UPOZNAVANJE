@@ -8,7 +8,6 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; color: #1e293b; display: flex; flex-direction: column; min-height: 100vh; overflow: hidden; }
     
-    /* FULL-SCREEN BLINKING OVERLAY */
     #initialOverlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background-color: rgba(0, 0, 0, 0.95);
@@ -17,7 +16,7 @@
       text-align: center; color: #fff;
     }
     .blink-text {
-      font-size: 2.5rem; font-weight: bold; margin-bottom: 30px;
+      font-size: 2.2rem; font-weight: bold; margin-bottom: 30px;
       animation: mainBlink 1s infinite;
     }
     @keyframes mainBlink {
@@ -52,23 +51,44 @@
     .tool-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
     .tool-color { width: 30px; height: 30px; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; padding: 0; background: transparent; }
 
+    /* SLIDE CANVAS SA RELATIVNOM POZICIJOM ZA SLIKE */
     .slide-canvas { 
       width: 100%; max-width: 900px; aspect-ratio: 16/9; background: white; 
-      box-shadow: 0 15px 35px rgba(0,0,0,0.1); border-radius: 4px; padding: 60px; 
-      display: flex; flex-direction: column; gap: 25px; outline: none; transition: background 0.3s;
-      overflow-y: auto; text-align: left;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.1); border-radius: 4px; padding: 50px; 
+      display: flex; flex-direction: column; gap: 20px; outline: none; transition: background 0.3s;
+      position: relative; overflow: hidden; text-align: left;
     }
-    .slide-title { font-size: 2.5rem; font-weight: bold; border-bottom: 2px dashed #cbd5e1; padding-bottom: 10px; color: #2b2d42; outline: none; }
-    .slide-body { font-size: 1.2rem; line-height: 1.6; color: #475569; outline: none; flex: 1; }
-    .slide-image-container { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; }
-    .slide-image-container img { max-width: 220px; max-height: 160px; object-fit: cover; border-radius: 8px; border: 2px solid #e2e8f0; }
+    .slide-title { font-size: 2.2rem; font-weight: bold; border-bottom: 2px dashed #cbd5e1; padding-bottom: 8px; color: #2b2d42; outline: none; z-index: 2; }
+    .slide-body { font-size: 1.1rem; line-height: 1.6; color: #475569; outline: none; z-index: 2; }
+    
+    /* PLUTAJUĆA SLIKA KOJU MOŽETE POMJERATI I MIJENJATI VELIČINU */
+    .draggable-image {
+      position: absolute;
+      top: 150px; left: 50px;
+      width: 200px; height: auto;
+      cursor: move;
+      border: 2px dashed #3b82f6;
+      resize: both;
+      overflow: hidden;
+      z-index: 10;
+      background: rgba(255,255,255,0.5);
+    }
+    .draggable-image img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .delete-img-btn {
+      position: absolute; top: 2px; right: 2px; background: red; color: white;
+      border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px;
+      cursor: pointer; z-index: 11; display: none;
+    }
+    .draggable-image:hover .delete-img-btn { display: block; }
   </style>
 </head>
 <body onload="init()">
 
   <div id="initialOverlay">
     <div class="blink-text">
-      ⚠️ UKOLIKO IMATE NEKIH PRIMJEDBI NA RAD OVOG UREĐIVAČA ILI NEKIH SUGESTIJA ZA DODAVANJE PISIITE NAM U PODRŠKU KORISNICIMA NA POČETNOJ STRANICI!
+      ⚠️ UKOLIKO IMATE NEKIH PRIMJEDBI NA RAD OVOG UREĐIVAČA ILI NEKIH SUGESTIJA ZA DODAVANJE PIŠITE NAM U PODRŠKU KORISNICIMA NA POČETNOJ STRANICI!
     </div>
     <button class="btn-close-overlay" onclick="zatvoriObavjestenje()">RAZUMIO SAM / ZATVORI</button>
   </div>
@@ -126,7 +146,7 @@
       <div id="slideCanvas" class="slide-canvas">
         <div id="slideTitle" class="slide-title" contenteditable="true" oninput="sacuvajPromjene()">Naslov</div>
         <div id="slideBody" class="slide-body" contenteditable="true" oninput="sacuvajPromjene()">Unesite sadržaj ili koristite AI...</div>
-        <div id="slideImages" class="slide-image-container"></div>
+        <div id="imageLayer"></div>
       </div>
     </div>
   </div>
@@ -136,7 +156,6 @@
     let currentSlideIndex = 0;
 
     function init() { renderThumbnails(); ucitajSlajd(0); }
-
     function zatvoriObavjestenje() { document.getElementById('initialOverlay').style.display = 'none'; }
 
     function renderThumbnails() {
@@ -165,11 +184,75 @@
       const align = slide.align || 'left';
       titleEl.style.textAlign = align; bodyEl.style.textAlign = align;
 
-      const imgContainer = document.getElementById('slideImages'); imgContainer.innerHTML = '';
-      if(slide.images) slide.images.forEach(url => { 
-        const img = document.createElement('img'); img.src = url; imgContainer.appendChild(img); 
-      });
+      // Prikaz plutajućih slika
+      const imgLayer = document.getElementById('imageLayer'); imgLayer.innerHTML = '';
+      if(slide.images) {
+        slide.images.forEach((imgData, imgIdx) => {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'draggable-image';
+          wrapper.style.left = imgData.x || '50px';
+          wrapper.style.top = imgData.y || '150px';
+          if(imgData.width) wrapper.style.width = imgData.width;
+          if(imgData.height) wrapper.style.height = imgData.height;
+
+          const img = document.createElement('img');
+          img.src = imgData.url;
+
+          const delBtn = document.createElement('button');
+          delBtn.className = 'delete-img-btn';
+          delBtn.innerHTML = '✕';
+          delBtn.onclick = (e) => {
+            e.stopPropagation();
+            slides[currentSlideIndex].images.splice(imgIdx, 1);
+            ucitajSlajd(currentSlideIndex);
+          };
+
+          wrapper.appendChild(img);
+          wrapper.appendChild(delBtn);
+          uciniPomjerljivim(wrapper, imgIdx);
+          imgLayer.appendChild(wrapper);
+        });
+      }
       renderThumbnails();
+    }
+
+    // Funkcija za pomjeranje slike mišem (Drag & Drop)
+    function uciniPomjerljivim(elmnt, imgIdx) {
+      let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      elmnt.onmousedown = dragMouseDown;
+
+      function dragMouseDown(e) {
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+      }
+
+      function elementDrag(e) {
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        
+        let newTop = (elmnt.offsetTop - pos2);
+        let newLeft = (elmnt.offsetLeft - pos1);
+
+        elmnt.style.top = newTop + "px";
+        elmnt.style.left = newLeft + "px";
+
+        // Sačuvaj poziciju i veličinu
+        slides[currentSlideIndex].images[imgIdx].x = elmnt.style.left;
+        slides[currentSlideIndex].images[imgIdx].y = elmnt.style.top;
+        slides[currentSlideIndex].images[imgIdx].width = elmnt.style.width;
+        slides[currentSlideIndex].images[imgIdx].height = elmnt.style.height;
+      }
+
+      function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
     }
 
     function sacuvajPromjene() { 
@@ -188,7 +271,7 @@
         const reader = new FileReader();
         reader.onload = function(e) {
           if (!slides[currentSlideIndex].images) slides[currentSlideIndex].images = [];
-          slides[currentSlideIndex].images.push(e.target.result);
+          slides[currentSlideIndex].images.push({ url: e.target.result, x: '50px', y: '150px', width: '200px', height: 'auto' });
           ucitajSlajd(currentSlideIndex);
         };
         reader.readAsDataURL(file);
@@ -199,14 +282,13 @@
       let url = prompt("Unesite URL link slike:"); 
       if(url && url.trim() !== "") { 
         if (!slides[currentSlideIndex].images) slides[currentSlideIndex].images = [];
-        slides[currentSlideIndex].images.push(url.trim()); ucitajSlajd(currentSlideIndex); 
+        slides[currentSlideIndex].images.push({ url: url.trim(), x: '50px', y: '150px', width: '200px', height: 'auto' }); 
+        ucitajSlajd(currentSlideIndex); 
       } 
     }
 
     function postaviPoravnanje(tip) { slides[currentSlideIndex].align = tip; ucitajSlajd(currentSlideIndex); }
-
     function promijeniPozadinu(boja) { slides[currentSlideIndex].bg = boja; document.getElementById('slideCanvas').style.backgroundColor = boja; }
-
     function promijeniBojuSlova(boja) {
       slides[currentSlideIndex].textColor = boja;
       document.getElementById('slideTitle').style.color = boja;
@@ -228,5 +310,3 @@
   </script>
 </body>
 </html>
-
-Snimite ovaj kôd, osvježite stranicu i sve će raditi besprijekorno!
