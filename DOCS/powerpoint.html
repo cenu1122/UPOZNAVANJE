@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PowerPoint Prezentacije | DDOCS</title>
+  <title>AI PowerPoint | docs</title>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -14,27 +14,27 @@
     .btn-nav { background: #d90429; color: #fff; text-decoration: none; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; transition: background 0.2s; border: none; cursor: pointer; }
     .btn-nav:hover { background: #ef233c; }
 
-    /* Glavni Layout */
     .app-container { display: flex; flex: 1; overflow: hidden; }
 
-    /* Sidebar sa slajdovima */
-    .sidebar { width: 220px; background: #fff; border-right: 1px solid #cbd5e1; display: flex; flex-direction: column; padding: 15px; gap: 15px; overflow-y: auto; }
-    .sidebar h4 { font-size: 0.9rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
-    .slide-thumb { width: 100%; aspect-ratio: 16/9; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #94a3b8; transition: all 0.2s; position: relative; font-size: 0.8rem; }
+    .sidebar { width: 240px; background: #fff; border-right: 1px solid #cbd5e1; display: flex; flex-direction: column; padding: 15px; gap: 15px; overflow-y: auto; }
+    .sidebar h4 { font-size: 0.85rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+    .slide-thumb { width: 100%; aspect-ratio: 16/9; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #94a3b8; transition: all 0.2s; position: relative; font-size: 0.75rem; text-align: center; padding: 5px; }
     .slide-thumb:hover { border-color: #cbd5e1; background: #f1f5f9; }
     .slide-thumb.active { border-color: #d90429; background: #fff0f3; color: #d90429; box-shadow: 0 4px 10px rgba(217, 4, 41, 0.1); }
-    .btn-add-slide { width: 100%; padding: 10px; background: #2b2d42; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
+    
+    .btn-action { width: 100%; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-add { background: #2b2d42; color: #fff; }
+    .btn-ai { background: #8b5cf6; color: #fff; margin-top: 5px; }
+    .btn-ai:hover { background: #7c3aed; }
 
-    /* Centralni dio - Editor */
     .editor-zone { flex: 1; display: flex; flex-direction: column; background: #e2e8f0; padding: 20px; gap: 20px; align-items: center; overflow-y: auto; }
     
-    .toolbar { background: #fff; width: 100%; max-width: 900px; padding: 10px; border-radius: 10px; display: flex; flex-wrap: wrap; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); align-items: center; }
-    .tool-group { display: flex; gap: 5px; border-right: 1px solid #e2e8f0; padding-right: 10px; }
-    .tool-btn { background: #f8fafc; border: 1px solid #cbd5e1; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.85rem; }
-    .tool-btn:hover { background: #f1f5f9; }
-    .tool-color { width: 28px; height: 28px; border: 1px solid #cbd5e1; border-radius: 5px; cursor: pointer; }
+    .toolbar { background: #fff; width: 100%; max-width: 950px; padding: 10px; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); align-items: center; }
+    .tool-group { display: flex; gap: 5px; border-right: 1px solid #e2e8f0; padding-right: 10px; align-items: center; }
+    .tool-btn { background: #f8fafc; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.8rem; color: #334155; }
+    .tool-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+    .tool-color { width: 30px; height: 30px; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; padding: 0; }
 
-    /* Canvas (Slajd) */
     .slide-canvas { 
       width: 100%; 
       max-width: 900px; 
@@ -45,27 +45,28 @@
       padding: 60px; 
       display: flex; 
       flex-direction: column; 
-      gap: 30px; 
+      gap: 25px; 
       outline: none; 
       transition: background 0.3s;
+      overflow-y: auto;
     }
     .slide-title { font-size: 2.5rem; font-weight: bold; border-bottom: 2px dashed #cbd5e1; padding-bottom: 10px; color: #2b2d42; outline: none; }
-    .slide-body { font-size: 1.2rem; line-height: 1.6; color: #475569; flex: 1; outline: none; }
-
-    /* Fullscreen Mode */
-    .slide-canvas:fullscreen { width: 100vw; height: 100vh; max-width: none; aspect-ratio: auto; border-radius: 0; padding: 10%; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
+    .slide-body { font-size: 1.2rem; line-height: 1.6; color: #475569; outline: none; flex: 1; min-height: 100px; }
+    
+    .slide-image-container { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; }
+    .slide-image-container img { max-width: 220px; max-height: 160px; object-fit: cover; border-radius: 8px; border: 2px solid #e2e8f0; }
 
     @media print {
-      header, .sidebar, .toolbar, .btn-add-slide { display: none; }
+      header, .sidebar, .toolbar { display: none; }
       body, .editor-zone { background: white; overflow: visible; }
-      .slide-canvas { box-shadow: none; border: 1px solid #eee; break-after: page; }
+      .slide-canvas { box-shadow: none; border: 1px solid #eee; break-after: page; margin-bottom: 20px; }
     }
   </style>
 </head>
 <body>
 
   <header>
-    <a href="../DASHBOARD.html" class="logo">📊 PowerPoint Prezentacije</a>
+    <a href="../DASHBOARD.html" class="logo">📊 AI PowerPoint Editor</a>
     <div style="display: flex; gap: 10px;">
       <button class="btn-nav" onclick="pokreniPrezentaciju()" style="background: #10b981;">▶️ Pokreni Prezentaciju</button>
       <a href="../DASHBOARD.html" class="btn-nav">🏠 Dashboard</a>
@@ -76,9 +77,10 @@
     
     <div class="sidebar">
       <h4>Slajdovi</h4>
-      <div id="slideList">
-        </div>
-      <button class="btn-add-slide" onclick="noviSlajd()">➕ Dodaj Slajd</button>
+      <button class="btn-action btn-add" onclick="noviSlajd()">➕ Novi Slajd</button>
+      <button class="btn-action btn-ai" onclick="aiGenerisiPrezentaciju()">✨ AI Generiši</button>
+      
+      <div id="slideList" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;"></div>
     </div>
 
     <div class="editor-zone">
@@ -89,27 +91,34 @@
           <button class="tool-btn" onclick="formatiraj('italic')">I</button>
           <button class="tool-btn" onclick="formatiraj('underline')">U</button>
         </div>
+
         <div class="tool-group">
-          <button class="tool-btn" onclick="formatiraj('justifyLeft')">⬅️</button>
-          <button class="tool-btn" onclick="formatiraj('justifyCenter')">⬛</button>
-          <button class="tool-btn" onclick="formatiraj('justifyRight')">➡️</button>
+          <button class="tool-btn" onclick="postaviPoravnanje('left')">⬅️ Lijevo</button>
+          <button class="tool-btn" onclick="postaviPoravnanje('center')">⬛ Centar</button>
+          <button class="tool-btn" onclick="postaviPoravnanje('right')">➡️ Desno</button>
+          <button class="tool-btn" onclick="postaviPoravnanje('justify')">📄 Justified</button>
         </div>
+
         <div class="tool-group">
-          <span style="font-size: 0.8rem;">Pozadina: </span>
+          <button class="tool-btn" onclick="dodajSliku()" style="background: #eff6ff; color: #1d4ed8;">🖼️ Slika</button>
+        </div>
+
+        <div class="tool-group">
+          <span style="font-size: 0.75rem; font-weight: bold;">Boja:</span>
           <input type="color" class="tool-color" onchange="promijeniPozadinu(this.value)" value="#ffffff">
         </div>
+
         <div class="tool-group" style="margin-left: auto; border: none;">
-          <button class="tool-btn" onclick="window.print()" style="color: #10b981;">📥 Save PDF</button>
-          <button class="tool-btn" onclick="obrisiTrenutniSlajd()" style="color: #d90429;">🗑️ Obriši Slajd</button>
+          <button class="tool-btn" onclick="window.print()" style="color: #10b981;">📥 PDF</button>
+          <button class="tool-btn" onclick="obrisiTrenutniSlajd()" style="color: #d90429;">🗑️ Briši</button>
         </div>
       </div>
 
       <div id="slideCanvas" class="slide-canvas">
         <div id="slideTitle" class="slide-title" contenteditable="true" oninput="sacuvajPromjene()">Naslov Slajda</div>
-        <div id="slideBody" class="slide-body" contenteditable="true" oninput="sacuvajPromjene()">Ovdje unesite sadržaj vaše prezentacije...</div>
+        <div id="slideBody" class="slide-body" contenteditable="true" oninput="sacuvajPromjene()">Započnite pisanje ili koristite AI dugme...</div>
+        <div id="slideImages" class="slide-image-container"></div>
       </div>
-
-      <div style="font-size: 0.8rem; color: #64748b;">Savjet: Koristite Enter za nove redove. Sve promjene se automatski čuvaju u sesiji.</div>
 
     </div>
 
@@ -117,11 +126,10 @@
 
   <script>
     let slides = [
-      { title: "Dobrodošli", body: "Ovo je vaš prvi slajd. Kliknite i počnite pisati.", bg: "#ffffff" }
+      { title: "Dobrodošli", body: "Ovo je vaša prva prezentacija. Možete dodavati slajdove ručno ili koristiti ✨ AI dugme.", bg: "#ffffff", images: [], align: "left" }
     ];
     let currentSlideIndex = 0;
 
-    // Inicijalizacija
     function init() {
       renderThumbnails();
       ucitajSlajd(0);
@@ -133,7 +141,7 @@
       slides.forEach((slide, index) => {
         const thumb = document.createElement('div');
         thumb.className = `slide-thumb ${index === currentSlideIndex ? 'active' : ''}`;
-        thumb.innerHTML = `<span>${index + 1}</span>`;
+        thumb.innerHTML = `<span>${index + 1}. ${slide.title.substring(0, 15)}...</span>`;
         thumb.onclick = () => ucitajSlajd(index);
         list.appendChild(thumb);
       });
@@ -146,7 +154,19 @@
       document.getElementById('slideBody').innerHTML = slide.body;
       document.getElementById('slideCanvas').style.backgroundColor = slide.bg;
       
-      // Ažuriraj thumbnail selekciju
+      const align = slide.align || 'left';
+      document.getElementById('slideTitle').style.textAlign = align;
+      document.getElementById('slideBody').style.textAlign = align;
+
+      const imgContainer = document.getElementById('slideImages');
+      imgContainer.innerHTML = '';
+      if (slide.images) {
+        slide.images.forEach(imgUrl => {
+          const img = document.createElement('img');
+          img.src = imgUrl;
+          imgContainer.appendChild(img);
+        });
+      }
       renderThumbnails();
     }
 
@@ -156,23 +176,72 @@
     }
 
     function noviSlajd() {
-      slides.push({ title: "Novi Naslov", body: "Sadržaj novog slajda...", bg: "#ffffff" });
+      slides.push({ title: "Novi Naslov", body: "Sadržaj slajda...", bg: "#ffffff", images: [], align: "left" });
       ucitajSlajd(slides.length - 1);
+    }
+
+    // AI FUNKCIJA ZA AUTOMATSKO KREIRANJE PREZENTACIJE
+    function aiGenerisiPrezentaciju() {
+      const tema = prompt("O kojoj temi želite da AI napravi prezentaciju?");
+      if (!tema || tema.trim() === "") return;
+
+      const loaders = ["Analiziram temu...", "Generišem naslove...", "Pišem sadržaj...", "Finaliziram slajdove..."];
+      alert("AI započinje rad na temi: " + tema);
+
+      // Simulacija AI sadržaja na osnovu teme
+      const aiSlides = [
+        { 
+          title: "Uvod: " + tema, 
+          body: `Ova prezentacija detaljno istražuje temu: <b>${tema}</b>. <br><br>Cilj nam je pružiti jasan pregled ključnih koncepata, važnosti ovog procesa i praktičnih savjeta za implementaciju. Razumijevanje ove teme od presudnog je značaja za profesionalni razvoj i uspješno izvođenje projekata.`, 
+          bg: "#f0f9ff", images: [], align: "justify" 
+        },
+        { 
+          title: "Glavni ciljevi i plan", 
+          body: `Kada govorimo o temi <i>${tema}</i>, moramo se fokusirati na tri stuba:<br>1. Analiza trenutnog stanja i potreba.<br>2. Definisanje preciznih koraka za realizaciju.<br>3. Praćenje rezultata i optimizacija procesa.<br><br>Kvalitetna priprema čini 70% uspjeha u svakom radu.`, 
+          bg: "#ffffff", images: [], align: "justify" 
+        },
+        { 
+          title: "Praktični koraci i savjeti", 
+          body: `Evo kako efikasno primijeniti znanje o: <u>${tema}</u>.<br>Uvijek počnite sa sigurnosnim mjerama i provjerom alata. Koristite samo provjerene materijale i tehnike koje su se pokazale uspješnim u praksi. Ne žurite u fazi planiranja kako biste izbjegli greške u izradi.`, 
+          bg: "#fffbeb", images: [], align: "justify" 
+        },
+        { 
+          title: "Zaključak i pitanja", 
+          body: `Uspješno smo prošli kroz osnove teme ${tema}. <br><br>Ključni zaključak je da posvećenost detaljima i kontinuirano učenje vode do vrhunskih rezultata. Hvala vam na pažnji, spremni smo za vaša pitanja i dalju diskusiju.`, 
+          bg: "#f0fdf4", images: [], align: "justify" 
+        }
+      ];
+
+      // Dodaj generisane slajdove u listu
+      slides = slides.concat(aiSlides);
+      ucitajSlajd(slides.length - 4);
+      alert("✨ AI je uspješno generisao 4 nova slajda na vašu temu!");
     }
 
     function obrisiTrenutniSlajd() {
       if (slides.length > 1) {
         slides.splice(currentSlideIndex, 1);
-        let nextIndex = Math.max(0, currentSlideIndex - 1);
-        ucitajSlajd(nextIndex);
-      } else {
-        alert("Prezentacija mora imati bar jedan slajd!");
+        ucitajSlajd(Math.max(0, currentSlideIndex - 1));
+      }
+    }
+
+    function dodajSliku() {
+      let url = prompt("Unesite URL link slike:");
+      if (url) {
+        slides[currentSlideIndex].images.push(url);
+        ucitajSlajd(currentSlideIndex);
       }
     }
 
     function promijeniPozadinu(boja) {
       slides[currentSlideIndex].bg = boja;
       document.getElementById('slideCanvas').style.backgroundColor = boja;
+    }
+
+    function postaviPoravnanje(tip) {
+      slides[currentSlideIndex].align = tip;
+      document.getElementById('slideTitle').style.textAlign = tip;
+      document.getElementById('slideBody').style.textAlign = tip;
     }
 
     function formatiraj(komanda) {
@@ -182,22 +251,13 @@
 
     function pokreniPrezentaciju() {
       const canvas = document.getElementById('slideCanvas');
-      if (canvas.requestFullscreen) {
-        canvas.requestFullscreen();
-      } else if (canvas.webkitRequestFullscreen) { /* Safari */
-        canvas.webkitRequestFullscreen();
-      } else if (canvas.msRequestFullscreen) { /* IE11 */
-        canvas.msRequestFullscreen();
-      }
+      if (canvas.requestFullscreen) canvas.requestFullscreen();
+      else if (canvas.webkitRequestFullscreen) canvas.webkitRequestFullscreen();
     }
 
-    // Navigacija tastaturom unutar Fullscreen-a (Lijevo/Desno strelice)
     document.addEventListener('keydown', (e) => {
-      if (e.key === "ArrowRight") {
-        if (currentSlideIndex < slides.length - 1) ucitajSlajd(currentSlideIndex + 1);
-      } else if (e.key === "ArrowLeft") {
-        if (currentSlideIndex > 0) ucitajSlajd(currentSlideIndex - 1);
-      }
+      if (e.key === "ArrowRight" && currentSlideIndex < slides.length - 1) ucitajSlajd(currentSlideIndex + 1);
+      if (e.key === "ArrowLeft" && currentSlideIndex > 0) ucitajSlajd(currentSlideIndex - 1);
     });
 
     window.onload = init;
