@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pretraga i WhatsApp Slanje - Dochbizub</title>
+    <!-- Uvoz Supabase klijenta -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h2 { color: #007bff; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .section { margin-bottom: 25px; padding: 15px; background: #fafafa; border: 1px solid #e1e1e1; border-radius: 6px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; }
+        select, input[type="text"] { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #28a745; color: white; border: none; padding: 10px 20px; font-size: 14px; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #218838; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff; }
+        th, td { border: 1px solid #dddddd; text-align: left; padding: 10px; font-size: 14px; }
+        th { background-color: #007bff; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .wa-btn { background-color: #25d366; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px; display: inline-block; }
+        .wa-btn:hover { background-color: #1ebe5d; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Upravljanje i Slanje Podataka via WhatsApp</h2>
+
+    <!-- SEKCIJA 1: Izbor korisnika / broja iz tabele BOZMOD_KORISNICI -->
+    <div class="section">
+        <h3>1. Izaberite primaoca (Iz tabele BOZMOD_KORISNICI)</h3>
+        <label for="korisnikSelect">Izaberite korisnika i broj:</label>
+        <select id="korisnikSelect">
+            <Ucitavam>Učitavam korisnike iz baze...</Ucitavam>
+        </select>
+    </div>
+
+    <!-- SEKCIJA 2: Pretraga firme / kriterijuma -->
+    <div class="section">
+        <h3>2. Pretraga podataka / firmi</h3>
+        <input type="text" id="searchInput" placeholder="Unesite kriterijum pretrage (naziv firme, grad, djelatnost)...">
+        <button onclick="pretraziPodatke()">Pretraži bazu</button>
+    </div>
+
+    <!-- SEKCIJA 3: Excel tabela sa rezultatima -->
+    <div class="section">
+        <h3>3. Rezultati pretrage (Excel format)</h3>
+        <table id="rezultatiTabela">
+            <thead>
+                <tr>
+                    <th>Naziv Firme</th>
+                    <th>Grad / Lokacija</th>
+                    <th>Djelatnost / Kriterijum</th>
+                    <th>Kontakt / Info</th>
+                    <th>Akcija</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaBody">
+                <tr><td colspan="5" style="text-align:center;">Nema unesenih rezultata. Pokrenite pretragu.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Ovdje unesi svoje prave Supabase podatke kada postaviš aplikaciju
+    const SUPABASE_URL = 'https://tvoj-supabase-url.supabase.co';
+    const SUPABASE_ANON_KEY = 'tvoj-supabase-anon-key';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Funkcija koja učitava korisnike iz tabele BOZMOD_KORISNICI pri pokretanju
+    async function ucitajKorisnike() {
+        const select = document.getElementById('korisnikSelect');
+        try {
+            const { data, error } = await _supabase.from('BOZMOD_KORISNICI').select('*');
+            if (error) throw error;
+
+            select.innerHTML = '';
+            if (data && data.length > 0) {
+                data.forEach(korisnik => {
+                    let option = document.createElement('option');
+                    // Pretpostavka da tabela ima kolone 'id', 'ime' i 'telefon' (ili prilagodi nazive kolona svojoj bazi)
+                    option.value = korisnik.telefon || korisnik.broj_telefona;
+                    option.textContent = `${korisnik.ime || 'Korisnik'} - (${option.value})`;
+                    select.appendChild(option);
+                });
+            } else {
+                select.innerHTML = '<option value="">Nema pronađenih korisnika u tabele BOZMOD_KORISNICI</option>';
+            }
+        } catch (err) {
+            console.error("Greška pri učitavanju korisnika:", err.message);
+            // Fallback ako baza nije u ovom trenutku spojena da se vidi interfejs
+            select.innerHTML = '<option value="+38760000000">Primjer: Nusret (+38760000000) - Provjerite Supabase ključeve</option>';
+        }
+    }
+
+    // Pokreni učitavanje pri otvaranju stranice
+    ucitajKorisnike();
+
+    // Funkcija za pretragu (Ovdje možeš povezati ili svoju lokalnu tabelu firmi ili Google Custom Search API)
+    function pretraziPodatke() {
+        const pojam = document.getElementById('searchInput').value.trim();
+        const tbody = document.getElementById('tabelaBody');
+        
+        // Primjer simuliranih rezultata pretrage (Ovdje ubacuješ podatke dobijene iz pretrage)
+        // Kada dodaš pravu tabelu ili API, podaci se ubacuju ovdje dinamički petljom
+        
+        tbody.innerHTML = '';
+        
+        // Simulisani primjeri podataka da vidiš tabelu i dugme u akciji:
+        const primjeriRezultata = [
+            { naziv: "Metalurg DOO", grad: "Lukavac", djelatnost: "Mašinska obrada", info: "Aktivna firma" },
+            { naziv: "TehnoRemont", grad: "Tuzla", djelatnost: "Industrijsko održavanje", info: "Partner" }
+        ];
+
+        primjeriRezultataforEachSafely = primjeriRezultata.forEach(item => {
+            let tr = document.createElement('tr');
+            
+            tr.innerHTML = `
+                <td>${item.naziv}</td>
+                <td>${item.grad}</td>
+                <td>${item.djelatnost}</td>
+                <td>${item.info}</td>
+                <td><button class="wa-btn" onclick="posaljiNaWhatsApp('${item.naziv}', '${item.grad}', '${item.djelatnost}')">Pošalji WhatsApp</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Funkcija koja kupi izabrani broj iz padajućeg menija (BOZMOD_KORISNICI) i podatke iz reda tabele te otvara WhatsApp
+    function posaljiNaWhatsApp(naziv, grad, djelatnost) {
+        const selectElement = document.getElementById('korisnikSelect');
+        const izabraniBroj = selectElement.value;
+
+        if (!izabraniBroj) {
+            alert("Molimo izaberite važeći broj telefona primaoca iz padajućeg menija!");
+            return;
+        }
+
+        // Kreiranje tekstualne poruke sa podacima iz tabele
+        const poruka = `Poštovani,\n\nŠaljem vam podatke iz pretrage:\n- Firma: ${naziv}\n- Grad: ${grad}\n- Djelatnost: ${djelatnost}\n\nPozdrav!`;
+        
+        // Kodiranje poruke za URL
+        const encodedPoruka = encodeURIComponent(poruka);
+
+        // Otvaranje WhatsApp API linka
+        const waURL = `https://wa.me/${izabraniBroj}?text=${encodedPoruka}`;
+        window.open(waURL, '_blank');
+    }
+</script>
+
+</body>
+</html>
