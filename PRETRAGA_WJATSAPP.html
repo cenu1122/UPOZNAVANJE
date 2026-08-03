@@ -28,9 +28,9 @@
 <div class="container">
     <h2>Upravljanje i Slanje Podataka via WhatsApp</h2>
 
-    <!-- SEKCIJA 1: Izbor korisnika / broja iz tabele BOZMOD_KORISNICI -->
+    <!-- SEKCIJA 1: Izbor korisnika / broja iz tabele BiZnis_KORISNICI -->
     <div class="section">
-        <h3>1. Izaberite primaoca (Iz tabele BOZMOD_KORISNICI)</h3>
+        <h3>1. Izaberite primaoca (Iz tabele BiZnis_KORISNICI)</h3>
         <label for="korisnikSelect">Izaberite korisnika i broj:</label>
         <select id="korisnikSelect">
             <Ucitavam>Učitavam korisnike iz baze...</Ucitavam>
@@ -70,11 +70,11 @@
     const SUPABASE_ANON_KEY = 'tvoj-supabase-anon-key';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Funkcija koja učitava korisnike iz tabele BOZMOD_KORISNICI pri pokretanju
+    // Funkcija koja učitava korisnike iz tabele BiZnis_KORISNICI pri pokretanju
     async function ucitajKorisnike() {
         const select = document.getElementById('korisnikSelect');
         try {
-            const { data, error } = await _supabase.from('BOZMOD_KORISNICI').select('*');
+            const { data, error } = await _supabase.from('BiZnis_KORISNICI').select('*');
             if (error) throw error;
 
             select.innerHTML = '';
@@ -87,7 +87,7 @@
                     select.appendChild(option);
                 });
             } else {
-                select.innerHTML = '<option value="">Nema pronađenih korisnika u tabele BOZMOD_KORISNICI</option>';
+                select.innerHTML = '<option value="">Nema pronađenih korisnika u tabele BiZnis_KORISNICI</option>';
             }
         } catch (err) {
             console.error("Greška pri učitavanju korisnika:", err.message);
@@ -129,7 +129,7 @@
         });
     }
 
-    // Funkcija koja kupi izabrani broj iz padajućeg menija (BOZMOD_KORISNICI) i podatke iz reda tabele te otvara WhatsApp
+    // Funkcija koja kupi izabrani broj iz padajućeg menija (BiZnis_KORISNICI) i podatke iz reda tabele te otvara WhatsApp
     function posaljiNaWhatsApp(naziv, grad, djelatnost) {
         const selectElement = document.getElementById('korisnikSelect');
         const izabraniBroj = selectElement.value;
