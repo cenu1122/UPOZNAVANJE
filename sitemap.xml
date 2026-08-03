@@ -1,39 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
   <url>
-    <loc>https://langlove.site/</loc>
-    <lastmod>2026-07-28</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
+    <loc>https://docbizhub.com/</loc>
   </url>
-
   <url>
-    <loc>https://langlove.site/login.html</loc>
-    <lastmod>2026-07-28</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://docbizhub.com/DASHBOARD.html</loc>
   </url>
-
   <url>
-    <loc>https://langlove.site/about.html</loc>
-    <lastmod>2026-07-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <loc>https://docbizhub.com/DODAJ_SLIKU.html</loc>
   </url>
-
   <url>
-    <loc>https://langlove.site/privacy.html</loc>
-    <lastmod>2026-07-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <loc>https://docbizhub.com/FORUM.html</loc>
   </url>
-
   <url>
-    <loc>https://langlove.site/contact.html</loc>
-    <lastmod>2026-07-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <loc>https://docbizhub.com/INTERVJU.html</loc>
   </url>
-
+  <url>
+    <loc>https://docbizhub.com/JEZICI.html</loc>
+  </url>
+  <url>
+    <loc>https://docbizhub.com/KONTAKT.html</loc>
+  </url>
+  <url>
+    <loc>https://docbizhub.com/LOGIN.html</loc>
+  </url>
+  <url>
+    <loc>https://docbizhub.com/PORUKE.html</loc>
+  </url>
+  <url>
+    <loc>https://docbizhub.com/POSAO.html</loc>
+  </url>
+  <url>
+    <loc>https://docbizhub.com/POSAO_FORUM.html</loc>
+  </url>
+  <url>
+    <loc>https://docbizhub.com/POSAO_VIDEO.html</loc>
+  </url>
+  <url>
+    <loc>https://docbizhub.com/PRETRAGA.html</loc>
+  </url>
+  <url>
+    <loc>https://docbizhub.com/PRETRAGA_INTERNET.html</loc>
+  </url>
+  <url>
+    <loc>https://docbizhub.com/PRETRAGA_WHATSAPP.html</loc>
+  </url>
+  <url>
+    <loc>https://docbizhub.com/PROFIL.html</loc>
+  </url>
+  <url>
+    <loc>https://docbizhub.com/REGISTRACIJA.html</loc>
+  </url>
+  <url>
+    <loc>https://docbizhub.com/ZABAVA.html</loc>
+  </url>
+  <url>
+    <loc>https://docbizhub.com/index.html</loc>
+  </url>
+  <url>
+    <loc>https://docbizhub.com/posao_fpri_.html</loc>
+  </url>
+  <url>
+    <loc>https://docbizhub.com/googleHH1eab1c51c3729e8c.html</loc>
+  </url>
 </urlset>
