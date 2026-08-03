@@ -18,7 +18,7 @@
     .btn-nav { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
     .btn-nav:hover { background: #ef233c; }
 
-    /* Stilovi za gornju desnu navigaciju (Dugme foruma i Notifikacije) */
+    /* Stilovi za gornju desnu navigaciju (Dugme foruma, WhatsApp pretraga i Notifikacije) */
     .top-nav-utilities {
         display: flex;
         align-items: center;
@@ -44,6 +44,17 @@
     .nav-btn:hover {
         background: #f1f5f9;
         border-color: #94a3b8;
+    }
+
+    /* Poseban stil za WhatsApp dugme u gornjem meniju da se istakne */
+    .nav-btn-wa {
+        background: #25d366;
+        border: 1px solid #20ba5a;
+        color: #ffffff;
+    }
+    .nav-btn-wa:hover {
+        background: #1ebe5d;
+        border-color: #189e4c;
     }
 
     /* Stilovi za notifikacije (Zvonce) */
@@ -189,21 +200,26 @@
   <header>
     <a href="DASHBOARD.html" class="logo">💼 Posao & Karijera Portal</a>
 
-<div class="nav-actions">
+    <div class="nav-actions">
       <div class="lang-wrapper">
         <span>🌐</span>
         <div id="google_translate_element"></div>
       </div>
 
       <a href="POSAO_VIDEO.html" class="btn-nav" style="background: #10b981;">📺 Video Projekti</a>
-
       <a href="DASHBOARD.html" class="btn-nav">🏠 Nazad na Dashboard</a>
       <a href="KONTAKT.html" class="btn-nav">📩 Podrška</a>
     </div>
     
     <div class="nav-actions">
-      <!-- Forum dugme i Notifikacije u gornjem desnom uglu -->
+      <!-- Forum dugme, WhatsApp pretraga i Notifikacije u gornjem desnom uglu -->
       <div class="top-nav-utilities">
+          <!-- Novo dodano dugme za WhatsApp pretragu -->
+          <a href="PRETRAGA_WHATSAPP.html" class="nav-btn nav-btn-wa">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+              WhatsApp Pretraga
+          </a>
+
           <a href="POSAO_FORUM.html" class="nav-btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
               Forum
@@ -224,9 +240,6 @@
               </div>
           </div>
       </div>
-
-      <a href="DASHBOARD.html" class="btn-nav">🏠 Dashboard</a>
-      <a href="KONTAKT.html" class="btn-nav">📩 Podrška</a>
     </div>
   </header>
 
