@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pretraga i WhatsApp Slanje - Dochbizub</title>
+    <title>Pretraga, Slanje i Automatski Upis - Dochbizub</title>
     <!-- Uvoz Supabase klijenta -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -21,39 +21,41 @@
         tr:nth-child(even) { background-color: #f9f9f9; }
         .wa-btn { background-color: #25d366; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px; display: inline-block; }
         .wa-btn:hover { background-color: #1ebe5d; }
+        #statusPoruka { margin-top: 10px; font-weight: bold; font-size: 13px; color: #007bff; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Upravljanje i Slanje Podataka via WhatsApp</h2>
+    <h2>Upravljanje, Pretraga i Automatski Upis u Bazu</h2>
 
-    <!-- SEKCIJA 1: Izbor korisnika / broja iz tabele BiZnis_KORISNICI -->
+    <!-- SEKCIJA 1: Izbor korisnika / broja iz tabele BIZNIS_KORISNICI -->
     <div class="section">
-        <h3>1. Izaberite primaoca (Iz tabele BiZnis_KORISNICI)</h3>
+        <h3>1. Izaberite primaoca poruke</h3>
         <label for="korisnikSelect">Izaberite korisnika i broj:</label>
         <select id="korisnikSelect">
             <option>Učitavam korisnike iz baze...</option>
         </select>
     </div>
 
-    <!-- SEKCIJA 2: Pretraga firme / kriterijuma -->
+    <!-- SEKCIJA 2: Pretraga podataka / firmi -->
     <div class="section">
-        <h3>2. Pretraga podataka / firmi</h3>
+        <h3>2. Pretraga podataka sa Google-a</h3>
         <input type="text" id="searchInput" placeholder="Unesite kriterijum pretrage (naziv firme, grad, djelatnost)..." onkeypress="handleKeyPress(event)">
-        <button onclick="pretraziPodatke()">Pretraži bazu</button>
+        <button onclick="pretraziIUpisiUBazu()">Pretraži Google i Snimi u Bazu</button>
+        <div id="statusPoruka"></div>
     </div>
 
-    <!-- SEKCIJA 3: Excel tabela sa rezultatima -->
+    <!-- SEKCIJA 3: Tabela sa rezultatima -->
     <div class="section">
         <h3>3. Rezultati pretrage (Excel format)</h3>
         <table id="rezultatiTabela">
             <thead>
                 <tr>
-                    <th>Naziv Firme</th>
-                    <th>Grad / Lokacija</th>
-                    <th>Djelatnost / Kriterijum</th>
-                    <th>Kontakt / Info</th>
+                    <th>Naziv Firme / Rezultata</th>
+                    <th>Lokacija</th>
+                    <th>Opis / Detalji</th>
+                    <th>Izvor</th>
                     <th>Akcija</th>
                 </tr>
             </thead>
@@ -65,50 +67,52 @@
 </div>
 
 <script>
-    // Supabase konfiguracija (ostavljamo tvoje postojeće parametre)
+    // Supabase konfiguracija (Unesi svoje prave Supabase podatke)
     const SUPABASE_URL = 'https://tvoj-supabase-url.supabase.co';
     const SUPABASE_ANON_KEY = 'tvoj-supabase-anon-key';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Funkcija koja učitava korisnike iz tabele BiZnis_KORISNICI pri pokretanju
+    // Funkcija koja učitava korisnike iz tabele BIZNIS_KORISNICI pri pokretanju
     async function ucitajKorisnike() {
         const select = document.getElementById('korisnikSelect');
         try {
-            const { data, error } = await _supabase.from('BiZnis_KORISNICI').select('*');
+            const { data, error } = await _supabase.from('BIZNIS_KORISNICI').select('*');
             if (error) throw error;
 
             select.innerHTML = '';
             if (data && data.length > 0) {
                 data.forEach(korisnik => {
                     let option = document.createElement('option');
-                    option.value = korisnik.telefon || korisnik.broj_telefona;
-                    option.textContent = `${korisnik.ime || 'Korisnik'} - (${option.value})`;
+                    option.value = korisnik.TELEFON || korisnik.BROJ_TELEFONA;
+                    option.textContent = `${korisnik.IME || 'Korisnik'} - (${option.value})`;
                     select.appendChild(option);
                 });
             } else {
-                select.innerHTML = '<option value="">Nema pronađenih korisnika u tabele BiZnis_KORISNICI</option>';
+                select.innerHTML = '<option value="">Nema pronađenih korisnika u tabeli BIZNIS_KORISNICI</option>';
             }
         } catch (err) {
             console.error("Greška pri učitavanju korisnika:", err.message);
-            select.innerHTML = '<option value="+38760000000">Primjer: Nusret (+38760000000) - Provjerite Supabase ključeve</option>';
+            select.innerHTML = '<option value="">Provjerite Supabase URL i ključeve</option>';
         }
     }
 
     ucitajKorisnike();
 
-    // Funkcija koja vrši pravu Google pretragu preko API-ja i upisuje rezultate u tabelu
-    async function pretraziPodatke() {
+    // Funkcija koja vrši Google pretragu i automatski upisuje sve pronađene firme u bazu
+    async function pretraziIUpisiUBazu() {
         const pojam = document.getElementById('searchInput').value.trim();
         const tbody = document.getElementById('tabelaBody');
+        const statusDiv = document.getElementById('statusPoruka');
 
         if (!pojam) {
             alert("Molimo unesite pojmove za pretragu!");
             return;
         }
 
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Pretražujem Google... Molimo sačekajte.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Pretražujem Google i snimam u bazu... Molimo sačekajte.</td></tr>';
+        statusDiv.textContent = "Pretraga u toku...";
 
-        // Ubačeni tvoji pravi Google API podaci
+        // Tvoji pravi Google API podaci
         const GOOGLE_API_KEY = 'AIzaSyAZAkjpv1DA3jci_tvdtaqmxeXAZgGXEt4';
         const SEARCH_ENGINE_ID = 'd34bb19acdcc3474c';
 
@@ -121,49 +125,77 @@
             tbody.innerHTML = '';
 
             if (data.items && data.items.length > 0) {
-                data.items.forEach(item => {
+                let upisanoBroj = 0;
+
+                for (const item of data.items) {
                     let nazivFirme = item.title || "Nepoznat naziv";
                     let linkFirme = item.link || "#";
                     let opisFirme = item.snippet || "Nema opisa";
-                    let gradLokacija = "Google Rezultat";
+                    let gradLokacija = "Google Pretraga";
 
+                    // 1. Prikaz u tabeli na stranici
                     let tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td><strong>${nazivFirme}</strong><br><a href="${linkFirme}" target="_blank" style="font-size:12px; color:#007bff;">Posjeti link</a></td>
                         <td>${gradLokacija}</td>
                         <td>${opisFirme}</td>
-                        <td>Direktan Google rezultat</td>
+                        <td>Google Custom Search</td>
                         <td><button class="wa-btn" onclick="posaljiNaWhatsApp('${nazivFirme.replace(/'/g, "")}', '${gradLokacija}', '${opisFirme.replace(/'/g, "").substring(0, 50)}...')">Pošalji WhatsApp</button></td>
                     `;
                     tbody.appendChild(tr);
-                });
+
+                    // 2. Automatsko snimanje svakog pronađenog rezultata u tabelu BIZNIS_KORISNICI 
+                    // (Prilagođeno kolonama: IME, TELEFON / BROJ_TELEFONA)
+                    try {
+                        const { error: insertError } = await _supabase
+                            .from('BIZNIS_KORISNICI')
+                            .insert([
+                                { 
+                                    IME: nazivFirme.substring(0, 99), 
+                                    TELEFON: linkFirme.substring(0, 49), 
+                                    BROJ_TELEFONA: opisFirme.substring(0, 49) 
+                                }
+                            ]);
+                        
+                        if (!insertError) {
+                            upisanoBroj++;
+                        }
+                    } catch (dbErr) {
+                        console.error("Greška pri upisu u bazu:", dbErr);
+                    }
+                }
+
+                statusDiv.textContent = `Uspješno pronađeno i zabilježeno rezultata: ${upisanoBroj}`;
+
             } else {
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nema pronađenih rezultata na Google-u za dati kriterijum.</td></tr>';
+                statusDiv.textContent = "Nema rezultata za upisanu pretragu.";
             }
 
         } catch (err) {
             console.error("Greška pri Google pretrazi:", err);
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Došlo je do greške pri komunikaciji sa Google API-jem. Provjerite ključeve.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Došlo je do greške pri komunikaciji sa Google API-jem.</td></tr>';
+            statusDiv.textContent = "Greška u izvršavanju pretrage.";
         }
     }
 
     function handleKeyPress(event) {
         if (event.key === 'Enter') {
-            pretraziPodatke();
+            pretraziIUpisiUBazu();
         }
     }
 
-    // Funkcija koja kupi izabrani broj iz padajućeg menija i otvara WhatsApp
+    // Funkcija za slanje na WhatsApp
     function posaljiNaWhatsApp(naziv, grad, djelatnost) {
         const selectElement = document.getElementById('korisnikSelect');
         const izabraniBroj = selectElement.value;
 
         if (!izabraniBroj) {
-            alert("Molimo izaberite važeći broj telefona primaoca iz padajućeg menija!");
+            alert("Molimo izaberite važeći broj telefona primaoca!");
             return;
         }
 
-        const poruka = `Poštovani,\n\nŠaljem vam podatke iz pretrage:\n- Firma: ${naziv}\n- Grad: ${grad}\n- Djelatnost: ${djelatnost}\n\nPozdrav!`;
+        const poruka = `Poštovani,\n\nŠaljem vam podatke iz pretrage:\n- Naziv: ${naziv}\n- Lokacija: ${grad}\n- Detalji: ${djelatnost}\n\nPozdrav!`;
         const encodedPoruka = encodeURIComponent(poruka);
         const waURL = `https://wa.me/${izabraniBroj}?text=${encodedPoruka}`;
         window.open(waURL, '_blank');
