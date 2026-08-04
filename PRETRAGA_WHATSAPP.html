@@ -65,7 +65,10 @@
 
 <script>
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_IFX6dxz-ILfYK_3VgelcMw_tYOX0y45'; 
+    
+    // Ovdje unesi svoj pravi Supabase anon public ključ (izgleda kao dugačak niz slova i brojeva koji počinje sa eyJ...)
+    const SUPABASE_ANON_KEY = 'sb_publishable_IfX6dxz-ILfYK_3VgelcMw_tYOX0y45'; 
+    
     const _SUPABASE = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const GROQ_API_KEY = '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';
@@ -120,9 +123,7 @@
                     model: "llama-3.3-70b-versatile",
                     messages: [{ 
                         role: "user", 
-                        content: `Navedi mi tačno 10 stvarnih ili relevantnih firmi/organizacija za sljedeći upit: "${POJAM}". Odgovor vrati ISKLJUČIVO u čistom JSON formatu kao niz objekata, bez ikakvog dodatnog teksta ili markdown oznaka, gdje svaki objekat ima tačno ove ključeve: "naziv", "lokacija", "opis", "link", "telefon". 
-                        - Za ključ "link" obavezno navedi direktan URL njihovog LinkedIn profila ili preduzeća.
-                        - Za ključ "telefon" navedi stvarni broj ukoliko ga model pouzdano zna, a ukoliko ne zna, upiši tačno "Nije dostupno".` 
+                        content: `Navedi mi tačno 10 stvarnih ili relevantnih firmi/organizacija za sljedeći upit: "${POJAM}". Odgovor vrati ISKLJUČIVO u čistom JSON formatu kao niz objekata, bez ikakvog dodatnog teksta ili markdown oznaka, gdje svaki objekat ima tačno ove ključeve: "naziv", "lokacija", "opis", "link", "telefon". Za ključ "link" obavezno navedi direktan URL njihovog LinkedIn profila ili preduzeća. Za ključ "telefon" navedi stvarni broj ukoliko ga model pouzdano zna, a ukoliko ne zna, upiši tačno "Nije dostupno".` 
                     }],
                     temperature: 0.7
                 })
