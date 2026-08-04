@@ -34,7 +34,7 @@
         <h3>1. Izaberite primaoca poruke</h3>
         <label for="KORISNIK_SELECT">Izaberite korisnika i broj:</label>
         <select id="KORISNIK_SELECT">
-            <option value="+38760000000">Nusret (+38760000000) - Podrazumijevani</option>
+            <option value="+38760000000">Učitavam korisnike iz baze...</option>
         </select>
     </div>
 
@@ -69,11 +69,11 @@
 <script>
     // Supabase konfiguracija sa tvojim pravim URL-om
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
-    const SUPABASE_ANON_KEY = 'tvoj-supabase-anon-key'; // Ovdje ubaci svoj pravi anon ključ iz Supabase-a
+    const SUPABASE_ANON_KEY = 'unesi_svoj_pravi_supabase_anon_kljuc_ovdje'; 
     const _SUPABASE = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Groq API ključ
-    const GROQ_API_KEY = 'TVOJ_GROQ_API_KLJUC'; // Ovdje ubaci svoj pravi Groq ključ
+    // Groq API ključ (Ovdje upisuješ svoj važeći gsk_ ključ)
+    const GROQ_API_KEY = 'unesi_svoj_pravi_groq_kljuc_ovdje'; 
 
     async function UCITAJ_KORISNIKE() {
         const SELECT = document.getElementById('KORISNIK_SELECT');
@@ -82,7 +82,7 @@
             if (error) throw error;
 
             if (data && data.length > 0) {
-                SELECT.innerHTML = '<option value="+38760000000">Nusret (+38760000000) - Podrazumijevani</option>';
+                SELECT.innerHTML = '<option value="">Izaberite broj sa liste...</option>';
                 data.forEach(KORISNIK => {
                     let BROJ = KORISNIK.TELEFON || KORISNIK.BROJ_TELEFONA;
                     if (BROJ && BROJ !== "000000000") {
@@ -94,7 +94,8 @@
                 });
             }
         } catch (err) {
-            console.log("Koristim rezervni broj zbog Supabase konekcije.");
+            console.log("Greška pri učitavanju korisnika iz baze:", err);
+            SELECT.innerHTML = '<option value="+38760000000">Nusret (+38760000000) - Rezervni broj</option>';
         }
     }
 
@@ -186,7 +187,7 @@
                         }
                     }
                 } catch (DB_ERR) {
-                    // Ignoriše grešku baze da ne remeti prikaz
+                    console.log("Greška pri upisu u bazu:", DB_ERR);
                 }
             }
 
