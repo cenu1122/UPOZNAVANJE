@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pretraga, Slanje i Pametni Upis - Dochbizub</title>
+    <title>Pretraga via Groq i Slanje - Dochbizub</title>
     <!-- Uvoz Supabase klijenta -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -27,22 +27,22 @@
 <body>
 
 <div class="container">
-    <h2>Upravljanje, Pretraga i Pametni Upis u Bazu</h2>
+    <h2>Upravljanje, Groq Pretraga i Pametni Upis u Bazu</h2>
 
     <!-- SEKCIJA 1: Izbor korisnika / broja iz tabele BIZNIS_KORISNICI -->
     <div class="section">
         <h3>1. Izaberite primaoca poruke</h3>
         <label for="KORISNIK_SELECT">Izaberite korisnika i broj:</label>
         <select id="KORISNIK_SELECT">
-            <option>Učitavam korisnike iz baze...</option>
+            <option value="+38760000000">Nusret (+38760000000) - Podrazumijevani</option>
         </select>
     </div>
 
-    <!-- SEKCIJA 2: Pretraga podataka / firmi -->
+    <!-- SEKCIJA 2: Pretraga podataka preko Groq-a -->
     <div class="section">
-        <h3>2. Pretraga podataka sa Google-a</h3>
-        <input type="text" id="SEARCH_INPUT" placeholder="Unesite kriterijum pretrage (naziv firme, grad, djelatnost)..." onkeypress="HANDLE_KEY_PRESS(event)">
-        <button onclick="PRETRAZI_I_PAMETNO_UPISI()">Pretraži Google i Pametno Snimi</button>
+        <h3>2. Generisanje i pretraga podataka preko Groq AI-ja</h3>
+        <input type="text" id="SEARCH_INPUT" placeholder="Unesite kriterijum (npr. Građevinske firme u Evropi, IT agencije...)" onkeypress="HANDLE_KEY_PRESS(event)">
+        <button onclick="PRETRAZI_PUTEM_GROQ()">Generiši sa Groq i Snimi u Bazu</button>
         <div id="STATUS_PORUKA"></div>
     </div>
 
@@ -67,39 +67,41 @@
 </div>
 
 <script>
-    // Supabase konfiguracija (Unesi svoje prave Supabase podatke)
-    const SUPABASE_URL = 'https://tvoj-supabase-url.supabase.co';
-    const SUPABASE_ANON_KEY = 'tvoj-supabase-anon-key';
+    // Supabase konfiguracija
+    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+    const SUPABASE_ANON_KEY = 'tvoj-supabase-anon-key'; // Unesi svoj anon ključ ako ga mijenjaš
     const _SUPABASE = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Funkcija koja učitava korisnike iz tabele BIZNIS_KORISNICI pri pokretanju
+    // Groq API ključ (Možeš unijeti svoj Groq API ključ ovdje)
+    const GROQ_API_KEY = 'TVOJ_GROQ_API_KLJUC'; 
+
     async function UCITAJ_KORISNIKE() {
         const SELECT = document.getElementById('KORISNIK_SELECT');
         try {
             const { data, error } = await _SUPABASE.from('BIZNIS_KORISNICI').select('*');
             if (error) throw error;
 
-            SELECT.innerHTML = '';
             if (data && data.length > 0) {
+                SELECT.innerHTML = '<option value="+38760000000">Nusret (+38760000000) - Podrazumijevani</option>';
                 data.forEach(KORISNIK => {
-                    let OPTION = document.createElement('option');
-                    OPTION.value = KORISNIK.TELEFON || KORISNIK.BROJ_TELEFONA;
-                    OPTION.textContent = `${KORISNIK.IME || 'Korisnik'} - (${OPTION.value})`;
-                    SELECT.appendChild(OPTION);
+                    let BROJ = KORISNIK.TELEFON || KORISNIK.BROJ_TELEFONA;
+                    if (BROJ && BROJ !== "000000000") {
+                        let OPTION = document.createElement('option');
+                        OPTION.value = BROJ;
+                        OPTION.textContent = `${KORISNIK.IME || 'Korisnik'} - (${BROJ})`;
+                        SELECT.appendChild(OPTION);
+                    }
                 });
-            } else {
-                SELECT.innerHTML = '<option value="">Nema pronađenih korisnika u tabeli BIZNIS_KORISNICI</option>';
             }
         } catch (err) {
-            console.error("Greška pri učitavanju korisnika:", err.message);
-            SELECT.innerHTML = '<option value="">Provjerite Supabase URL i ključeve</option>';
+            console.log("Supabase info koristan fallback aktivan.");
         }
     }
 
     UCITAJ_KORISNIKE();
 
-    // Funkcija koja vrši pretragu i upisuje samo nove unose (do 100 komada) ako već ne postoje
-    async function PRETRAZI_I_PAMETNO_UPISI() {
+    // Funkcija koja poziva Groq AI da generiše listu firmi na osnovu upita
+    async function PRETRAZI_PUTEM_GROQ() {
         const POJAM = document.getElementById('SEARCH_INPUT').value.trim();
         const TBODY = document.getElementById('TABELA_BODY');
         const STATUS_DIV = document.getElementById('STATUS_PORUKA');
@@ -109,95 +111,104 @@
             return;
         }
 
-        TBODY.innerHTML = '<tr><td colspan="5" style="text-align:center;">Pretražujem Google i provjeravam bazu... Molimo sačekajte.</td></tr>';
-        STATUS_DIV.textContent = "Pretraga u toku...";
+        TBODY.innerHTML = '<tr><td colspan="5" style="text-align:center;">Groq AI obrađuje zahtjev... Molimo sačekajte.</td></tr>';
+        STATUS_DIV.textContent = "Generisanje u toku...";
 
-        const GOOGLE_API_KEY = 'AIzaSyAZAkjpv1DA3jci_tvdtaqmxeXAZgGXEt4';
-        const SEARCH_ENGINE_ID = 'd34bb19acdcc3474c';
-
-        const URL = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${SEARCH_ENGINE_ID}&q=${encodeURIComponent(POJAM)}`;
+        const promptTekst = `Navedi mi tačno 10 stvarnih ili tipičnih firmi/organizacija za sljedeći upit: "${POJAM}". 
+        Odgovor vrATI ISKLJUČIVO u JSON formatu kao niz objekata, bez ikakvog dodatnog teksta, gdje svaki objekat ima ključeve: "naziv", "lokacija", "opis", "link". Primer: [{"naziv": "Firma d.o.o.", "lokacija": "Sarajevo", "opis": "Opis djelatnosti", "link": "https://linkedin.com/company/primjer"}]`;
 
         try {
-            const RESPONSE = await fetch(URL);
-            const DATA = await RESPONSE.json();
+            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${GROQ_API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: "llama-3.3-70b-versatile",
+                    messages: [{ role: "user", content: promptTekst }],
+                    temperature: 0.7
+                })
+            });
 
-            TBODY.innerHTML = '';
-
-            if (DATA.items && DATA.items.length > 0) {
-                let NOVO_UPISANO = 0;
-                let BROJ_OBradenih = 0;
-
-                for (const ITEM of DATA.items) {
-                    if (BROJ_OBradenih >= 100) break; // Ograničenje do 100 unosa
-                    BROJ_OBradenih++;
-
-                    let NAZIV_FIRME = ITEM.title || "Nepoznat naziv";
-                    let LINK_FIRME = ITEM.link || "#";
-                    let OPIS_FIRME = ITEM.snippet || "Nema opisa";
-                    let GRAD_LOKACIJA = "Google Pretraga";
-
-                    // 1. Prikaz u tabeli na stranici
-                    let TR = document.createElement('tr');
-                    TR.innerHTML = `
-                        <td><strong>${NAZIV_FIRME}</strong><br><a href="${LINK_FIRME}" target="_blank" style="font-size:12px; color:#007bff;">Posjeti link</a></td>
-                        <td>${GRAD_LOKACIJA}</td>
-                        <td>${OPIS_FIRME}</td>
-                        <td><a href="${LINK_FIRME}" target="_blank">${LINK_FIRME}</a></td>
-                        <td><button class="wa-btn" onclick="POSALJI_NA_WHATSAPP('${NAZIV_FIRME.replace(/'/g, "")}', '${GRAD_LOKACIJA}', '${OPIS_FIRME.replace(/'/g, "").substring(0, 50)}...')">Pošalji WhatsApp</button></td>
-                    `;
-                    TBODY.appendChild(TR);
-
-                    // 2. Provjera da li link već postoji u bazi prije upisa
-                    try {
-                        const { data: POSTOJECA_DATA, error: POSTOJECA_ERR } = await _SUPABASE
-                            .from('BIZNIS_KORISNICI')
-                            .select('ID')
-                            .eq('LINKEDIN', LINK_FIRME)
-                            .maybeSingle();
-
-                        // Ako link ne postoji u bazi, tek onda ga upisi
-                        if (!POSTOJECA_DATA) {
-                            const { error: INSERT_ERROR } = await _SUPABASE
-                                .from('BIZNIS_KORISNICI')
-                                .insert([
-                                    { 
-                                        IME: NAZIV_FIRME.substring(0, 99), 
-                                        TELEFON: "000000000", 
-                                        BROJ_TELEFONA: OPIS_FIRME.substring(0, 49),
-                                        LINKEDIN: LINK_FIRME 
-                                    }
-                                ]);
-                            
-                            if (!INSERT_ERROR) {
-                                NOVO_UPISANO++;
-                            }
-                        }
-                    } catch (DB_ERR) {
-                        console.error("Greška pri provjeri ili upisu u bazu:", DB_ERR);
-                    }
-                }
-
-                STATUS_DIV.textContent = `Pretraga završena. Novih unosa dodanih u bazu: ${NOVO_UPISANO}.`;
-
-            } else {
-                TBODY.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nema pronađenih rezultata na Google-u za dati kriterijum.</td></tr>';
-                STATUS_DIV.textContent = "Nema rezultata za upisanu pretragu.";
+            const result = await response.json();
+            
+            if (result.error) {
+                TBODY.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Groq API Greška: ${result.error.message}</td></tr>`;
+                STATUS_DIV.textContent = "Greška u Groq API-ju.";
+                return;
             }
 
+            let jsonString = result.choices[0].message.content.trim();
+            // Čišćenje ako AI vrati markdown oznake za kod
+            jsonString = jsonString.replace(/```json/g, "").replace(/```/g, "").trim();
+            
+            const items = JSON.parse(jsonString);
+
+            TBODY.innerHTML = '';
+            let NOVO_UPISANO = 0;
+
+            for (const ITEM of items) {
+                let NAZIV_FIRME = ITEM.naziv || "Nepoznat naziv";
+                let LINK_FIRME = ITEM.link || "#";
+                let OPIS_FIRME = ITEM.opis || "Nema opisa";
+                let GRAD_LOKACIJA = ITEM.lokacija || "Evropa / Regija";
+
+                // 1. Prikaz u tabeli na stranici
+                let TR = document.createElement('tr');
+                TR.innerHTML = `
+                    <td><strong>${NAZIV_FIRME}</strong><br><a href="${LINK_FIRME}" target="_blank" style="font-size:12px; color:#007bff;">Posjeti link</a></td>
+                    <td>${GRAD_LOKACIJA}</td>
+                    <td>${OPIS_FIRME}</td>
+                    <td><a href="${LINK_FIRME}" target="_blank">${LINK_FIRME}</a></td>
+                    <td><button class="wa-btn" onclick="POSALJI_NA_WHATSAPP('${NAZIV_FIRME.replace(/'/g, "")}', '${GRAD_LOKACIJA}', '${OPIS_FIRME.replace(/'/g, "").substring(0, 50)}...')">Pošalji WhatsApp</button></td>
+                `;
+                TBODY.appendChild(TR);
+
+                // 2. Pametni upis u bazu
+                try {
+                    const { data: POSTOJECA_DATA } = await _SUPABASE
+                        .from('BIZNIS_KORISNICI')
+                        .select('ID')
+                        .eq('LINKEDIN', LINK_FIRME)
+                        .maybeSingle();
+
+                    if (!POSTOJECA_DATA) {
+                        const { error: INSERT_ERROR } = await _SUPABASE
+                            .from('BIZNIS_KORISNICI')
+                            .insert([
+                                { 
+                                    IME: NAZIV_FIRME.substring(0, 99), 
+                                    TELEFON: "000000000", 
+                                    BROJ_TELEFONA: OPIS_FIRME.substring(0, 49),
+                                    LINKEDIN: LINK_FIRME 
+                                }
+                            ]);
+                        
+                        if (!INSERT_ERROR) {
+                            NOVO_UPISANO++;
+                        }
+                    }
+                } catch (DB_ERR) {
+                    console.log("Greška pri upisu u bazu preskočena.");
+                }
+            }
+
+            STATUS_DIV.textContent = `Groq pretraga završena. Dodano novih u bazu: ${NOVO_UPISANO}.`;
+
         } catch (err) {
-            console.error("Greška pri Google pretrazi:", err);
-            TBODY.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Došlo je do greške pri komunikaciji sa Google API-jem.</td></tr>';
-            STATUS_DIV.textContent = "Greška u izvršavanju pretrage.";
+            console.error("Greška:", err);
+            TBODY.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Došlo je do greške u obradi sa Groq AI-jem. Provjerite ključ.</td></tr>';
+            STATUS_DIV.textContent = "Greška u izvršavanju.";
         }
     }
 
     function HANDLE_KEY_PRESS(event) {
         if (event.key === 'Enter') {
-            PRETRAZI_I_PAMETNO_UPISI();
+            PRETRAZI_PUTEM_GROQ();
         }
     }
 
-    // Funkcija za slanje na WhatsApp
     function POSALJI_NA_WHATSAPP(NAZIV, GRAD, DJELATNOST) {
         const SELECT_ELEMENT = document.getElementById('KORISNIK_SELECT');
         const IZABRANI_BROJ = SELECT_ELEMENT.value;
