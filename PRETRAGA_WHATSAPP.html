@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pretraga, Slanje i Pametni Upis - Dochbizub</title>
-    <!-- Uvoz Supabase klijenta -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
@@ -29,7 +28,6 @@
 <div class="container">
     <h2>Upravljanje, Pretraga i Pametni Upis u Bazu</h2>
 
-    <!-- SEKCIJA 1: Izbor korisnika / broja iz tabele BIZNIS_KORISNICI -->
     <div class="section">
         <h3>1. Izaberite primaoca poruke</h3>
         <label for="KORISNIK_SELECT">Izaberite korisnika i broj:</label>
@@ -38,7 +36,6 @@
         </select>
     </div>
 
-    <!-- SEKCIJA 2: Pretraga podataka -->
     <div class="section">
         <h3>2. Pretraga i generisanje podataka</h3>
         <input type="text" id="SEARCH_INPUT" placeholder="Unesite kriterijum (npr. Građevinske firme Tuzla)..." onkeypress="HANDLE_KEY_PRESS(event)">
@@ -46,7 +43,6 @@
         <div id="STATUS_PORUKA"></div>
     </div>
 
-    <!-- SEKCIJA 3: Tabela sa rezultatima -->
     <div class="section">
         <h3>3. Rezultati pretrage (Excel format)</h3>
         <table id="REZULTATI_TABELA">
@@ -68,7 +64,6 @@
 </div>
 
 <script>
-    // Supabase konfiguracija
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_IFX6dxz-ILfYK_3VgelcMw_tYOX0y45'; 
     const _SUPABASE = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -119,8 +114,13 @@
 
             if (funkcijaError) throw funkcijaError;
 
-            let jsonString = funkcijaData.choices[0].message.content.trim();
-            jsonString = jsonString.replace(/```json/g, "").replace(/```/g, "").trim();
+            if (!funkcijaData || !funkcijaData.choices || !funkcijaData.choices[0]) {
+                throw new Error("Neispravan format odgovora sa servera.");
+            }
+
+            let rawContent = funkcijaData.choices[0].message.content.trim();
+            // Čistimo sve moguće markdown oznake za json
+            let jsonString = rawContent.replace(/```json/g, "").replace(/```/g, "").trim();
             
             const items = JSON.parse(jsonString);
 
