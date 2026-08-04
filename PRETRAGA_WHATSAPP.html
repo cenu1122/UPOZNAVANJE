@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pretraga i WhatsApp Slanje - Dochbizub</title>
-    <!-- Uvoz Supabase klijenta (Ispravljen link) -->
+    <!-- Uvoz Supabase klijenta -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
@@ -40,7 +40,7 @@
     <!-- SEKCIJA 2: Pretraga firme / kriterijuma -->
     <div class="section">
         <h3>2. Pretraga podataka / firmi</h3>
-        <input type="text" id="searchInput" placeholder="Unesite kriterijum pretrage (naziv firme, grad, djelatnost)...">
+        <input type="text" id="searchInput" placeholder="Unesite kriterijum pretrage (naziv firme, grad, djelatnost)..." onkeypress="handleKeyPress(event)">
         <button onclick="pretraziPodatke()">Pretraži bazu</button>
     </div>
 
@@ -65,7 +65,7 @@
 </div>
 
 <script>
-    // Ovdje unesi svoje prave Supabase podatke
+    // Supabase konfiguracija (ostavljamo tvoje postojeće parametre)
     const SUPABASE_URL = 'https://tvoj-supabase-url.supabase.co';
     const SUPABASE_ANON_KEY = 'tvoj-supabase-anon-key';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -106,10 +106,11 @@
             return;
         }
 
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Pretražujem Google i bazu... Molimo sačekajte.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Pretražujem Google... Molimo sačekajte.</td></tr>';
 
-        const GOOGLE_API_KEY = 'TVOJ_GOOGLE_API_KLJUC';
-        const SEARCH_ENGINE_ID = 'TVOJ_SEARCH_ENGINE_ID';
+        // Ubačeni tvoji pravi Google API podaci
+        const GOOGLE_API_KEY = 'AIzaSyAZAkjpv1DA3jci_tvdtaqmxeXAZgGXEt4';
+        const SEARCH_ENGINE_ID = 'd34bb19acdcc3474c';
 
         const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${SEARCH_ENGINE_ID}&q=${encodeURIComponent(pojam)}`;
 
@@ -143,6 +144,12 @@
         } catch (err) {
             console.error("Greška pri Google pretrazi:", err);
             tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Došlo je do greške pri komunikaciji sa Google API-jem. Provjerite ključeve.</td></tr>';
+        }
+    }
+
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') {
+            pretraziPodatke();
         }
     }
 
