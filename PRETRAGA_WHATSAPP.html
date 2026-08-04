@@ -34,7 +34,7 @@
         <h3>1. Izaberite primaoca poruke</h3>
         <label for="KORISNIK_SELECT">Izaberite korisnika i broj:</label>
         <select id="KORISNIK_SELECT">
-            <option value="+38760000000">Učitavam korisnike iz baze...</option>
+            <option value="">Učitavam korisnike iz baze...</option>
         </select>
     </div>
 
@@ -67,13 +67,10 @@
 </div>
 
 <script>
-    // Supabase konfiguracija sa tvojim pravim URL-om
+    // Supabase konfiguracija
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
     const SUPABASE_ANON_KEY = 'unesi_svoj_pravi_supabase_anon_kljuc_ovdje'; 
     const _SUPABASE = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Groq API ključ (Ovdje upisuješ svoj važeći gsk_ ključ)
-    const GROQ_API_KEY = 'unesi_svoj_pravi_groq_kljuc_ovdje'; 
 
     async function UCITAJ_KORISNIKE() {
         const SELECT = document.getElementById('KORISNIK_SELECT');
@@ -111,35 +108,18 @@
             return;
         }
 
-        TBODY.innerHTML = '<tr><td colspan="5" style="text-align:center;">Pretražujem i obrađujem podatke... Molimo sačekajte.</td></tr>';
+        TBODY.innerHTML = '<tr><td colspan="5" style="text-align:center;">Pretražujem preko PRETRAGA funkcije... Molimo sačekajte.</td></tr>';
         STATUS_DIV.textContent = "Pretraga u toku...";
 
-        const promptTekst = `Navedi mi tačno 10 stvarnih ili relevantnih firmi/organizacija za sljedeći upit: "${POJAM}". 
-        Odgovor vrati ISKLJUČIVO u JSON formatu kao niz objekata, bez ikakvog dodatnog teksta, gdje svaki objekat ima ključeve: "naziv", "lokacija", "opis", "link". Primer: [{"naziv": "Firma d.o.o.", "lokacija": "Tuzla", "opis": "Opis djelatnosti", "link": "https://linkedin.com/company/primjer"}]`;
-
         try {
-            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${GROQ_API_KEY}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    model: "llama-3.3-70b-versatile",
-                    messages: [{ role: "user", content: promptTekst }],
-                    temperature: 0.7
-                })
+            // Pozivamo tvoju Supabase Edge Funkciju PRETRAGA
+            const { data: funkcijaData, error: funkcijaError } = await _SUPABASE.functions.invoke('PRETRAGA', {
+                body: { pojam: POJAM }
             });
 
-            const result = await response.json();
-            
-            if (result.error) {
-                TBODY.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Greška: ${result.error.message}</td></tr>`;
-                STATUS_DIV.textContent = "Greška u API-ju.";
-                return;
-            }
+            if (funkcijaError) throw funkcijaError;
 
-            let jsonString = result.choices[0].message.content.trim();
+            let jsonString = funkcijaData.choices[0].message.content.trim();
             jsonString = jsonString.replace(/```json/g, "").replace(/```/g, "").trim();
             
             const items = JSON.parse(jsonString);
@@ -195,7 +175,7 @@
 
         } catch (err) {
             console.error("Greška:", err);
-            TBODY.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Došlo je do greške u izvršavanju pretrage.</td></tr>';
+            TBODY.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Greška: ${err.message || 'Nepoznata greška'}</td></tr>`;
             STATUS_DIV.textContent = "Greška u izvršavanju.";
         }
     }
