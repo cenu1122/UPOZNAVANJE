@@ -122,15 +122,14 @@
                     "Authorization": `Bearer ${GROQ_API_KEY}`,
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({
+                bobody: JSON.stringify({
                     model: "llama-3.3-70b-versatile",
                     messages: [{ 
                         role: "user", 
-                        content: `Navedi mi tačno 10 stvarnih ili relevantnih firmi/organizacija za sljedeći upit: "${POJAM}". Odgovor vrati ISKLJUČIVO u čistom JSON formatu kao niz objekata, bez ikakvog dodatnog teksta ili markdown oznaka, gdje svaki objekat ima tačno ove ključeve: "naziv", "lokacija", "opis", "link", "telefon". Ako neki podatak nije poznat, upiši "Nije dostupno".` 
+                        content: `Navedi mi tačno 10 stvarnih ili relevantnih firmi/organizacija za sljedeći upit: "${pojam}". Odgovor vrati ISKLJUČIVO u čistom JSON formatu kao niz objekata, bez ikakvog dodatnog teksta ili markdown oznaka, gdje svaki objekat ima tačno ove ključeve: "naziv", "lokacija", "opis", "link", "telefon". Trudi se da za polje "telefon" pronađeš stvarni broj ukoliko ga znaš, a ako ne znaš, stavi standardni format kontakt telefona za tu regiju umjesto da pišeš da nije dostupno.` 
                     }],
                     temperature: 0.7
                 })
-            });
 
             const funkcijaData = await response.json();
             
