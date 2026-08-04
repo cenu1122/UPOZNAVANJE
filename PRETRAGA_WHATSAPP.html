@@ -120,8 +120,8 @@
                     model: "llama-3.3-70b-versatile",
                     messages: [{ 
                         role: "user", 
-                        content: `Navedi mi tačno 10 stvarnih ili relevantnih firmi/organizacija za sljedeći upit: "${pojam}". Odgovor vrati ISKLJUČIVO u čistom JSON formatu kao niz objekata, bez ikakvog dodatnog teksta ili markdown oznaka, gdje svaki objekat ima tačno ove ključeve: "naziv", "lokacija", "opis", "link", "telefon". 
-                        - Za ključ "link" obavezno navedi direktan URL njihovog LinkedIn profila ili preduzeća (ili generalnu LinkedIn pretragu ako direktan link nije poznat).
+                        content: `Navedi mi tačno 10 stvarnih ili relevantnih firmi/organizacija za sljedeći upit: "${POJAM}". Odgovor vrati ISKLJUČIVO u čistom JSON formatu kao niz objekata, bez ikakvog dodatnog teksta ili markdown oznaka, gdje svaki objekat ima tačno ove ključeve: "naziv", "lokacija", "opis", "link", "telefon". 
+                        - Za ključ "link" obavezno navedi direktan URL njihovog LinkedIn profila ili preduzeća.
                         - Za ključ "telefon" navedi stvarni broj ukoliko ga model pouzdano zna, a ukoliko ne zna, upiši tačno "Nije dostupno".` 
                     }],
                     temperature: 0.7
