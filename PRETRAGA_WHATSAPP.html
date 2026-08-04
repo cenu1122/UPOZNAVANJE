@@ -37,8 +37,8 @@
     </div>
 
     <div class="section">
-        <h3>2. Pretraga i generisanje podataka</h3>
-        <input type="text" id="SEARCH_INPUT" placeholder="Unesite kriterijum (npr. Mašinske firme Tuzla)..." onkeypress="HANDLE_KEY_PRESS(event)">
+        <h3>2. Pretraga i generisanje podataka (Google Web)</h3>
+        <input type="text" id="SEARCH_INPUT" placeholder="Unesite kriterijum (npr. Građevinske firme Tuzla)..." onkeypress="HANDLE_KEY_PRESS(event)">
         <button onclick="PRETRAZI_I_PAMETNO_UPISI()">Pokreni Pretragu i Snimi</button>
         <div id="STATUS_PORUKA"></div>
     </div>
@@ -52,7 +52,7 @@
                     <th>Lokacija</th>
                     <th>Opis / Detalji</th>
                     <th>Telefon</th>
-                    <th>LinkedIn Profil</th>
+                    <th>Link / Web sajt</th>
                     <th>Akcija</th>
                 </tr>
             </thead>
@@ -65,13 +65,8 @@
 
 <script>
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
-    
-    // Ovdje unesi svoj pravi Supabase anon public ključ (izgleda kao dugačak niz slova i brojeva koji počinje sa eyJ...)
-    const SUPABASE_ANON_KEY = 'sb_publishable_IfX6dxz-ILfYK_3VgelcMw_tYOX0y45'; 
-    
+    const SUPABASE_ANON_KEY = 'sb_publishable_IFX6dxz-ILfYK_3VgelcMw_tYOX0y45'; 
     const _SUPABASE = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const GROQ_API_KEY = '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';
 
     async function UCITAJ_KORISNIKE() {
         const SELECT = document.getElementById('KORISNIK_SELECT');
@@ -109,31 +104,16 @@
             return;
         }
 
-        TBODY.innerHTML = '<tr><td colspan="6" style="text-align:center;">Pretražujem preko Groq AI... Molimo sačekajte.</td></tr>';
+        TBODY.innerHTML = '<tr><td colspan="6" style="text-align:center;">Pretražujem preko Google-a i Edge funkcije... Molimo sačekajte.</td></tr>';
         STATUS_DIV.textContent = "Pretraga u toku...";
 
         try {
-            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${GROQ_API_KEY}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    model: "llama-3.3-70b-versatile",
-                    messages: [{ 
-                        role: "user", 
-                        content: `Navedi mi tačno 10 stvarnih ili relevantnih firmi/organizacija za sljedeći upit: "${POJAM}". Odgovor vrati ISKLJUČIVO u čistom JSON formatu kao niz objekata, bez ikakvog dodatnog teksta ili markdown oznaka, gdje svaki objekat ima tačno ove ključeve: "naziv", "lokacija", "opis", "link", "telefon". Za ključ "link" obavezno navedi direktan URL njihovog LinkedIn profila ili preduzeća. Za ključ "telefon" navedi stvarni broj ukoliko ga model pouzdano zna, a ukoliko ne zna, upiši tačno "Nije dostupno".` 
-                    }],
-                    temperature: 0.7
-                })
+            // Pozivamo Supabase Edge funkciju koja u pozadini koristi Google Custom Search API
+            const { data: funkcijaData, error: funkcijaError } = await _SUPABASE.functions.invoke('PRETRAGA', {
+                body: { pojam: POJAM }
             });
 
-            const funkcijaData = await response.json();
-            
-            if (funkcijaData.error) {
-                throw new Error(funkcijaData.error.message || "Greška sa Groq API-ja");
-            }
+            if (funkcijaError) throw funkcijaError;
 
             let rawContent = funkcijaData.choices[0].message.content.trim();
             let jsonString = rawContent.replace(/```json/g, "").replace(/```/g, "").trim();
@@ -145,7 +125,7 @@
 
             for (const ITEM of items) {
                 let NAZIV_FIRME = ITEM.naziv || "Nepoznat naziv";
-                let LINK_FIRME = ITEM.link || "https://www.linkedin.com";
+                let LINK_FIRME = ITEM.link || "#";
                 let OPIS_FIRME = ITEM.opis || "Nema opisa";
                 let GRAD_LOKACIJA = ITEM.lokacija || "Tuzla / Regija";
                 let TELEFON_FIRME = ITEM.telefon || "Nije dostupno";
@@ -156,7 +136,7 @@
                     <td>${GRAD_LOKACIJA}</td>
                     <td>${OPIS_FIRME}</td>
                     <td><strong>${TELEFON_FIRME}</strong></td>
-                    <td><a href="${LINK_FIRME}" target="_blank" style="color:#007bff;">Otvori LinkedIn</a></td>
+                    <td><a href="${LINK_FIRME}" target="_blank" style="color:#007bff;">Posjeti sajt</a></td>
                     <td><button class="wa-btn" onclick="POSALJI_NA_WHATSAPP('${NAZIV_FIRME.replace(/'/g, "")}', '${GRAD_LOKACIJA}', '${OPIS_FIRME.replace(/'/g, "").substring(0, 50)}...')">Pošalji WhatsApp</button></td>
                 `;
                 TBODY.appendChild(TR);
