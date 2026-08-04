@@ -52,7 +52,7 @@
                     <th>Lokacija</th>
                     <th>Opis / Detalji</th>
                     <th>Telefon</th>
-                    <th>Izvor / LinkedIn Link</th>
+                    <th>LinkedIn Profil</th>
                     <th>Akcija</th>
                 </tr>
             </thead>
@@ -68,7 +68,6 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_IFX6dxz-ILfYK_3VgelcMw_tYOX0y45'; 
     const _SUPABASE = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Tvoj Groq ključ za direktnu komunikaciju
     const GROQ_API_KEY = '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';
 
     async function UCITAJ_KORISNIKE() {
@@ -121,7 +120,9 @@
                     model: "llama-3.3-70b-versatile",
                     messages: [{ 
                         role: "user", 
-                        content: `Navedi mi tačno 10 stvarnih ili relevantnih firmi/organizacija za sljedeći upit: "${POJAM}". Odgovor vrati ISKLJUČIVO u čistom JSON formatu kao niz objekata, bez ikakvog dodatnog teksta ili markdown oznaka, gdje svaki objekat ima tačno ove ključeve: "naziv", "lokacija", "opis", "link", "telefon". Za polje "telefon" navedi broj ukoliko ga znaš, a ako ne znaš, stavi prazno ili "Nije dostupno".` 
+                        content: `Navedi mi tačno 10 stvarnih ili relevantnih firmi/organizacija za sljedeći upit: "${pojam}". Odgovor vrati ISKLJUČIVO u čistom JSON formatu kao niz objekata, bez ikakvog dodatnog teksta ili markdown oznaka, gdje svaki objekat ima tačno ove ključeve: "naziv", "lokacija", "opis", "link", "telefon". 
+                        - Za ključ "link" obavezno navedi direktan URL njihovog LinkedIn profila ili preduzeća (ili generalnu LinkedIn pretragu ako direktan link nije poznat).
+                        - Za ključ "telefon" navedi stvarni broj ukoliko ga model pouzdano zna, a ukoliko ne zna, upiši tačno "Nije dostupno".` 
                     }],
                     temperature: 0.7
                 })
@@ -143,23 +144,18 @@
 
             for (const ITEM of items) {
                 let NAZIV_FIRME = ITEM.naziv || "Nepoznat naziv";
-                let LINK_FIRME = ITEM.link || "#";
+                let LINK_FIRME = ITEM.link || "https://www.linkedin.com";
                 let OPIS_FIRME = ITEM.opis || "Nema opisa";
                 let GRAD_LOKACIJA = ITEM.lokacija || "Tuzla / Regija";
-                
-                // Pametna provjera: ako model vrati da nema broja, automatski generišemo važeći format da dugme radi
-                let TELEFON_FIRME = ITEM.telefon;
-                if (!TELEFON_FIRME || TELEFON_FIRME.includes("Nije") || TELEFON_FIRME.length < 6) {
-                    TELEFON_FIRME = "+38761" + Math.floor(100000 + Math.random() * 900000); // Generiše unikatan funkcionalan format za BiH
-                }
+                let TELEFON_FIRME = ITEM.telefon || "Nije dostupno";
 
                 let TR = document.createElement('tr');
                 TR.innerHTML = `
-                    <td><strong>${NAZIV_FIRME}</strong><br><a href="${LINK_FIRME}" target="_blank" style="font-size:12px; color:#007bff;">Posjeti link</a></td>
+                    <td><strong>${NAZIV_FIRME}</strong></td>
                     <td>${GRAD_LOKACIJA}</td>
                     <td>${OPIS_FIRME}</td>
                     <td><strong>${TELEFON_FIRME}</strong></td>
-                    <td><a href="${LINK_FIRME}" target="_blank">${LINK_FIRME}</a></td>
+                    <td><a href="${LINK_FIRME}" target="_blank" style="color:#007bff;">Otvori LinkedIn</a></td>
                     <td><button class="wa-btn" onclick="POSALJI_NA_WHATSAPP('${NAZIV_FIRME.replace(/'/g, "")}', '${GRAD_LOKACIJA}', '${OPIS_FIRME.replace(/'/g, "").substring(0, 50)}...')">Pošalji WhatsApp</button></td>
                 `;
                 TBODY.appendChild(TR);
