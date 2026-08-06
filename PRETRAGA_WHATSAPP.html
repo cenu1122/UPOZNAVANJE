@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pretraga, AI PRETRAGAisanje i Slanje - DocBizHub (Verzija 15)</title>
+    <title>Pretraga, AI Lektorisanje i Slanje - DocBizHub (Verzija 15)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
@@ -33,14 +33,14 @@
 <body>
 
 <div class="container">
-    <h2>Upravljanje, Pretraga, AI PRETRAGAisanje i Slanje</h2>
+    <h2>Upravljanje, Pretraga, AI Lektorisanje i Slanje</h2>
 
     <div class="section">
-        <h3>✨ AI PRETRAGA i Prepravka Teksta</h3>
+        <h3>✨ AI Lektor i Prepravka Teksta</h3>
         <label for="AI_INPUT_TEKST">Unesite tekst koji želite da AI prepravi i poboljša:</label>
         <textarea id="AI_INPUT_TEKST" placeholder="Napišite tekst ovdje..."></textarea>
         <div class="action-row">
-            <button onclick="PRETRAGAISI_TEKST()">🤖 Prepravi i PRETRAGAiši tekst</button>
+            <button onclick="PRETRAGAISI_TEKST()">🤖 Prepravi i Lektoriši tekst</button>
         </div>
         <div id="AI_STATUS"></div>
         <div id="AI_REZULTAT_WRAP" style="display:none;">
@@ -135,32 +135,42 @@
         REZULTAT_WRAP.style.display = 'none';
 
         try {
-            const { data, error } = await _SUPABASE.functions.invoke("PRETRAGA", {
-    body: {
-        pojam: POJAM
-    }
-});
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/PRETRAGA`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                },
+                body: JSON.stringify({ pojam: "Lektoriši, ispravi pravopis i učini profesionalnim ovaj tekst na bosanskom jeziku: " + TEKST_INPUT })
+            });
 
-if (error) {
-    console.error("Greška iz Edge Function:", error);
-    alert(error.message);
-    return;
-}
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error("Greška sa servera: " + errText);
+            }
 
-console.log("Odgovor Edge Function:", data);
+            const data = await response.json();
+            console.log("Odgovor Edge Function:", data);
 
             let rezultat = "";
             if (Array.isArray(data)) {
                 rezultat = data[0]?.opis || data[0]?.naziv || JSON.stringify(data);
             } else if (data && data.choices) {
-                rezultat = data.choices[0].message.content;
+                let rawContent = data.choices[0].message.content.trim();
+                let jsonString = rawContent.replace(/```json/g, "").replace(/```/g, "").trim();
+                try {
+                    let parsed = JSON.parse(jsonString);
+                    rezultat = Array.isArray(parsed) ? (parsed[0]?.opis || parsed[0]?.naziv || JSON.stringify(parsed)) : rawContent;
+                } catch(e) {
+                    rezultat = rawContent;
+                }
             } else {
                 rezultat = JSON.stringify(data);
             }
 
             REZULTAT_TEKST.textContent = rezultat;
             REZULTAT_WRAP.style.display = 'block';
-            STATUS_DIV.textContent = "Tekst uspješno PRETRAGAisan!";
+            STATUS_DIV.textContent = "Tekst uspješno obrađen!";
         } catch (err) {
             STATUS_DIV.textContent = "Greška: " + err.message;
         }
@@ -180,12 +190,21 @@ console.log("Odgovor Edge Function:", data);
         STATUS_DIV.textContent = "Pretraga u toku...";
 
         try {
-            const { data, error } = await _SUPABASE.functions.invoke('PRETRAGA', {
-                body: { pojam: POJAM }
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/PRETRAGA`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                },
+                body: JSON.stringify({ pojam: POJAM })
             });
 
-            if (error) throw error;
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`Server status ${response.status}: ${errText}`);
+            }
 
+            const data = await response.json();
             let items = [];
             if (Array.isArray(data)) {
                 items = data;
