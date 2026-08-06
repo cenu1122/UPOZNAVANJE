@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pretraga, AI Lektorisanje i Slanje - DocBizHub</title>
+    <title>Pretraga, AI Lektorisanje i Slanje - DocBizHub (Verzija 12)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
         .container { max-width: 1300px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h2 { color: #3742fa; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .version-badge { background: #3742fa; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; float: right; }
+        h2 { color: #3742fa; border-bottom: 2px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .section { margin-bottom: 25px; padding: 15px; background: #fafafa; border: 1px solid #e1e1e1; border-radius: 6px; }
         label { font-weight: bold; display: block; margin-bottom: 5px; }
         select, input[type="text"], textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: inherit; }
@@ -28,7 +29,10 @@
 <body>
 
 <div class="container">
-    <h2>Upravljanje, Pretraga, AI Lektorisanje i Slanje</h2>
+    <h2>
+        <span>Upravljanje, Pretraga, AI Lektorisanje i Slanje</span>
+        <span class="version-badge">Verzija 12</span>
+    </h2>
 
     <div class="section">
         <h3>✨ AI Lektor i Prepravka Teksta</h3>
@@ -51,7 +55,7 @@
     </div>
 
     <div class="section">
-        <h3>2. Pretraga i generisanje podataka (AI & Web)</h3>
+        <h3>2. Pretraga i generisanje podataka (Google Web)</h3>
         <input type="text" id="SEARCH_INPUT" placeholder="Unesite kriterijum (npr. Mašinske firme Tuzla)..." onkeypress="HANDLE_KEY_PRESS(event)">
         <button onclick="PRETRAZI_I_PAMETNO_UPISI()">Pokreni Pretragu i Snimi</button>
         <div id="STATUS_PORUKA"></div>
@@ -81,9 +85,6 @@
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';  
     const _SUPABASE = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Ovdje možeš direktno unijeti svoj Groq ključ da sve radi lokalno bez zavisnosti od servera funkcija
-    const GROQ_API_KEY_LOCAL = "gsk_tvoj_groq_kljuc_ovdje"; 
 
     async function UCITAJ_KORISNIKE() {
         const SELECT = document.getElementById('KORISNIK_SELECT');
@@ -122,32 +123,28 @@
             return;
         }
 
-        STATUS_DIV.textContent = "AI lektorisanjem obrađuje tekst... Molimo sačekajte.";
+        STATUS_DIV.textContent = "AI obrađuje tekst... Molimo sačekajte.";
         REZULTAT_WRAP.style.display = 'none';
 
         try {
-            const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${GROQ_API_KEY_LOCAL}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    model: "llama-3.3-70b-versatile",
-                    messages: [{
-                        role: "user",
-                        content: "Lektoriši, ispravi gramatiku, pravopis i učini ovaj tekst profesionalnim na bosanskom jeziku:\n\n" + TEKST_INPUT
-                    }],
-                    temperature: 0.2
-                })
+            const { data, error } = await _SUPABASE.functions.invoke('PRETRAGA', {
+                body: { pojam: "Lektoriši, ispravi pravopis i učini profesionalnim ovaj tekst na bosanskom jeziku: " + TEKST_INPUT }
             });
 
-            const data = await groqRes.json();
-            const poboljsaniTekst = data.choices[0].message.content.trim();
+            if (error) throw error;
 
-            REZULTAT_TEKST.textContent = poboljsaniTekst;
+            let rezultat = "";
+            if (Array.isArray(data)) {
+                rezultat = data[0]?.opis || data[0]?.naziv || JSON.stringify(data);
+            } else if (data && data.choices) {
+                rezultat = data.choices[0].message.content;
+            } else {
+                rezultat = JSON.stringify(data);
+            }
+
+            REZULTAT_TEKST.textContent = rezultat;
             REZULTAT_WRAP.style.display = 'block';
-            STATUS_DIV.textContent = "Tekst je uspješno prepravljen i lektorisan!";
+            STATUS_DIV.textContent = "Tekst uspješno lektorisan!";
         } catch (err) {
             STATUS_DIV.textContent = "Greška: " + err.message;
         }
@@ -163,41 +160,40 @@
             return;
         }
 
-        TBODY.innerHTML = '<tr><td colspan="6" style="text-align:center;">Generišem podatke preko Groq modela... Molimo sačekajte.</td></tr>';
-        STATUS_DIV.textContent = "Obrada u toku...";
+        TBODY.innerHTML = '<tr><td colspan="6" style="text-align:center;">Pretražujem preko Edge funkcije i Google-a... Molimo sačekajte.</td></tr>';
+        STATUS_DIV.textContent = "Pretraga u toku...";
 
         try {
-            // Direktni upit prema Groqu za tražene podatke iz baze znanja modela
-            const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${GROQ_API_KEY_LOCAL}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    model: "llama-3.3-70b-versatile",
-                    messages: [{
-                        role: "user",
-                        content: `Na osnovu tvog znanja o firmama i preduzećima za pojam "${POJAM}", pronađi stvarne ili reprezentativne firme i vrati ih ISKLJUČIVO u čistom JSON formatu kao niz objekata, bez ikakvog dodatnog teksta ili markdown oznaka. Svaki objekat mora imati tačno ove ključeve: "naziv", "lokacija", "opis", "link", "telefon". Ako nemaš tačan telefon ili link, upiši "Nije dostupno" ili "#".`
-                    }],
-                    temperature: 0.2
-                })
+            const { data, error } = await _SUPABASE.functions.invoke('PRETRAGA', {
+                body: { pojam: POJAM }
             });
 
-            const data = await groqRes.json();
-            const rawContent = data.choices[0].message.content.trim();
-            const jsonString = rawContent.replace(/```json/g, "").replace(/```/g, "").trim();
-            const items = JSON.parse(jsonString);
+            if (error) throw error;
+
+            let items = [];
+            if (Array.isArray(data)) {
+                items = data;
+            } else if (data && data.choices) {
+                let rawContent = data.choices[0].message.content.trim();
+                let jsonString = rawContent.replace(/```json/g, "").replace(/```/g, "").trim();
+                items = JSON.parse(jsonString);
+            }
 
             TBODY.innerHTML = '';
             let NOVO_UPISANO = 0;
 
+            if (!items || items.length === 0) {
+                TBODY.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nema pronađenih rezultata.</td></tr>';
+                STATUS_DIV.textContent = "Pretraga završena, nema rezultata.";
+                return;
+            }
+
             for (const ITEM of items) {
-                let NAZIV_FIRME = ITEM.naziv || "Nepoznat naziv";
-                let LINK_FIRME = ITEM.link || "#";
-                let OPIS_FIRME = ITEM.opis || "Nema opisa";
+                let NAZIV_FIRME = ITEM.naziv || ITEM.IME || "Nepoznat naziv";
+                let LINK_FIRME = ITEM.link || ITEM.LINKEDIN || "#";
+                let OPIS_FIRME = ITEM.opis || ITEM.BROJ_TELEFONA || "Nema opisa";
                 let GRAD_LOKACIJA = ITEM.lokacija || "Tuzla / Regija";
-                let TELEFON_FIRME = ITEM.telefon || "Nije dostupno";
+                let TELEFON_FIRME = ITEM.telefon || ITEM.TELEFON || "Nije dostupno";
 
                 let TR = document.createElement('tr');
                 TR.innerHTML = `
@@ -222,7 +218,7 @@
                             .from('BIZNIS_KORISNICI')
                             .insert([
                                 { 
-                                    IME: NAZIV_FIRM.substring(0, 99), 
+                                    IME: NAZIV_FIRME.substring(0, 99), 
                                     TELEFON: TELEFON_FIRME.substring(0, 49), 
                                     BROJ_TELEFONA: OPIS_FIRME.substring(0, 49),
                                     LINKEDIN: LINK_FIRME 
@@ -238,12 +234,12 @@
                 }
             }
 
-            STATUS_DIV.textContent = `Uspješno generisano rezultata: ${items.length}, novih upisanih u bazu: ${NOVO_UPISANO}.`;
+            STATUS_DIV.textContent = `Pretraga uspješna. Prikazano rezultata: ${items.length}, novih upisanih u bazu: ${NOVO_UPISANO}.`;
 
         } catch (err) {
-            console.error("Greška:", err);
-            TBODY.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Greška: ${err.message} (Provjerite da li ste upisali važeći Groq API ključ u kodu).</td></tr>`;
-            STATUS_DIV.textContent = "Greška u izvršavanju.";
+            console.error("Detaljna greška:", err);
+            TBODY.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Greška: ${err.message || err}</td></tr>`;
+            STATUS_DIV.textContent = "Greška u izvršavanju poziva prema funkciji.";
         }
     }
 
