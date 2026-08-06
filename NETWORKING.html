@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poslovni Networking | DocBizHub</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
+
+    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
+    .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+
+    .nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .btn-nav { background: #3742fa; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
+    .btn-nav:hover { background: #2f3542; }
+
+    .main-container { flex: 1; padding: 30px 20px; max-width: 1000px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
+
+    .header-card { background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(55, 66, 250, 0.08); border-left: 6px solid #3742fa; }
+    .header-card h1 { color: #1e1f29; font-size: 1.8rem; margin-bottom: 5px; }
+    .header-card p { color: #666; font-size: 1rem; }
+
+    .search-box { width: 100%; padding: 12px 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; margin-bottom: 15px; outline: none; }
+    .search-box:focus { border-color: #3742fa; }
+
+    .networking-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .member-card { background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; display: flex; flex-direction: column; gap: 10px; }
+    .member-card h3 { color: #1e1f29; font-size: 1.2rem; }
+    .member-card p { font-size: 0.9rem; color: #555; }
+    .member-badge { display: inline-block; background: #e0e0ff; color: #3742fa; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; align-self: flex-start; }
+
+    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="DASHBOARD.html" class="logo">🚀 DocBizHub</a>
+    <div class="nav-actions">
+      <a href="DASHBOARD.html" class="btn-nav">🏠 Početna</a>
+      <a href="PROFIL.html" class="btn-nav">👤 Moj Profil</a>
+    </div>
+  </header>
+
+  <div class="main-container">
+
+    <div class="header-card">
+      <h1>Poslovni Networking</h1>
+      <p>Povežite se sa preduzetnicima, stručnjacima i potencijalnim partnerima.</p>
+    </div>
+
+    <input type="text" id="search-input" class="search-box" placeholder="Pretraži članove po imenu, djelatnosti ili vještinama..." onkeyup="pretraziMrezu()">
+
+    <div id="networking-container" class="networking-grid">
+      <p style="color: #777;">Učitavam članove mreže...</p>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>© 2026 DocBizHub. Sva prava zadržana.</p>
+  </footer>
+
+  <script>
+    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let sviClanovi = [];
+
+    async function ucitajClanoveMreze() {
+      const container = document.getElementById('networking-container');
+      try {
+        const { data, error } = await supabaseClient
+          .from('UPOZNAVANJ_KORISNICI')
+          .select('*');
+
+        if (error) throw error;
+
+        sviClanovi = data || [];
+        prikaziClanove(sviClanovi);
+
+      } catch (err) {
+        console.error("Greška pri učitavanju mreže:", err);
+        container.innerHTML = `<p style="color: red;">Greška pri učitavanju podataka iz baze.</p>`;
+      }
+    }
+
+    function prikaziClanove(clanovi) {
+      const container = document.getElementById('networking-container');
+      container.innerHTML = '';
+
+      if (clanovi.length === 0) {
+        container.innerHTML = '<p style="color: #777;">Nema pronađenih članova u mreži.</p>';
+        return;
+      }
+
+      clanovi.forEach(c => {
+        const ime = c.IME || c.NAZIV || 'Član mreže';
+        const opis = c.OPIS || c.BIOGRAFIJA || c.INTERESOVANJA || 'Poslovni profil i saradnja.';
+        const grad = c.GRAD || c.LOKACIJA || 'Regija / Online';
+
+        const card = document.createElement('div');
+        card.className = 'member-card';
+        card.innerHTML = `
+          <span class="member-badge">📍 ${grad}</span>
+          <h3>${ime}</h3>
+          <p>${opis}</p>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function pretraziMrezu() {
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const filtrirani = sviClanovi.filter(c => {
+        const ime = (c.IME || c.NAZIV || '').toLowerCase();
+        const opis = (c.OPIS || c.BIOGRAFIJA || c.INTERESOVANJA || '').toLowerCase();
+        const grad = (c.GRAD || c.LOKACIJA || '').toLowerCase();
+        return ime.includes(query) || opis.includes(query) || grad.includes(query);
+      });
+      prikaziClanove(filtrirani);
+    }
+
+    document.addEventListener('DOMContentLoaded', ucitajClanoveMreze);
+  </script>
+
+</body>
+</html>
