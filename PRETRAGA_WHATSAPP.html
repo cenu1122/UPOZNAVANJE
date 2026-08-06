@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pretraga, AI Lektorisanje i Slanje - DocBizHub (Verzija 15)</title>
+    <title>Pretraga, AI PRETRAGAisanje i Slanje - DocBizHub (Verzija 15)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
@@ -33,14 +33,14 @@
 <body>
 
 <div class="container">
-    <h2>Upravljanje, Pretraga, AI Lektorisanje i Slanje</h2>
+    <h2>Upravljanje, Pretraga, AI PRETRAGAisanje i Slanje</h2>
 
     <div class="section">
-        <h3>✨ AI Lektor i Prepravka Teksta</h3>
+        <h3>✨ AI PRETRAGA i Prepravka Teksta</h3>
         <label for="AI_INPUT_TEKST">Unesite tekst koji želite da AI prepravi i poboljša:</label>
         <textarea id="AI_INPUT_TEKST" placeholder="Napišite tekst ovdje..."></textarea>
         <div class="action-row">
-            <button onclick="LEKTORISI_TEKST()">🤖 Prepravi i Lektoriši tekst</button>
+            <button onclick="PRETRAGAISI_TEKST()">🤖 Prepravi i PRETRAGAiši tekst</button>
         </div>
         <div id="AI_STATUS"></div>
         <div id="AI_REZULTAT_WRAP" style="display:none;">
@@ -120,7 +120,7 @@
 
     UCITAJ_KORISNIKE();
 
-    async function LEKTORISI_TEKST() {
+    async function PRETRAGAISI_TEKST() {
         const TEKST_INPUT = document.getElementById('AI_INPUT_TEKST').value.trim();
         const STATUS_DIV = document.getElementById('AI_STATUS');
         const REZULTAT_WRAP = document.getElementById('AI_REZULTAT_WRAP');
@@ -135,11 +135,19 @@
         REZULTAT_WRAP.style.display = 'none';
 
         try {
-            const { data, error } = await _SUPABASE.functions.invoke('PRETRAGA', {
-                body: { pojam: "Lektoriši, ispravi pravopis i učini profesionalnim ovaj tekst na bosanskom jeziku: " + TEKST_INPUT }
-            });
+            const { data, error } = await _SUPABASE.functions.invoke("PRETRAGA", {
+    body: {
+        pojam: POJAM
+    }
+});
 
-            if (error) throw error;
+if (error) {
+    console.error("Greška iz Edge Function:", error);
+    alert(error.message);
+    return;
+}
+
+console.log("Odgovor Edge Function:", data);
 
             let rezultat = "";
             if (Array.isArray(data)) {
@@ -152,7 +160,7 @@
 
             REZULTAT_TEKST.textContent = rezultat;
             REZULTAT_WRAP.style.display = 'block';
-            STATUS_DIV.textContent = "Tekst uspješno lektorisan!";
+            STATUS_DIV.textContent = "Tekst uspješno PRETRAGAisan!";
         } catch (err) {
             STATUS_DIV.textContent = "Greška: " + err.message;
         }
