@@ -18,7 +18,7 @@
     .btn-nav { background: #3742fa; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
     .btn-nav:hover { background: #2f3542; }
 
-    .main-container { flex: 1; padding: 30px 20px; max-width: 1000px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
+    .main-container { flex: 1; padding: 30px 20px; max-width: 1100px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
 
     .header-card { background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(55, 66, 250, 0.08); border-left: 6px solid #3742fa; }
     .header-card h1 { color: #1e1f29; font-size: 1.8rem; margin-bottom: 5px; }
@@ -27,19 +27,20 @@
     .search-box { width: 100%; padding: 12px 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; margin-bottom: 15px; outline: none; }
     .search-box:focus { border-color: #3742fa; }
 
-    .networking-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .networking-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
     
-    .member-card { background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; display: flex; flex-direction: column; gap: 12px; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; }
-    .member-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(55, 66, 250, 0.15); border-color: #3742fa; }
+    /* Osigurana visina i fleksibilnost kartice da se dugmad uvijek vide */
+    .member-card { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; display: flex; flex-direction: column; justify-content: space-between; min-height: 180px; transition: transform 0.2s, box-shadow 0.2s; }
+    .member-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(55, 66, 250, 0.15); border-color: #3742fa; }
     
-    .member-info { text-decoration: none; color: #2b2d42; display: flex; flex-direction: column; gap: 8px; cursor: pointer; }
-    .member-info h3 { color: #1e1f29; font-size: 1.2rem; }
-    .member-info p { font-size: 0.9rem; color: #555; }
+    .member-info { text-decoration: none; color: #2b2d42; display: flex; flex-direction: column; gap: 6px; cursor: pointer; margin-bottom: 15px; }
+    .member-info h3 { color: #1e1f29; font-size: 1.1rem; }
+    .member-info p { font-size: 0.85rem; color: #555; }
     
-    .member-badge { display: inline-block; background: #e0e0ff; color: #3742fa; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; align-self: flex-start; }
+    .member-badge { display: inline-block; background: #e0e0ff; color: #3742fa; padding: 3px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; align-self: flex-start; }
 
-    .card-actions { display: flex; gap: 10px; margin-top: auto; border-top: 1px solid #f0f0f0; padding-top: 12px; }
-    .btn-card { flex: 1; text-align: center; background: #f1f2f6; color: #2b2d42; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; transition: background 0.2s; }
+    .card-actions { display: flex; gap: 8px; border-top: 1px solid #eee; padding-top: 12px; }
+    .btn-card { flex: 1; text-align: center; background: #f1f2f6; color: #2b2d42; text-decoration: none; padding: 8px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; transition: background 0.2s; }
     .btn-card:hover { background: #dfe4ea; }
     .btn-chat { background: #3742fa; color: #fff; }
     .btn-chat:hover { background: #2f3542; }
@@ -122,7 +123,7 @@
         const card = document.createElement('div');
         card.className = 'member-card';
         card.innerHTML = `
-          <a href="${profilLink}" class="member-info" style="text-decoration: none;">
+          <a href="${profilLink}" class="member-info">
             <span class="member-badge">📍 ${grad}</span>
             <h3>${ime}</h3>
             <p>${opis}</p>
