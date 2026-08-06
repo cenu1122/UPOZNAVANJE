@@ -16,7 +16,6 @@
 
     .nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     
-    /* Stil za Google Translate */
     .lang-wrapper { display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 10px; border-radius: 20px; border: 2px solid #3742fa; }
     #google_translate_element select { padding: 4px 8px; border: none; background: transparent; font-weight: bold; font-size: 0.85rem; color: #2b2d42; outline: none; cursor: pointer; }
     
@@ -39,7 +38,6 @@
     .dash-tile h3 { color: #1e1f29; font-size: 1.2rem; }
     .dash-tile p { font-size: 0.85rem; color: #777; }
 
-    /* Modal (Novi prozor) za unutrašnje kartice dokumenata iz foldera DOCS */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
     .modal-overlay.active { display: flex; }
     .modal-content { background: #fff; width: 100%; max-width: 700px; padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 20px; position: relative; animation: modalIn 0.3s ease-out; }
@@ -75,8 +73,8 @@
 
     <div class="welcome-card">
       <div class="welcome-text">
-        <h1 id="txtWelcome">Dobrodošli nazad! 👋</h1>
-        <p id="txtSubWelcome">Upravljajte svojim projektima, dokumentima i poslovnom mrežom na jednom mjestu.</p>
+        <h1 id="txtWelcome">Dobrodošli nazad na DocBizHub! 👋</h1>
+        <p id="txtSubWelcome">Vaša centralna platforma za biznis, projekte, dokumente i profesionalno umrežavanje.</p>
       </div>
       <div class="user-badge" id="lblUserEmail">Učitavanje profila...</div>
     </div>
@@ -92,7 +90,7 @@
       <a href="NETWORKING.html" class="dash-tile">
         <div class="icon">🤝</div>
         <h3>Poslovni Networking</h3>
-        <p>Upoznajte partnere, saradnike i proširite svoju profesionalnu mrežu.</p>
+        <p>Povežite se sa drugim preduzetnicima, saradnicima i proširite mrežu.</p>
       </a>
 
       <a href="PRETRAGA.html" class="dash-tile">
@@ -116,7 +114,7 @@
       <div class="dash-tile" onclick="otvoriModalDokumenata()">
         <div class="icon">📁</div>
         <h3>Dokumenti i Alati</h3>
-        <p>Otvorite meni za Word, Excel, PowerPoint i dokumente iz foldera DOCS.</p>
+        <p>Otvorite meni za Word, Excel, PowerPoint i fajlove iz foldera DOCS.</p>
       </div>
 
       <a href="INTERVJU.html" class="dash-tile">
@@ -140,7 +138,7 @@
       <a href="ZABAVA.html" class="dash-tile">
         <div class="icon">🎉</div>
         <h3>Kutak za Odmor</h3>
-        <p>Opustite se uz zanimljive članke i sadržaj van posla.</p>
+        <p>Opustite se uz zanimljiv sadržaj van svakodnevnih obaveza.</p>
       </a>
 
       <a href="TEST.html" class="dash-tile">
@@ -152,7 +150,7 @@
       <a href="KONTAKT.html" class="dash-tile">
         <div class="icon">📩</div>
         <h3>Korisnička Podrška</h3>
-        <p>Imate pitanje, prijedlog ili problem? Kontaktirajte tim.</p>
+        <p>Imate pitanje, prijedlog ili problem? Kontaktirajte naš tim.</p>
       </a>
 
     </div>
@@ -213,7 +211,6 @@
       _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     }
 
-    // Funkcije za otvaranje i zatvaranje modala sa dokumentima
     function otvoriModalDokumenata() {
       document.getElementById('DOCSModal').classList.add('active');
     }
@@ -222,7 +219,6 @@
       document.getElementById('DOCSModal').classList.remove('active');
     }
 
-    // Zatvaranje modala klikom izvan prozora
     window.onclick = function(event) {
       const modal = document.getElementById('DOCSModal');
       if (event.target === modal) {
