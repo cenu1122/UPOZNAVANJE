@@ -62,6 +62,8 @@
         <input type="text" id="SEARCH_INPUT" placeholder="Unesite kriterijum (npr. Mašinske firme Tuzla)..." onkeypress="HANDLE_KEY_PRESS(event)">
         <div class="action-row">
             <button onclick="PRETRAZI_I_PAMETNO_UPISI()">Pokreni Pretragu i Snimi</button>
+            <label style="margin:0;">Verzija:</label>
+            <input type="text" id="VERZIJA_PRETRAGE" value="1" style="width:80px;margin:0;text-align:center;">
             <span class="version-badge">Verzija 15</span>
         </div>
         <div id="STATUS_PORUKA"></div>
@@ -226,7 +228,7 @@
                                 { 
                                     IME: NAZIV_FIRME.substring(0, 99), 
                                     TELEFON: TELEFON_FIRME.substring(0, 49), 
-                                    BROJ_TELEFONA: OPIS_FIRME.substring(0, 49),
+                                    BROJ_TELEFONA: TELEFON_FIRME.substring(0, 49),
                                     LINKEDIN: LINK_FIRME 
                                 }
                             ]);
