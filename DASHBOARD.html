@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard | LjubavNaPrviKlik</title>
+  <title>Dashboard | DocBizHub</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
 
     header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
     .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
@@ -17,26 +17,26 @@
     .nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     
     /* Stil za Google Translate */
-    .lang-wrapper { display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 10px; border-radius: 20px; border: 2px solid #d90429; }
+    .lang-wrapper { display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 10px; border-radius: 20px; border: 2px solid #3742fa; }
     #google_translate_element select { padding: 4px 8px; border: none; background: transparent; font-weight: bold; font-size: 0.85rem; color: #2b2d42; outline: none; cursor: pointer; }
     
-    .btn-nav { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
-    .btn-nav:hover { background: #ef233c; }
+    .btn-nav { background: #3742fa; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
+    .btn-nav:hover { background: #2f3542; }
     .btn-logout { background: #6c757d; }
     .btn-logout:hover { background: #495057; }
 
     .main-container { flex: 1; padding: 30px 20px; max-width: 1000px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
 
-    .welcome-card { background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(217, 4, 41, 0.08); border-left: 6px solid #d90429; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-    .welcome-text h1 { color: #800020; font-size: 1.8rem; margin-bottom: 5px; }
+    .welcome-card { background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(55, 66, 250, 0.08); border-left: 6px solid #3742fa; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .welcome-text h1 { color: #1e1f29; font-size: 1.8rem; margin-bottom: 5px; }
     .welcome-text p { color: #666; font-size: 1rem; }
-    .user-badge { background: #ffe0e3; color: #d90429; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+    .user-badge { background: #e0e0ff; color: #3742fa; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
 
     .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
     .dash-tile { background: #fff; padding: 25px; border-radius: 16px; text-decoration: none; color: #2b2d42; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #f0f0f0; cursor: pointer; }
-    .dash-tile:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(217, 4, 41, 0.15); border-color: #ffccd5; }
+    .dash-tile:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(55, 66, 250, 0.15); border-color: #b8bfff; }
     .dash-tile .icon { font-size: 2.5rem; }
-    .dash-tile h3 { color: #800020; font-size: 1.2rem; }
+    .dash-tile h3 { color: #1e1f29; font-size: 1.2rem; }
     .dash-tile p { font-size: 0.85rem; color: #777; }
 
     /* Modal (Novi prozor) za unutrašnje kartice dokumenata iz foldera DOCS */
@@ -45,7 +45,7 @@
     .modal-content { background: #fff; width: 100%; max-width: 700px; padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 20px; position: relative; animation: modalIn 0.3s ease-out; }
     @keyframes modalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; }
-    .modal-header h2 { color: #800020; font-size: 1.5rem; }
+    .modal-header h2 { color: #1e1f29; font-size: 1.5rem; }
     .btn-close-modal { background: #ef4444; color: #fff; border: none; width: 35px; height: 35px; border-radius: 50%; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; }
     .btn-close-modal:hover { background: #dc2626; }
     
@@ -57,7 +57,7 @@
 <body>
 
   <header>
-    <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
+    <a href="DASHBOARD.html" class="logo">🚀 DocBizHub</a>
 
     <div class="nav-actions">
       <div class="lang-wrapper">
@@ -65,7 +65,8 @@
         <div id="google_translate_element"></div>
       </div>
 
-      <a href="KONTAKT.html" class="btn-nav" id="txtBtnContact">📩 Podrška & Kontakt</a>
+      <a href="O_NAMA.html" class="btn-nav" id="txtBtnAbout">ℹ️ O nama</a>
+      <a href="KONTAKT.html" class="btn-nav" id="txtBtnContact">📩 Podrška</a>
       <button class="btn-nav btn-logout" onclick="odjava()" id="txtBtnLogout">🚪 Odjava</button>
     </div>
   </header>
@@ -75,7 +76,7 @@
     <div class="welcome-card">
       <div class="welcome-text">
         <h1 id="txtWelcome">Dobrodošli nazad! 👋</h1>
-        <p id="txtSubWelcome">Pronađite srodnu dušu i započnite novi razgovor već danas.</p>
+        <p id="txtSubWelcome">Upravljajte svojim projektima, dokumentima i poslovnom mrežom na jednom mjestu.</p>
       </div>
       <div class="user-badge" id="lblUserEmail">Učitavanje profila...</div>
     </div>
@@ -85,67 +86,73 @@
       <a href="PROFIL.html" class="dash-tile">
         <div class="icon">👤</div>
         <h3>Moj Profil</h3>
-        <p>Uredite svoje podatke, fotografije i postavke privatnosti.</p>
+        <p>Uredite svoje poslovne podatke, CV i postavke naloga.</p>
+      </a>
+
+      <a href="NETWORKING.html" class="dash-tile">
+        <div class="icon">🤝</div>
+        <h3>Poslovni Networking</h3>
+        <p>Upoznajte partnere, saradnike i proširite svoju profesionalnu mrežu.</p>
       </a>
 
       <a href="PRETRAGA.html" class="dash-tile">
         <div class="icon">🔍</div>
-        <h3>Pretraga Profila</h3>
-        <p>Pronađite članove prema godinama, lokaciji i interesovanjima.</p>
+        <h3>Pretraga Baze</h3>
+        <p>Pronađite članove, kompanije, resurse i prilike za saradnju.</p>
       </a>
 
       <a href="FORUM.html" class="dash-tile">
         <div class="icon">🗣️</div>
-        <h3>Forum</h3>
-        <p>Diskutujte o temama, dijelite iskustva i postavljajte pitanja.</p>
-      </a>
-
-      <a href="ZABAVA.html" class="dash-tile">
-        <div class="icon">🎉</div>
-        <h3>Zabava i Zanimljivosti</h3>
-        <p>Pročitajte zanimljive članke, viceve i opustite se uz zabavan sadržaj.</p>
+        <h3>Poslovni Forum</h3>
+        <p>Diskutujte o projektima, tehnologijama i razmjenjujte iskustva.</p>
       </a>
 
       <a href="PORUKE.html" class="dash-tile">
         <div class="icon">💬</div>
-        <h3>Poruke & Dopisivanje</h3>
-        <p>Pregledajte vaše aktivne razgovore i nove poruke.</p>
+        <h3>Poruke & Chat</h3>
+        <p>Pregledajte vaše aktivne poslovne razgovore i dogovore.</p>
       </a>
+
+      <div class="dash-tile" onclick="otvoriModalDokumenata()">
+        <div class="icon">📁</div>
+        <h3>Dokumenti i Alati</h3>
+        <p>Otvorite meni za Word, Excel, PowerPoint i dokumente iz foldera DOCS.</p>
+      </div>
 
       <a href="INTERVJU.html" class="dash-tile">
         <div class="icon">🎙️</div>
-        <h3>AI Vježba Intervjua</h3>
-        <p>Vježbajte intervjue i konverzaciju sa AI asistentom uz naplatu po karakteru.</p>
+        <h3>AI Asistent i Intervjui</h3>
+        <p>Vježbajte poslovnu konverzaciju i koristite AI alate za automatizaciju.</p>
       </a>
 
       <a href="JEZICI.html" class="dash-tile">
         <div class="icon">🎓</div>
         <h3>Učenje Jezika</h3>
-        <p>Vježbajte strane jezike sa AI Profesorom kroz lekcije i konverzaciju.</p>
+        <p>Usavršite strane jezike uz AI profesora za poslovnu komunikaciju.</p>
       </a>
 
       <a href="POSAO.html" class="dash-tile">
         <div class="icon">💼</div>
-        <h3>Posao & Karijera</h3>
-        <p>Pregledajte ponude za posao, oglase i prilike za saradnju.</p>
+        <h3>Poslovi & Oglasi</h3>
+        <p>Pregledajte ponude za posao, projekte i investicione prilike.</p>
+      </a>
+
+      <a href="ZABAVA.html" class="dash-tile">
+        <div class="icon">🎉</div>
+        <h3>Kutak za Odmor</h3>
+        <p>Opustite se uz zanimljive članke i sadržaj van posla.</p>
       </a>
 
       <a href="TEST.html" class="dash-tile">
         <div class="icon">🧪</div>
-        <h3>Test & Provjera</h3>
-        <p>Pokrenite testove kompatibilnosti, vještina ili sistemske provjere.</p>
+        <h3>Test & Sistemske Provjere</h3>
+        <p>Pokrenite testove kompatibilnosti, sistemske dijagnostike i vještina.</p>
       </a>
-
-      <div class="dash-tile" onclick="otvoriModalDokumenata()">
-        <div class="icon">📁</div>
-        <h3>Dokumenti</h3>
-        <p>Otvorite meni za Word, Excel i PowerPoint dokumente iz foldera DOCS.</p>
-      </div>
 
       <a href="KONTAKT.html" class="dash-tile">
         <div class="icon">📩</div>
         <h3>Korisnička Podrška</h3>
-        <p>Imate pitanje ili problem? Javite se našem timu.</p>
+        <p>Imate pitanje, prijedlog ili problem? Kontaktirajte tim.</p>
       </a>
 
     </div>
@@ -183,7 +190,7 @@
   </div>
 
   <footer>
-    <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
+    <p>© 2026 DocBizHub. Sva prava zadržana.</p>
   </footer>
 
   <script type="text/javascript">
