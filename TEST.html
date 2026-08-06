@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test & Sistemske Provjere</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --primary-color: #4f46e5;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --border-color: #e5e7eb;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1f2937;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        .card p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            margin-top: 15px;
+        }
+        button:hover {
+            background-color: #4338ca;
+        }
+        .status-box {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            background: #f3f4f6;
+            word-break: break-all;
+            display: none;
+        }
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Test & Sistemske Provjere</h1>
+    
+    <div class="grid">
+        <!-- Test 1: Provjera Supabase Konekcije -->
+        <div class="card">
+            <div>
+                <h3>Supabase Konekcija</h3>
+                <p>Provjerava da li je aplikacija uspješno povezana sa Supabase serverom i bazom.</p>
+            </div>
+            <div>
+                <button onclick="testSupabase()">Pokreni Test</button>
+                <div id="status-supabase" class="status-box">Testiram...</div>
+            </div>
+        </div>
+
+        <!-- Test 2: Provjera Edge Funkcije PRETRAGA -->
+        <div class="card">
+            <div>
+                <h3>Test Edge Funkcije (Pretraga)</h3>
+                <p>Šalje probni upit prema pretrazi da provjeri odziv i ispravnost podataka.</p>
+            </div>
+            <div>
+                <button onclick="testPretragaFunkcija()">Pokreni Test</button>
+                <div id="status-pretraga" class="status-box">Testiram...</div>
+            </div>
+        </div>
+
+        <!-- Test 3: Provjera Lokalne Memorije (LocalStorage) -->
+        <div class="card">
+            <div>
+                <h3>Lokalna Memorija (Storage)</h3>
+                <p>Provjerava da li preglednik dozvoljava čuvanje podešavanja i keš memorije.</p>
+            </div>
+            <div>
+                <button onclick="testStorage()">Pokreni Test</button>
+                <div id="status-storage" class="status-box">Testiram...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Unesi svoje Supabase podatke ovdje ako želiš direktan test
+    const SUPABASE_URL = "https://uduvpvdjmanrgpumdrfh.supabase.co"; 
+
+    async function testSupabase() {
+        const box = document.getElementById('status-supabase');
+        box.style.display = 'block';
+        box.className = 'status-box';
+        box.innerText = "Provjeravam konekciju sa Supabase...";
+
+        try {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+                headers: { "apikey": "public-anon-key-placeholder" }
+            });
+            // Ako server odgovori (čak i sa 401/404), znači da je online i dostupan
+            box.className = 'status-box success';
+            box.innerText = "Uspješno: Supabase server je aktivan i dostupan!";
+        } catch (err) {
+            box.className = 'status-box error';
+            box.innerText = "Greška: Konekcija nije uspjela. " + err.message;
+        }
+    }
+
+    async function testPretragaFunkcija() {
+        const box = document.getElementById('status-pretraga');
+        box.style.display = 'block';
+        box.className = 'status-box';
+        box.innerText = "Šaljem probni zahtjev na funkciju...";
+
+        try {
+            const res = await fetch(`${SUPABASE_URL}/functions/v1/PRETRAGA`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ pojam: "Test Firma" })
+            });
+            
+            const data = await res.json();
+            if (res.ok) {
+                box.className = 'status-box success';
+                box.innerText = "Uspješno! Funkcija radi i vraća ispravan odgovor.";
+            } else {
+                box.className = 'status-box error';
+                box.innerText = "Server vratio grešku: " + (data.error || JSON.stringify(data));
+            }
+        } catch (err) {
+            box.className = 'status-box error';
+            box.innerText = "Greška u pozivu: " + err.message;
+        }
+    }
+
+    function testStorage() {
+        const box = document.getElementById('status-storage');
+        box.style.display = 'block';
+        try {
+            localStorage.setItem("test_kljuc", "vrijednost");
+            const val = localStorage.getItem("test_kljuc");
+            localStorage.removeItem("test_kljuc");
+            
+            if (val === "vrijednost") {
+                box.className = 'status-box success';
+                box.innerText = "Uspješno: LocalStorage radi bez problema.";
+            } else {
+                throw new Error("Podatak nije sačuvan ispravno.");
+            }
+        } catch (err) {
+            box.className = 'status-box error';
+            box.innerText = "Greška: Memorija je blokirana. " + err.message;
+        }
+    }
+</script>
+
+</body>
+</html>
