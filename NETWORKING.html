@@ -15,6 +15,11 @@
     .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
 
     .nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    
+    /* Vraćen Google Translate stil */
+    .lang-wrapper { display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 10px; border-radius: 20px; border: 2px solid #3742fa; }
+    #google_translate_element select { padding: 4px 8px; border: none; background: transparent; font-weight: bold; font-size: 0.85rem; color: #2b2d42; outline: none; cursor: pointer; }
+
     .btn-nav { background: #3742fa; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
     .btn-nav:hover { background: #2f3542; }
 
@@ -29,8 +34,8 @@
 
     .networking-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
     
-    /* Eksplicitno definisana visina i layout kartice da se dugmad ugradi stopostotno */
-    .member-card { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e1e4e8; display: flex; flex-direction: column; justify-content: space-between; gap: 15px; }
+    /* Kartica sa osiguranim prostorom za dugmad na dnu */
+    .member-card { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e1e4e8; display: flex; flex-direction: column; justify-content: space-between; gap: 15px; min-height: 200px; }
     .member-card:hover { box-shadow: 0 8px 20px rgba(55, 66, 250, 0.15); border-color: #3742fa; }
     
     .member-info { text-decoration: none; color: #2b2d42; display: flex; flex-direction: column; gap: 6px; }
@@ -39,9 +44,9 @@
     
     .member-badge { display: inline-block; background: #e0e0ff; color: #3742fa; padding: 3px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; align-self: flex-start; }
 
-    /* Stilovi za dugmad na dnu svake kartice */
-    .card-actions { display: flex; gap: 10px; border-top: 2px solid #f1f2f6; padding-top: 12px; }
-    .btn-card { flex: 1; text-align: center; background: #f1f2f6; color: #2b2d42; text-decoration: none; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; border: 1px solid #dcdde1; transition: background 0.2s; }
+    /* Izričito vidljiva dugmad na dnu kartice */
+    .card-actions { display: flex; gap: 10px; border-top: 2px solid #f1f2f6; padding-top: 12px; margin-top: auto; }
+    .btn-card { flex: 1; text-align: center; background: #f1f2f6; color: #2b2d42; text-decoration: none; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; border: 1px solid #dcdde1; transition: background 0.2s; display: inline-block; }
     .btn-card:hover { background: #ced6e0; }
     .btn-chat { background: #3742fa; color: #fff; border-color: #3742fa; }
     .btn-chat:hover { background: #2f3542; }
@@ -53,7 +58,14 @@
 
   <header>
     <a href="DASHBOARD.html" class="logo">🚀 DocBizHub</a>
+
     <div class="nav-actions">
+      <!-- Google Translate dodatak vraćen nazad -->
+      <div class="lang-wrapper">
+        <span>🌐</span>
+        <div id="google_translate_element"></div>
+      </div>
+
       <a href="DASHBOARD.html" class="btn-nav">🏠 Početna</a>
       <a href="PROFIL.html" class="btn-nav">👤 Moj Profil</a>
     </div>
@@ -77,6 +89,18 @@
   <footer>
     <p>© 2026 DocBizHub. Sva prava zadržana.</p>
   </footer>
+
+  <!-- Google Translate skripta -->
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'bs',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+        autoDisplay: false
+      }, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
   <script>
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
