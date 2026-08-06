@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Forum | LjubavNaPrviKlik</title>
+  <title>Forum | DocBizHub</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
@@ -11,6 +11,8 @@
     function googleTranslateElementInit() {
       new google.translate.TranslateElement({
         pageLanguage: 'bs',
+        includedLanguages: 'bs,en,de,fr,tr,es,it,ar,zh-CN,ru',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
         autoDisplay: false
       }, 'google_translate_element');
     }
@@ -19,9 +21,8 @@
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; top: 0 !important; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; top: 0 !important; }
 
-    /* Sakrivanje ružne Google trake na vrhu */
     .goog-te-banner-frame, .skiptranslate, #google_translate_element { display: none !important; }
     body { top: 0px !important; }
 
@@ -29,8 +30,8 @@
     .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
 
     .nav-actions { display: flex; align-items: center; gap: 12px; }
-    .btn-nav { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
-    .btn-nav:hover { background: #ef233c; }
+    .btn-nav { background: #3742fa; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
+    .btn-nav:hover { background: #2f3542; }
 
     /* PADAJUĆI MENI ZA JEZIKE */
     .lang-dropdown-wrapper { position: relative; display: inline-block; }
@@ -40,7 +41,7 @@
       font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px;
       transition: background 0.2s;
     }
-    .lang-btn:hover { background: #d90429; border-color: #d90429; }
+    .lang-btn:hover { background: #3742fa; border-color: #3742fa; }
 
     .lang-dropdown-menu {
       display: none; position: absolute; right: 0; top: 115%;
@@ -54,36 +55,36 @@
       width: 100%; padding: 8px 12px; border: 1px solid #ccc;
       border-radius: 8px; font-size: 0.85rem; outline: none;
     }
-    .lang-search-box input:focus { border-color: #d90429; }
+    .lang-search-box input:focus { border-color: #3742fa; }
 
     .lang-list { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
     .lang-option {
       padding: 8px 12px; border-radius: 6px; font-size: 0.85rem;
       color: #2b2d42; cursor: pointer; transition: background 0.2s;
     }
-    .lang-option:hover { background: #ffe0e3; color: #d90429; font-weight: bold; }
+    .lang-option:hover { background: #e0e0ff; color: #3742fa; font-weight: bold; }
 
     .main-container { flex: 1; padding: 30px 20px; max-width: 900px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
 
     /* Forma za kreiranje objave */
-    .create-post-card { background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #ffccd5; }
-    .create-post-card h2 { color: #800020; margin-bottom: 15px; font-size: 1.3rem; }
+    .create-post-card { background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #b8bfff; }
+    .create-post-card h2 { color: #1e1f29; margin-bottom: 15px; font-size: 1.3rem; }
     
     .form-group { margin-bottom: 12px; }
     .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1px solid #ccc; border-radius: 10px; font-family: inherit; font-size: 0.95rem; outline: none; }
     .form-group textarea { resize: vertical; min-height: 80px; }
     
-    .btn-submit { background: #d90429; color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-    .btn-submit:hover { background: #ef233c; }
+    .btn-submit { background: #3742fa; color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+    .btn-submit:hover { background: #2f3542; }
 
     /* Lista objava */
     .forum-feed { display: flex; flex-direction: column; gap: 20px; }
     
     .post-card { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; }
     .post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; }
-    .post-author { font-weight: bold; color: #d90429; font-size: 0.95rem; }
+    .post-author { font-weight: bold; color: #3742fa; font-size: 0.95rem; }
     .post-time { font-size: 0.75rem; color: #888; }
-    .post-category { background: #ffe0e3; color: #800020; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-weight: bold; }
+    .post-category { background: #e0e0ff; color: #3742fa; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-weight: bold; }
     .post-title { font-size: 1.2rem; color: #2b2d42; margin-bottom: 8px; }
     .post-content { font-size: 0.95rem; color: #444; line-height: 1.5; margin-bottom: 15px; }
 
@@ -106,14 +107,14 @@
     /* NOTIFIKACIJA U GORNJEM DESNOM UGLU */
     .notification-toast {
       position: fixed; top: 25px; right: 25px; background: #2b2d42; color: #fff;
-      padding: 14px 20px; border-radius: 12px; border-left: 5px solid #d90429;
+      padding: 14px 20px; border-radius: 12px; border-left: 5px solid #3742fa;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center;
       gap: 12px; z-index: 9999; opacity: 0; transform: translateY(-20px);
       transition: all 0.4s ease; pointer-events: none;
     }
     .notification-toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
     .notification-icon { font-size: 1.4rem; }
-    .notification-body strong { display: block; color: #ffccd5; font-size: 0.85rem; }
+    .notification-body strong { display: block; color: #b8bfff; font-size: 0.85rem; }
     .notification-body p { font-size: 0.8rem; margin-top: 2px; }
 
     footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
@@ -124,7 +125,7 @@
   <div id="google_translate_element"></div>
 
   <header>
-    <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik - Forum</a>
+    <a href="DASHBOARD.html" class="logo">🚀 DocBizHub - Poslovni Forum</a>
 
     <div class="nav-actions">
       <div class="lang-dropdown-wrapper" id="langDropdownWrapper">
@@ -153,40 +154,41 @@
   <div id="toastNotification" class="notification-toast">
     <div class="notification-icon">🔔</div>
     <div class="notification-body">
-      <strong id="toastTitle">Novi komentar!</strong>
-      <p id="toastMessage">Neko je upravo odgovorio na forumu.</p>
+      <strong id="toastTitle">Novi sadržaj!</strong>
+      <p id="toastMessage">Neko je upravo objavio na forumu.</p>
     </div>
   </div>
 
   <div class="main-container">
 
     <div class="create-post-card">
-      <h2>🗣️ Započni novu temu na forumu</h2>
+      <h2>🗣️ Započni novu poslovnu temu</h2>
       <div class="form-group">
-        <input type="text" id="postTitleInput" placeholder="Naslov teme..." />
+        <input type="text" id="postTitleInput" placeholder="Naslov teme ili projekta..." />
       </div>
       <div class="form-group">
         <select id="postCategorySelect">
-          <option value="Ljubav & Veze">❤️ Ljubav & Veze</option>
-          <option value="Savjeti">💡 Savjeti</option>
+          <option value="Biznis & Strategija">📈 Biznis & Strategija</option>
+          <option value="AI & Automatizacija">🤖 AI & Automatizacija</option>
+          <option value="Razvoj Projekata">💡 Razvoj Projekata</option>
+          <option value="Networking">🤝 Networking & Partnerstva</option>
           <option value="Opšte diskusije">💬 Opšte diskusije</option>
-          <option value="Zabava">🎉 Zabava</option>
         </select>
       </div>
       <div class="form-group">
-        <textarea id="postContentInput" placeholder="Napišite vašu poruku ili pitanje..."></textarea>
+        <textarea id="postContentInput" placeholder="Napišite vašu ideju, pitanje ili ponudu za saradnju..."></textarea>
       </div>
       <button class="btn-submit" onclick="objaviTemu()">Objavi temu 🚀</button>
     </div>
 
     <div class="forum-feed" id="forumFeed">
-      <div style="text-align:center; color:#888; padding:20px;">Učitavanje teme sa foruma...</div>
+      <div style="text-align:center; color:#888; padding:20px;">Učitavanje tema sa foruma...</div>
     </div>
 
   </div>
 
   <footer>
-    <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
+    <p>© 2026 DocBizHub. Sva prava zadržana.</p>
   </footer>
 
   <script>
@@ -198,7 +200,6 @@
     let korisnikIme = "Član";
     let jePrvoUcitavanje = true;
 
-    // SVI SVJETSKI JEZICI
     const SVI_JEZICI = [
       { kod: 'bs', ime: 'Bosanski' },
       { kod: 'hr', ime: 'Hrvatski' },
@@ -211,37 +212,13 @@
       { kod: 'ru', ime: 'Русский (Ruski)' },
       { kod: 'tr', ime: 'Türkçe (Turski)' },
       { kod: 'ar', ime: 'العربية (Arapski)' },
-      { kod: 'zh-CN', ime: '中文 (Kineski)' },
-      { kod: 'ja', ime: '日本語 (Japanski)' },
-      { kod: 'pt', ime: 'Português (Portugalski)' },
-      { kod: 'nl', ime: 'Nederlands (Holandski)' },
-      { kod: 'pl', ime: 'Polski (Poljski)' },
-      { kod: 'uk', ime: 'Українська (Ukrajinski)' },
-      { kod: 'sv', ime: 'Svenska (Švedski)' },
-      { kod: 'no', ime: 'Norsk (Norveški)' },
-      { kod: 'fi', ime: 'Suomi (Finski)' },
-      { kod: 'da', ime: 'Dansk (Danski)' },
-      { kod: 'el', ime: 'Ελληνικά (Grčki)' },
-      { kod: 'hu', ime: 'Magyar (Mađarski)' },
-      { kod: 'ro', ime: 'Română (Rumunski)' },
-      { kod: 'bg', ime: 'Български (Bugarski)' },
-      { kod: 'cs', ime: 'Čeština (Češki)' },
-      { kod: 'sk', ime: 'Slovenčina (Slovački)' },
-      { kod: 'sl', ime: 'Slovenščina (Slovenski)' },
-      { kod: 'sq', ime: 'Shqip (Albanski)' },
-      { kod: 'mk', ime: 'Makedonski' }
+      { kod: 'zh-CN', ime: '中文 (Kineski)' }
     ];
 
     function popuniListuJezika(lista) {
       const listEl = document.getElementById('langList');
       if (!listEl) return;
       listEl.innerHTML = '';
-
-      if (lista.length === 0) {
-        listEl.innerHTML = '<div style="padding:10px; font-size:0.8rem; color:#888; text-align:center;">Nema rezultata...</div>';
-        return;
-      }
-
       lista.forEach(j => {
         const opt = document.createElement('div');
         opt.className = 'lang-option';
@@ -257,17 +234,7 @@
     function toggleLangMenu(e) {
       if (e) e.stopPropagation();
       const menu = document.getElementById('langDropdownMenu');
-      if (!menu) return;
-      menu.classList.toggle('show');
-
-      if (menu.classList.contains('show')) {
-        const searchInput = document.getElementById('langSearchInput');
-        if (searchInput) {
-          searchInput.value = '';
-          popuniListuJezika(SVI_JEZICI);
-          setTimeout(() => searchInput.focus(), 100);
-        }
-      }
+      if (menu) menu.classList.toggle('show');
     }
 
     function filtrirajJezike(e) {
@@ -320,7 +287,6 @@
         const { data: { user } } = await _supabase.auth.getUser();
         if (user) {
           trenutniKorisnik = user;
-          
           const { data: profile } = await _supabase
             .from('UPOZNAVANJ_KORISNICI')
             .select('IME')
@@ -337,15 +303,39 @@
         console.warn("Greška pri dohvaćanju profila:", e);
       }
 
+      // Provjera i automatsko pokretanje AI biznis teme svaka 2 dana
+      provjeriIPokreniGroqBiznisTemu();
+
       await ucitajSveTeme();
       jePrvoUcitavanje = false;
       slusajPromjeneNaForumu();
     }
 
-    // ČISTO I PROVJERENO UČITAVANJE TEME IZ TVOJE TABELE
+    // AUTOMATSKA PROVJERA DA GROQ ZAPOČNE NOVU BIZNIS TEMU SVAKA 2 DANA
+    async function provjeriIPokreniGroqBiznisTemu() {
+      try {
+        const zadnjaAIObjavaKey = 'docbizhub_zadnji_ai_biznis_post';
+        const zadnjeVrijeme = localStorage.getItem(zadnjaAIObjavaKey);
+        const sad = new Date().getTime();
+        const dvaDanaMs = 2 * 24 * 60 * 60 * 1000; // 48 sati
+
+        // Ako je prošlo više od 2 dana ili nikad nije pokrenuto u lokalnoj memoriji
+        if (!zadnjeVrijeme || (sad - parseInt(zadnjeVrijeme)) > dvaDanaMs) {
+          console.log("Pokrećem Groq AI da generiše novu dvodnevnu biznis temu...");
+          
+          await _supabase.functions.invoke('zapocni-biznis-temu-ai', {
+            body: { tip: 'dvodnevna_biznis_tema' }
+          });
+
+          localStorage.setItem(zadnjaAIObjavaKey, String(sad));
+        }
+      } catch (e) {
+        console.warn("Automatsko pokretanje AI teme u pozadini:", e);
+      }
+    }
+
     async function ucitajSveTeme() {
       if (!_supabase) return;
-
       const feedEl = document.getElementById('forumFeed');
 
       try {
@@ -357,7 +347,7 @@
         feedEl.innerHTML = '';
 
         if (error || !postovi || postovi.length === 0) {
-          feedEl.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">Trenutno nema objavljenih tema. Budi prvi koji će započeti diskusiju!</div>';
+          feedEl.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">Trenutno nema objavljenih tema. Započnite prvu poslovnu diskusiju!</div>';
           return;
         }
 
@@ -390,7 +380,7 @@
                 <span class="post-author">👤 ${post.autor_ime || 'Član'}</span>
                 <span class="post-time">• ${datum}</span>
               </div>
-              <span class="post-category">${post.kategorija || 'Opšte'}</span>
+              <span class="post-category">${post.kategorija || 'Biznis'}</span>
             </div>
             <h3 class="post-title">${post.naslov || post.sadrzaj}</h3>
             <div class="post-content">${post.sadrzaj}</div>
@@ -398,7 +388,7 @@
             <div class="comments-section">
               <div class="comments-title">💬 Komentari (${komentari.length})</div>
               <div class="comment-list" id="comments-list-${post.id}">
-                ${komentariHtml || '<div style="color:#aaa; font-style:italic; font-size:0.8rem;">Nema komentara. Napišite prvi komentar!</div>'}
+                ${komentariHtml || '<div style="color:#aaa; font-style:italic; font-size:0.8rem;">Nema komentara. Budite prvi koji će prokomentarisati!</div>'}
               </div>
               <div class="add-comment-box">
                 <input type="text" id="comment-input-${post.id}" placeholder="Napišite komentar..." onkeypress="if(event.key==='Enter') dodajKomentar('${post.id}')">
@@ -506,7 +496,7 @@
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'FORUM_POSTOVI' }, payload => {
           ucitajSveTeme();
           if (!jePrvoUcitavanje && payload.new.autor_ime !== korisnikIme) {
-            prikaziNotifikaciju("🗣️ Nova tema na forumu!", `${payload.new.autor_ime}: ${payload.new.naslov}`);
+            prikaziNotifikaciju("🗣️ Nova biznis tema!", `${payload.new.autor_ime}: ${payload.new.naslov}`);
           }
         }).subscribe();
 
