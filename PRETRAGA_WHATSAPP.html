@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pretraga, AI Lektorisanje i Slanje - DocBizHub (Verzija 13)</title>
+    <title>Pretraga, AI Lektorisanje i Slanje - DocBizHub (Verzija 14)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
         .container { max-width: 1300px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .version-badge { background: #d90429; color: #fff; padding: 4px 12px; border-radius: 6px; font-size: 0.9rem; font-weight: bold; margin-left: 10px; display: inline-block; }
-        h2 { color: #3742fa; border-bottom: 2px solid #eee; padding-bottom: 10px; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+        h2 { color: #3742fa; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         .section { margin-bottom: 25px; padding: 15px; background: #fafafa; border: 1px solid #e1e1e1; border-radius: 6px; }
         label { font-weight: bold; display: block; margin-bottom: 5px; }
         select, input[type="text"], textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: inherit; }
         textarea { resize: vertical; min-height: 100px; }
+        
+        .action-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 5px; }
         button { background-color: #3742fa; color: white; border: none; padding: 10px 20px; font-size: 14px; border-radius: 4px; cursor: pointer; }
         button:hover { background-color: #2f3542; }
+        
+        .version-badge { background: #d90429; color: #fff; padding: 8px 14px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; display: inline-block; }
+
         table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff; }
         th, td { border: 1px solid #dddddd; text-align: left; padding: 10px; font-size: 14px; }
         th { background-color: #3742fa; color: white; }
@@ -29,16 +33,16 @@
 <body>
 
 <div class="container">
-    <h2>
-        <span>Upravljanje, Pretraga, AI Lektorisanje i Slanje</span>
-        <span class="version-badge">Verzija 13</span>
-    </h2>
+    <h2>Upravljanje, Pretraga, AI Lektorisanje i Slanje</h2>
 
     <div class="section">
         <h3>✨ AI Lektor i Prepravka Teksta</h3>
         <label for="AI_INPUT_TEKST">Unesite tekst koji želite da AI prepravi i poboljša:</label>
         <textarea id="AI_INPUT_TEKST" placeholder="Napišite tekst ovdje..."></textarea>
-        <button onclick="LEKTORISI_TEKST()">🤖 Prepravi i Lektoriši tekst</button>
+        <div class="action-row">
+            <button onclick="LEKTORISI_TEKST()">🤖 Prepravi i Lektoriši tekst</button>
+            <span class="version-badge">Verzija 14 (Lektor)</span>
+        </div>
         <div id="AI_STATUS"></div>
         <div id="AI_REZULTAT_WRAP" style="display:none;">
             <label style="margin-top: 15px;">Prepravljeni tekst:</label>
@@ -57,7 +61,10 @@
     <div class="section">
         <h3>2. Pretraga i generisanje podataka (Google Web)</h3>
         <input type="text" id="SEARCH_INPUT" placeholder="Unesite kriterijum (npr. Mašinske firme Tuzla)..." onkeypress="HANDLE_KEY_PRESS(event)">
-        <button onclick="PRETRAZI_I_PAMETNO_UPISI()">Pokreni Pretragu i Snimi</button>
+        <div class="action-row">
+            <button onclick="PRETRAZI_I_PAMETNO_UPISI()">Pokreni Pretragu i Snimi</button>
+            <span class="version-badge">Verzija 14 (Pretraga)</span>
+        </div>
         <div id="STATUS_PORUKA"></div>
     </div>
 
