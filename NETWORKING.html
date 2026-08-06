@@ -33,7 +33,7 @@
 
     .networking-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
     
-    /* Osigurane dimenzije kartice da dugmad moraju stati */
+    /* Definisana visina i fleksibilan raspored kartice */
     .member-card { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e1e4e8; display: flex; flex-direction: column; justify-content: space-between; gap: 15px; }
     
     .member-info { text-decoration: none; color: #2b2d42; display: flex; flex-direction: column; gap: 6px; }
@@ -42,8 +42,8 @@
     
     .member-badge { display: inline-block; background: #e0e0ff; color: #3742fa; padding: 3px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; align-self: flex-start; }
 
-    /* Direktno vidljiva dugmad unutar kartice */
-    .card-actions { display: flex; gap: 10px; border-top: 2px solid #f1f2f6; padding-top: 12px; width: 100%; }
+    /* Stilovi za dugmad na dnu */
+    .card-actions { display: flex; gap: 10px; border-top: 2px solid #f1f2f6; padding-top: 12px; width: 100%; margin-top: auto; }
     .btn-card { flex: 1; text-align: center; background: #f1f2f6; color: #2b2d42; text-decoration: none; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; border: 1px solid #dcdde1; display: inline-block; }
     .btn-card:hover { background: #ced6e0; }
     .btn-chat { background: #3742fa; color: #fff; border-color: #3742fa; }
