@@ -16,7 +16,7 @@
 
     .nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     
-    /* Vraćen Google Translate stil */
+    /* Google Translate stil identičan početnoj stranici */
     .lang-wrapper { display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 10px; border-radius: 20px; border: 2px solid #3742fa; }
     #google_translate_element select { padding: 4px 8px; border: none; background: transparent; font-weight: bold; font-size: 0.85rem; color: #2b2d42; outline: none; cursor: pointer; }
 
@@ -34,8 +34,8 @@
 
     .networking-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
     
-    /* Kartica sa osiguranim prostorom za dugmad na dnu */
-    .member-card { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e1e4e8; display: flex; flex-direction: column; justify-content: space-between; gap: 15px; min-height: 200px; }
+    /* Kartica dizajnirana da obavezno prikaže dugmad na dnu */
+    .member-card { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e1e4e8; display: flex; flex-direction: column; justify-content: space-between; gap: 15px; min-height: 210px; }
     .member-card:hover { box-shadow: 0 8px 20px rgba(55, 66, 250, 0.15); border-color: #3742fa; }
     
     .member-info { text-decoration: none; color: #2b2d42; display: flex; flex-direction: column; gap: 6px; }
@@ -44,7 +44,7 @@
     
     .member-badge { display: inline-block; background: #e0e0ff; color: #3742fa; padding: 3px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; align-self: flex-start; }
 
-    /* Izričito vidljiva dugmad na dnu kartice */
+    /* Vidljiva dugmad */
     .card-actions { display: flex; gap: 10px; border-top: 2px solid #f1f2f6; padding-top: 12px; margin-top: auto; }
     .btn-card { flex: 1; text-align: center; background: #f1f2f6; color: #2b2d42; text-decoration: none; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; border: 1px solid #dcdde1; transition: background 0.2s; display: inline-block; }
     .btn-card:hover { background: #ced6e0; }
@@ -60,7 +60,7 @@
     <a href="DASHBOARD.html" class="logo">🚀 DocBizHub</a>
 
     <div class="nav-actions">
-      <!-- Google Translate dodatak vraćen nazad -->
+      <!-- Google Translate widget vraćen na pravo mjesto -->
       <div class="lang-wrapper">
         <span>🌐</span>
         <div id="google_translate_element"></div>
@@ -90,7 +90,7 @@
     <p>© 2026 DocBizHub. Sva prava zadržana.</p>
   </footer>
 
-  <!-- Google Translate skripta -->
+  <!-- Google Translate Skripta -->
   <script type="text/javascript">
     function googleTranslateElementInit() {
       new google.translate.TranslateElement({
