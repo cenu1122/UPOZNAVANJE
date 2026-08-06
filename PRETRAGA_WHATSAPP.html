@@ -30,7 +30,6 @@
 <div class="container">
     <h2>Upravljanje, Pretraga, AI Lektorisanje i Slanje</h2>
 
-    <!-- SEKCIJA 1: AI PREPRAVLJANJE TEKSTA -->
     <div class="section">
         <h3>✨ AI Lektor i Prepravka Teksta</h3>
         <label for="AI_INPUT_TEKST">Unesite tekst koji želite da AI prepravi i poboljša:</label>
@@ -43,7 +42,6 @@
         </div>
     </div>
 
-    <!-- SEKCIJA 2: IZBOR PRIMAOCA -->
     <div class="section">
         <h3>1. Izaberite primaoca poruke</h3>
         <label for="KORISNIK_SELECT">Izaberite korisnika i broj:</label>
@@ -52,7 +50,6 @@
         </select>
     </div>
 
-    <!-- SEKCIJA 3: PRETRAGA FIRMI -->
     <div class="section">
         <h3>2. Pretraga i generisanje podataka (Google Web)</h3>
         <input type="text" id="SEARCH_INPUT" placeholder="Unesite kriterijum (npr. Mašinske firme Tuzla)..." onkeypress="HANDLE_KEY_PRESS(event)">
@@ -60,7 +57,6 @@
         <div id="STATUS_PORUKA"></div>
     </div>
 
-    <!-- SEKCIJA 4: REZULTATI -->
     <div class="section">
         <h3>3. Rezultati pretrage (Excel format)</h3>
         <table id="REZULTATI_TABELA">
@@ -112,7 +108,6 @@
 
     UCITAJ_KORISNIKE();
 
-    // FUNKCIJA ZA AI LEKTORISANJE I PREPRAVKU TEKSTA
     async function LEKTORISI_TEKST() {
         const TEKST_INPUT = document.getElementById('AI_INPUT_TEKST').value.trim();
         const STATUS_DIV = document.getElementById('AI_STATUS');
@@ -124,32 +119,27 @@
             return;
         }
 
-        STATUS_DIV.textContent = "AI lektorisanjem obrađuje tekst... Molimo sačekajte.";
+        STATUS_DIV.textContent = "AI obrađuje tekst... Molimo sačekajte.";
         REZULTAT_WRAP.style.display = 'none';
 
         try {
-            const response = await fetch(`${SUPABASE_URL}/functions/v1/LEKTOR`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                },
-                body: JSON.stringify({ tekst: TEKST_INPUT })
+            const { data, error } = await _SUPABASE.functions.invoke('PRETRAGA', {
+                body: { pojam: "Lektoriši i poboljšaj ovaj tekst: " + TEKST_INPUT }
             });
 
-            if (!response.ok) {
-                throw new Error("Greška pri pozivanju AI servisa za lektorisanje.");
+            if (error) throw error;
+
+            let rezultat = "";
+            if (data && data.choices) {
+                rezultat = data.choices[0].message.content;
+            } else {
+                rezultat = JSON.stringify(data);
             }
 
-            const data = await response.json();
-            let poboljsaniTekst = data.prepravljeniTekst || data.choices?.[0]?.message?.content || "Greška pri čitanju odgovora.";
-
-            REZULTAT_TEKST.textContent = poboljsaniTekst;
+            REZULTAT_TEKST.textContent = rezultat;
             REZULTAT_WRAP.style.display = 'block';
-            STATUS_DIV.textContent = "Tekst je uspješno prepravljen i lektorisan!";
-
+            STATUS_DIV.textContent = "Tekst uspješno lektorisan!";
         } catch (err) {
-            console.error("AI Greška:", err);
             STATUS_DIV.textContent = "Greška: " + err.message;
         }
     }
@@ -164,31 +154,22 @@
             return;
         }
 
-        TBODY.innerHTML = '<tr><td colspan="6" style="text-align:center;">Pretražujem bazu... Molimo sačekajte.</td></tr>';
+        TBODY.innerHTML = '<tr><td colspan="6" style="text-align:center;">Pretražujem preko Edge funkcije i Google-a... Molimo sačekajte.</td></tr>';
         STATUS_DIV.textContent = "Pretraga u toku...";
 
         try {
-            const response = await fetch(`${SUPABASE_URL}/functions/v1/PRETRAGA`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                },
-                body: JSON.stringify({ pojam: POJAM })
+            // Korišćenje zvanične Supabase metode .functions.invoke koja automatski rješava tokene i antetete
+            const { data, error } = await _SUPABASE.functions.invoke('PRETRAGA', {
+                body: { pojam: POJAM }
             });
 
-            if (!response.ok) {
-                const errText = await response.text();
-                throw new Error(`Server je vratio grešku (${response.status}): ${errText || 'Edge funkcija nije podešena.'}`);
-            }
+            if (error) throw error;
 
-            const funkcijaData = await response.json();
             let items = [];
-            
-            if (Array.isArray(funkcijaData)) {
-                items = funkcijaData;
-            } else if (funkcijaData && funkcijaData.choices) {
-                let rawContent = funkcijaData.choices[0].message.content.trim();
+            if (Array.isArray(data)) {
+                items = data;
+            } else if (data && data.choices) {
+                let rawContent = data.choices[0].message.content.trim();
                 let jsonString = rawContent.replace(/```json/g, "").replace(/```/g, "").trim();
                 items = JSON.parse(jsonString);
             }
@@ -196,8 +177,8 @@
             TBODY.innerHTML = '';
             let NOVO_UPISANO = 0;
 
-            if (items.length === 0) {
-                TBODY.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nema pronađenih rezultata za unijeti pojam.</td></tr>';
+            if (!items || items.length === 0) {
+                TBODY.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nema pronađenih rezultata.</td></tr>';
                 STATUS_DIV.textContent = "Pretraga završena, nema rezultata.";
                 return;
             }
@@ -252,7 +233,7 @@
 
         } catch (err) {
             console.error("Detaljna greška:", err);
-            TBODY.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Greška: ${err.message}</td></tr>`;
+            TBODY.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Greška: ${err.message || err}</td></tr>`;
             STATUS_DIV.textContent = "Greška u izvršavanju poziva prema funkciji.";
         }
     }
