@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pretraga, Slanje i Pametni Upis - Dochbizub</title>
+    <title>Pretraga, Slanje i Pametni Upis - DocBizHub</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 1300px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h2 { color: #007bff; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .container { max-width: 1300px; max-width: 1300px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h2 { color: #3742fa; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         .section { margin-bottom: 25px; padding: 15px; background: #fafafa; border: 1px solid #e1e1e1; border-radius: 6px; }
         label { font-weight: bold; display: block; margin-bottom: 5px; }
         select, input[type="text"] { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { background-color: #28a745; color: white; border: none; padding: 10px 20px; font-size: 14px; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #218838; }
+        button { background-color: #3742fa; color: white; border: none; padding: 10px 20px; font-size: 14px; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #2f3542; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff; }
         th, td { border: 1px solid #dddddd; text-align: left; padding: 10px; font-size: 14px; }
-        th { background-color: #007bff; color: white; }
+        th { background-color: #3742fa; color: white; }
         tr:nth-child(even) { background-color: #f9f9f9; }
         .wa-btn { background-color: #25d366; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px; display: inline-block; }
         .wa-btn:hover { background-color: #1ebe5d; }
-        #STATUS_PORUKA { margin-top: 10px; font-weight: bold; font-size: 13px; color: #007bff; }
+        #STATUS_PORUKA { margin-top: 10px; font-weight: bold; font-size: 13px; color: #3742fa; }
     </style>
 </head>
 <body>
@@ -37,7 +37,7 @@
     </div>
 
     <div class="section">
-        <h3>2. Pretraga i generisanje podataka (Google Web)</h3>
+        <h3>2. Pretraga i generisanje podataka</h3>
         <input type="text" id="SEARCH_INPUT" placeholder="Unesite kriterijum (npr. Građevinske firme Tuzla)..." onkeypress="HANDLE_KEY_PRESS(event)">
         <button onclick="PRETRAZI_I_PAMETNO_UPISI()">Pokreni Pretragu i Snimi</button>
         <div id="STATUS_PORUKA"></div>
@@ -65,7 +65,7 @@
 
 <script>
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_IfX6dxz-ILfYK_3VgelcMw_tYOX0y45'; 
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';  
     const _SUPABASE = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function UCITAJ_KORISNIKE() {
@@ -104,31 +104,38 @@
             return;
         }
 
-        TBODY.innerHTML = '<tr><td colspan="6" style="text-align:center;">Pretražujem preko Google-a i Edge funkcije... Molimo sačekajte.</td></tr>';
+        TBODY.innerHTML = '<tr><td colspan="6" style="text-align:center;">Pretražujem i obrađujem podatke... Molimo sačekajte.</td></tr>';
         STATUS_DIV.textContent = "Pretraga u toku...";
 
         try {
-            // Pozivamo Supabase Edge funkciju koja u pozadini koristi Google Custom Search API
             const { data: funkcijaData, error: funkcijaError } = await _SUPABASE.functions.invoke('PRETRAGA', {
                 body: { pojam: POJAM }
             });
 
-            if (funkcijaError) throw funkcijaError;
+            if (funkcijaError) {
+                throw new Error("Edge funkcija je vratila grešku. Provjerite Supabase logove i API ključeve.");
+            }
 
-            let rawContent = funkcijaData.choices[0].message.content.trim();
-            let jsonString = rawContent.replace(/```json/g, "").replace(/```/g, "").trim();
-            
-            const items = JSON.parse(jsonString);
+            let items = [];
+            if (Array.isArray(funkcijaData)) {
+                items = funkcijaData;
+            } else if (funkcijaData && funkcijaData.choices) {
+                let rawContent = funkcijaData.choices[0].message.content.trim();
+                let jsonString = rawContent.replace(/```json/g, "").replace(/```/g, "").trim();
+                items = JSON.parse(jsonString);
+            } else {
+                throw new DataError("Neočekivan format podataka iz funkcije.");
+            }
 
             TBODY.innerHTML = '';
             let NOVO_UPISANO = 0;
 
             for (const ITEM of items) {
-                let NAZIV_FIRME = ITEM.naziv || "Nepoznat naziv";
-                let LINK_FIRME = ITEM.link || "#";
-                let OPIS_FIRME = ITEM.opis || "Nema opisa";
+                let NAZIV_FIRME = ITEM.naziv || ITEM.IME || "Nepoznat naziv";
+                let LINK_FIRME = ITEM.link || ITEM.LINKEDIN || "#";
+                let OPIS_FIRME = ITEM.opis || ITEM.BROJ_TELEFONA || "Nema opisa";
                 let GRAD_LOKACIJA = ITEM.lokacija || "Tuzla / Regija";
-                let TELEFON_FIRME = ITEM.telefon || "Nije dostupno";
+                let TELEFON_FIRME = ITEM.telefon || ITEM.TELEFON || "Nije dostupno";
 
                 let TR = document.createElement('tr');
                 TR.innerHTML = `
@@ -136,7 +143,7 @@
                     <td>${GRAD_LOKACIJA}</td>
                     <td>${OPIS_FIRME}</td>
                     <td><strong>${TELEFON_FIRME}</strong></td>
-                    <td><a href="${LINK_FIRME}" target="_blank" style="color:#007bff;">Posjeti sajt</a></td>
+                    <td><a href="${LINK_FIRME}" target="_blank" style="color:#3742fa;">Posjeti sajt</a></td>
                     <td><button class="wa-btn" onclick="POSALJI_NA_WHATSAPP('${NAZIV_FIRME.replace(/'/g, "")}', '${GRAD_LOKACIJA}', '${OPIS_FIRME.replace(/'/g, "").substring(0, 50)}...')">Pošalji WhatsApp</button></td>
                 `;
                 TBODY.appendChild(TR);
@@ -159,7 +166,7 @@
                                     LINKEDIN: LINK_FIRME 
                                 }
                             ]);
-                        
+                    
                         if (!INSERT_ERROR) {
                             NOVO_UPISANO++;
                         }
@@ -173,7 +180,7 @@
 
         } catch (err) {
             console.error("Greška:", err);
-            TBODY.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Greška: ${err.message || 'Nepoznata greška'}</td></tr>`;
+            TBODY.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Greška: ${err.message || 'Nepoznata greška'} (Provjerite Supabase Edge funkciju PRETRAGA)</td></tr>`;
             STATUS_DIV.textContent = "Greška u izvršavanju.";
         }
     }
