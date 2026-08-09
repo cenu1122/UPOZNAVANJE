@@ -105,7 +105,6 @@
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  let zadnjiPodaciZaBazu = {};
   let zadnjiPojam = "";
   let zadnjiOpis = "";
 
@@ -122,7 +121,7 @@
     }
 
     aiBox.style.display = 'block';
-    aiBox.innerHTML = "🤖 AI analizira vaš zahtjev i provjerava šta tačno tražite...";
+    aiBox.innerHTML = "🤖 AI analizira vaš zahtjev i priprema analizu za lakše pretraživanje...";
     resultsCard.style.display = 'none';
     saveBtn.style.display = 'none';
 
@@ -139,14 +138,15 @@
       const data = await response.json();
 
       if (data && data.choices && data.choices[0] && data.choices[0].message) {
-        let parsedItems = JSON.parse(data.choices[0].message.content);
+        let responseData = JSON.parse(data.choices[0].message.content);
+        
+        let analizaTekst = responseData.analiza || "Nema dostupne analize.";
+        let parsedItems = responseData.firme || [];
 
-        if (parsedItems && parsedItems.length > 0) {
-          // 1. Prikaz AI analize/pojašnjenja šta je korisnik tražio
-          aiBox.innerHTML = `<strong>📋 AI Analiza Vašeg Zahtjeva:</strong>\n` +
-                            `Vi ste zatražili pretragu pojma: <em>"${query}"</em>.\n` +
-                            `Sistem je prepoznao da tražite poslovne subjekte/firme iz ove oblasti sa dostupnim kontaktima, lokacijama i mrežama. Pronađeno je ${parsedItems.length} relevantnih rezultata koji su spremni za pregled.`;
+        // 1. Prikaz AI analize i prijedloga u zelenom boksu
+        aiBox.innerHTML = `<strong>📋 AI Analiza i Prijedlozi za Upit:</strong><br><br>${analizaTekst}`;
 
+        if (parsedItems.length > 0) {
           // 2. Kreiranje tabele sa rezultatima
           let tableHtml = `
             <table class="results-table">
@@ -199,11 +199,11 @@
 
           // Pripremi podatke za dugme za snimanje u bazu
           zadnjiPojam = query;
-          zadnjiOpis = kratkiOpisi.join(" | ");
-          saveBtn.style.display = 'block'; // Prikazuje dugme tek nakon uspješne analize
+          zadnjiOpis = `[Analiza: ${analizaTekst}] | Firme: ` + kratkiOpisi.join(" | ");
+          saveBtn.style.display = 'block'; 
 
         } else {
-          aiBox.innerHTML = "❌ AI nije pronašao rezultate za uneseni pojam.";
+          container.innerHTML = '<div class="no-results">Nema pronađenih rezultata za uneseni pojam.</div>';
         }
       } else {
         throw new Error(data.error || "Greška pri obradi podataka.");
