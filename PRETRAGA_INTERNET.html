@@ -40,7 +40,7 @@
 
     #aiChatBox { margin-top: 20px; padding: 20px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; display: none; }
     #aiChatBox h3 { color: #4f46e5; margin-bottom: 10px; font-size: 1.1rem; }
-    #aiChatContent { font-size: 0.95rem; line-height: 1.6; color: #334155; white-space: pre-line; margin-bottom: 15px; }
+    #aiChatContent { font-size: 1rem; line-height: 1.6; color: #1e293b; font-weight: 500; margin-bottom: 15px; }
 
     #infoBox { margin-top: 15px; padding: 12px; border-radius: 8px; background: #e8f4fd; color: #0056b3; font-size: 0.9rem; border: 1px solid #b8daff; display: none; }
 
@@ -128,20 +128,26 @@
     contentBox.innerHTML = "✨ Pozivam Edge funkciju PRETRAGA i čekam odgovor...";
 
     try {
-      // Pozivamo Edge funkciju pod nazivom PRETRAGA velikim slovima
       const { data, error } = await _supabase.functions.invoke('PRETRAGA', {
         body: { pojam: query }
       });
 
       if (error) throw error;
 
-      if (data && data.odgovor) {
-        contentBox.innerHTML = data.odgovor;
-      } else if (data && data.choices) {
-        contentBox.innerHTML = data.choices[0].message.content;
-      } else {
-        contentBox.innerHTML = JSON.stringify(data);
+      // Pametno parsiranje JSON odgovora da se izvuče samo čisti tekst pitanja ili poruke
+      let tekstZaPrikaz = "";
+      if (typeof data === 'string') {
+        try {
+          const parsed = JSON.parse(data);
+          tekstZaPrikaz = parsed.pitanja || parsed.odgovor || parsed.tekst || data;
+        } catch(e) {
+          tekstZaPrikaz = data;
+        }
+      } else if (typeof data === 'object' && data !== null) {
+        tekstZaPrikaz = data.pitanja || data.odgovor || data.tekst || JSON.stringify(data);
       }
+
+      contentBox.innerHTML = tekstZaPrikaz;
     } catch (err) {
       contentBox.innerHTML = `<span style="color: red;">Greška sa Edge funkcijom PRETRAGA: ${err.message}</span>`;
     }
@@ -152,7 +158,7 @@
     const odgovori = document.getElementById('dodatniOdgovori').value.trim();
     const infoBox = document.getElementById('infoBox');
 
-    const konacniUpit = `${osnovniUpit} ${odgovori ? '(' + odgovori + ')' : ''}`;
+    const konacniUpit = `${osnovniUpit} ${odgovori ? '- ' + odgovori : ''}`;
     const trenutniLink = window.location.origin + window.location.pathname + `?q=${encodeURIComponent(konacniUpit)}`;
 
     // 1. Slanje adminu u Supabase bazu
@@ -175,7 +181,7 @@
       console.warn("Greška pri snimanju u bazu:", err);
     }
 
-    // 2. Pretraga interneta za firme
+    // 2. Pretraga interneta za firme (čist i jednostavan upit bez greške 403)
     let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${SEARCH_ENGINE_ID}&q=${encodeURIComponent(konacniUpit)}`;
 
     const resultsCard = document.getElementById('resultsCard');
