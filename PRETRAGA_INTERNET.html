@@ -68,23 +68,23 @@
 
   <div class="main-container">
     <div class="card">
-      <h2>🤖 Groq AI Asistent (Preko Edge Funkcije)</h2>
-      <p class="sub">Unesite šta tražite. Sistem poziva sigurnu Edge funkciju koja preko Groq AI analizira upit i postavlja dodatna pitanja:</p>
+      <h2>🤖 AI Asistent preko Edge Funkcije PRETRAGA</h2>
+      <p class="sub">Unesite šta tražite. Sistem poziva Edge funkciju PRETRAGA koja obrađuje upit i postavlja dodatna pitanja:</p>
 
       <div class="form-group">
         <label for="searchInput">🔍 Šta tražite? (Osnovna ideja):</label>
         <input type="text" id="searchInput" placeholder="Npr. Otkup paleta, građevinski materijal..." onkeypress="handleKeyPress(event)">
       </div>
 
-      <button class="btn-submit" onclick="pokreniGroqAsistent()">✨ Pokreni AI Analizu preko Edge Funkcije</button>
+      <button class="btn-submit" onclick="pokreniGroqAsistent()">✨ Pokreni AI Analizu (Funkcija PRETRAGA)</button>
 
       <!-- AI Dijalog i Pitanja -->
       <div id="aiChatBox">
-        <h3>💬 Groq AI Prijedlozi i Dodatna Pitanja:</h3>
+        <h3>💬 Prijedlozi i Dodatna Pitanja:</h3>
         <div id="aiChatContent">Učitavanje...</div>
         
         <div class="form-group" style="margin-top: 15px;">
-          <label for="dodatniOdgovori">Unesite vaše odgovori ili dodatne detalje (lokacija, količina itd.):</label>
+          <label for="dodatniOdgovori">Unesite vaše odgovore ili dodatne detalje (lokacija, količina itd.):</label>
           <textarea id="dodatniOdgovori" placeholder="Npr. Tražim u Sarajevu, oko 500 komada mjesečno..."></textarea>
         </div>
         <button class="btn-submit btn-search-google" onclick="finalizirajI_Posalji()">🚀 Generiši konačan upit, pošalji adminu i pretraži internet</button>
@@ -125,25 +125,25 @@
     }
 
     chatBox.style.display = 'block';
-    contentBox.innerHTML = "✨ Pozivam Edge funkciju i čekam Groq AI odgovor...";
+    contentBox.innerHTML = "✨ Pozivam Edge funkciju PRETRAGA i čekam odgovor...";
 
     try {
-      // Pozivamo našu Supabase Edge funkciju umjesto direktnog API-ja
-      const { data, error } = await _supabase.functions.invoke('groq-asistent', {
-        body: { query: query }
+      // Pozivamo Edge funkciju pod nazivom PRETRAGA velikim slovima
+      const { data, error } = await _supabase.functions.invoke('PRETRAGA', {
+        body: { pojam: query }
       });
 
       if (error) throw error;
 
-      if (data && data.otpis) {
-        contentBox.innerHTML = data.otpis;
+      if (data && data.odgovor) {
+        contentBox.innerHTML = data.odgovor;
       } else if (data && data.choices) {
         contentBox.innerHTML = data.choices[0].message.content;
       } else {
         contentBox.innerHTML = JSON.stringify(data);
       }
     } catch (err) {
-      contentBox.innerHTML = `<span style="color: red;">Greška sa Edge funkcijom: ${err.message}</span>`;
+      contentBox.innerHTML = `<span style="color: red;">Greška sa Edge funkcijom PRETRAGA: ${err.message}</span>`;
     }
   }
 
