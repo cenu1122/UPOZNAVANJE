@@ -68,8 +68,8 @@
 
   <div class="main-container">
     <div class="card">
-      <h2>🌐 Napredna API & Groq AI Pretraga</h2>
-      <p class="sub">Pokrenite standardnu pretragu ili iskoristite Groq AI da istraži i proširi detalje koje možete ručno pokrenuti u Google-u:</p>
+      <h2>🌐 API Pretraga Vanjskih Mreža</h2>
+      <p class="sub">Pretraga se vrši direktno preko Google Custom Search API-ja i prikazuje rezultate ispod:</p>
 
       <div class="form-group">
         <label for="searchInput">🔍 Pojam za pretragu (Ime, Grad ili Opis):</label>
@@ -98,7 +98,7 @@
         </div>
       </div>
 
-      <button class="btn-submit" onclick="pokreniApiPretragu()">🚀 Pokreni API Pretragu & Pošalji Adminu</button>
+      <button class="btn-submit" onclick="pokreniApiPretragu()">🚀 Pokreni API Pretragu</button>
       <button class="btn-submit btn-ai" onclick="pokreniGroqAIPretragu()">✨ Groq AI Analiza & Generisanje Linka za Google</button>
 
       <div id="infoBox"></div>
@@ -122,11 +122,11 @@
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // API PODACI ZA GOOGLE SEARCH
+  // VAŠI API PODACI
   const API_KEY = "AIzaSyAZAkjpv1DA3jci_tvdtaqmxeXAZgGXEt4";
   const SEARCH_ENGINE_ID = "d34bb19acdcc3474c";
 
-  // GROQ API KLJUČ (Unesite svoj Groq ključ ovdje)
+  // GROQ API KLJUČ
   const GROQ_API_KEY = "Ovdje_unesi_svoj_groq_kljuc";
 
   function ucitajParametreIzUrl() {
@@ -180,7 +180,6 @@
         throw new Error("Groq API ključ nije podešen u skripti.");
       }
 
-      // Poziv prema Groq AI API-ju
       const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -199,8 +198,6 @@
       const data = await res.json();
       if (data.choices && data.choices[0]) {
         const aiOdgovor = data.choices[0].message.content;
-        
-        // Kreiranje Google linka na osnovu preporuke
         let googleQuery = `site:${platforma === 'ALL' ? 'badoo.com' : platforma} ${query} ${spol}`;
         let googleUrl = `https://www.google.com/search?q=${encodeURIComponent(googleQuery)}`;
 
@@ -212,7 +209,6 @@
           </div>
         `;
 
-        // Slanje zahtjeva adminu u bazu
         await posaljiAdminuUBazu(query, platforma, spol, "AI Analiza obavljena");
       } else {
         throw new Error("AI nije vratio ispravan odgovor.");
@@ -244,13 +240,18 @@
     infoBox.innerHTML = `✅ Vaša pretraga je uspješno poslata administratoru na pregled sa sačuvanim linkom!`;
 
     let searchTerms = [];
+
     if (platforma !== 'ALL') {
       searchTerms.push(`site:${platforma}`);
     } else {
       searchTerms.push("(site:badoo.com OR site:tinder.com OR site:bumble.com OR site:twoo.com)");
     }
 
-    searchTerms.push(`"${query}"`);
+    if (query) {
+      searchTerms.push(`"${query}"`);
+    } else {
+      searchTerms.push("profile");
+    }
 
     if (spol === 'Zensko') {
       searchTerms.push("(Zensko OR Žensko OR Female OR Woman)");
@@ -298,7 +299,7 @@
       }
     } catch (error) {
       console.error(error);
-      container.innerHTML = '<div class="no-results" style="color: red;">Došlo je do greške prilikom učitavanja API pretrage.</div>';
+      container.innerHTML = '<div class="no-results" style="color: red;">Došlo je do greške prilikom učitavanja API pretrage. Provjerite API ključ.</div>';
     }
   }
 
