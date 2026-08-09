@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pretraga Interneta | LjubavNaPrviKlik</title>
 
+  <!-- Supabase JS biblioteka -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
@@ -34,7 +37,11 @@
     .btn-submit { background: #d90429; color: #fff; border: none; padding: 14px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; margin-top: 10px; transition: background 0.2s; }
     .btn-submit:hover { background: #ef233c; }
 
-    #infoBox { margin-top: 15px; padding: 12px; border-radius: 8px; background: #e8f4fd; color: #0056b3; font-size: 0.9rem; border: 1px solid #b8daff; }
+    .btn-ai { background: #4f46e5; margin-top: 10px; }
+    .btn-ai:hover { background: #4338ca; }
+
+    #infoBox { margin-top: 15px; padding: 12px; border-radius: 8px; background: #e8f4fd; color: #0056b3; font-size: 0.9rem; border: 1px solid #b8daff; display: none; }
+    #aiResultsBox { margin-top: 15px; padding: 15px; border-radius: 8px; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; display: none; }
 
     /* Stilovi za prikaz rezultata pretrage */
     .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; margin-top: 20px; }
@@ -61,8 +68,8 @@
 
   <div class="main-container">
     <div class="card">
-      <h2>🌐 API Pretraga Vanjskih Mreža</h2>
-      <p class="sub">Pretraga se vrši direktno preko Google Custom Search API-ja i prikazuje rezultate ispod:</p>
+      <h2>🌐 Napredna API & Groq AI Pretraga</h2>
+      <p class="sub">Pokrenite standardnu pretragu ili iskoristite Groq AI da istraži i proširi detalje koje možete ručno pokrenuti u Google-u:</p>
 
       <div class="form-group">
         <label for="searchInput">🔍 Pojam za pretragu (Ime, Grad ili Opis):</label>
@@ -91,9 +98,11 @@
         </div>
       </div>
 
-      <button class="btn-submit" onclick="pokreniApiPretragu()">🚀 Pokreni API Pretragu</button>
+      <button class="btn-submit" onclick="pokreniApiPretragu()">🚀 Pokreni API Pretragu & Pošalji Adminu</button>
+      <button class="btn-submit btn-ai" onclick="pokreniGroqAIPretragu()">✨ Groq AI Analiza & Generisanje Linka za Google</button>
 
-      <div id="infoBox">ℹ️ Rezultati će se prikazati direktno na stranici ispod.</div>
+      <div id="infoBox"></div>
+      <div id="aiResultsBox"></div>
     </div>
 
     <!-- Sekcija za prikaz rezultata -->
@@ -108,9 +117,17 @@
   </footer>
 
 <script>
-  // VAŠI API PODACI
+  // SUPABASE KONFIGURACIJA
+  const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // API PODACI ZA GOOGLE SEARCH
   const API_KEY = "AIzaSyAZAkjpv1DA3jci_tvdtaqmxeXAZgGXEt4";
   const SEARCH_ENGINE_ID = "d34bb19acdcc3474c";
+
+  // GROQ API KLJUČ (Unesite svoj Groq ključ ovdje)
+  const GROQ_API_KEY = "Ovdje_unesi_svoj_groq_kljuc";
 
   function ucitajParametreIzUrl() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -123,24 +140,117 @@
     if (platformaParam) document.getElementById('platformaSelect').value = decodeURIComponent(platformaParam);
   }
 
+  async function posaljiAdminuUBazu(query, platforma, spol, dodatniPodaci = "") {
+    const trenutniLink = window.location.origin + window.location.pathname + `?q=${encodeURIComponent(query)}&platforma=${platforma}&spol=${spol}`;
+    try {
+      const { data: { user } } = await _supabase.auth.getUser();
+      const korisnikMail = user ? user.email : "Gost";
+
+      await _supabase.from('PRETRAGA_INTERNET').insert([
+        {
+          korisnik: korisnikMail,
+          pojam: query + (dodatniPodaci ? ` [AI Detalji: ${dodatniPodaci}]` : ''),
+          platforma: platforma,
+          spol: spol,
+          link_pretrage: trenutniLink,
+          status: 'Na cekanju'
+        }
+      ]);
+    } catch (err) {
+      console.warn("Greška pri snimanju u bazu:", err);
+    }
+  }
+
+  async function pokreniGroqAIPretragu() {
+    const query = document.getElementById('searchInput').value.trim();
+    const platforma = document.getElementById('platformaSelect').value;
+    const spol = document.getElementById('spolSelect').value;
+    const aiBox = document.getElementById('aiResultsBox');
+
+    if (!query) {
+      alert("Molimo unesite pojam za pretragu prije Groq AI analize!");
+      return;
+    }
+
+    aiBox.style.display = 'block';
+    aiBox.innerHTML = "✨ Groq AI analizira i proširuje podatke za vašu pretragu...";
+
+    try {
+      if (!GROQ_API_KEY || GROQ_API_KEY.includes("Ovdje")) {
+        throw new Error("Groq API ključ nije podešen u skripti.");
+      }
+
+      // Poziv prema Groq AI API-ju
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${GROQ_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "llama3-70b-8192",
+          messages: [{
+            role: "user",
+            content: `Analiziraj ovaj pojam za pretragu profila: "${query}", platforma: ${platforma}, spol: ${spol}. Predloži alternativne ključne riječi, lokacije, sinodime i optimalan upit koji korisnik može ručno unijeti u Google. Vrati kratak i jasan pregled sa direktnim Google linkom.`
+          }]
+        })
+      });
+
+      const data = await res.json();
+      if (data.choices && data.choices[0]) {
+        const aiOdgovor = data.choices[0].message.content;
+        
+        // Kreiranje Google linka na osnovu preporuke
+        let googleQuery = `site:${platforma === 'ALL' ? 'badoo.com' : platforma} ${query} ${spol}`;
+        let googleUrl = `https://www.google.com/search?q=${encodeURIComponent(googleQuery)}`;
+
+        aiBox.innerHTML = `
+          <strong>✨ Groq AI Izvještaj i Prijedlozi:</strong>
+          <p style="margin-top: 8px; white-space: pre-line;">${aiOdgovor}</p>
+          <div style="margin-top: 12px;">
+            <a href="${googleUrl}" target="_blank" style="background: #4285F4; color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block;">🌐 Ručno pokreni ovu pretragu u Google-u</a>
+          </div>
+        `;
+
+        // Slanje zahtjeva adminu u bazu
+        await posaljiAdminuUBazu(query, platforma, spol, "AI Analiza obavljena");
+      } else {
+        throw new Error("AI nije vratio ispravan odgovor.");
+      }
+    } catch (err) {
+      aiBox.style.background = '#fee2e2';
+      aiBox.style.color = '#991b1b';
+      aiBox.style.border = '1px solid #fecaca';
+      aiBox.innerHTML = `❌ Greška sa Groq AI: ${err.message}. Provjerite API ključ.`;
+    }
+  }
+
   async function pokreniApiPretragu() {
     const query = document.getElementById('searchInput').value.trim();
     const platforma = document.getElementById('platformaSelect').value;
     const spol = document.getElementById('spolSelect').value;
+    const infoBox = document.getElementById('infoBox');
+
+    if (!query) {
+      alert("Molimo unesite pojam za pretragu!");
+      return;
+    }
+
+    await posaljiAdminuUBazu(query, platforma, spol);
+
+    infoBox.style.display = 'block';
+    infoBox.style.background = '#e8f4fd';
+    infoBox.style.color = '#0056b3';
+    infoBox.innerHTML = `✅ Vaša pretraga je uspješno poslata administratoru na pregled sa sačuvanim linkom!`;
 
     let searchTerms = [];
-
     if (platforma !== 'ALL') {
       searchTerms.push(`site:${platforma}`);
     } else {
       searchTerms.push("(site:badoo.com OR site:tinder.com OR site:bumble.com OR site:twoo.com)");
     }
 
-    if (query) {
-      searchTerms.push(`"${query}"`);
-    } else {
-      searchTerms.push("profile");
-    }
+    searchTerms.push(`"${query}"`);
 
     if (spol === 'Zensko') {
       searchTerms.push("(Zensko OR Žensko OR Female OR Woman)");
@@ -188,7 +298,7 @@
       }
     } catch (error) {
       console.error(error);
-      container.innerHTML = '<div class="no-results" style="color: red;">Došlo je do greške prilikom učitavanja API pretrage. Provjerite API ključ.</div>';
+      container.innerHTML = '<div class="no-results" style="color: red;">Došlo je do greške prilikom učitavanja API pretrage.</div>';
     }
   }
 
