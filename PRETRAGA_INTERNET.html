@@ -4,7 +4,7 @@
   <link rel="shortcut icon" href="#">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pretraga Interneta | LjubavNaPrviKlik</title>
+  <title>AI Asistent za Pretragu Firmi | LjubavNaPrviKlik</title>
 
   <!-- Supabase JS biblioteka -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -20,7 +20,7 @@
     .btn-back { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
     .btn-back:hover { background: #ef233c; }
 
-    .main-container { flex: 1; max-width: 1200px; width: 100%; margin: 30px auto; padding: 0 15px; }
+    .main-container { flex: 1; max-width: 950px; width: 100%; margin: 30px auto; padding: 0 15px; }
     .card { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 25px; }
 
     h2 { color: #d90429; margin-bottom: 8px; font-size: 1.5rem; }
@@ -28,35 +28,31 @@
 
     .form-group { margin-bottom: 18px; display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-weight: bold; font-size: 0.9rem; color: #2b2d42; }
-    .form-group input { padding: 12px 14px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 0.95rem; width: 100%; }
-    .form-group input:focus { border-color: #d90429; }
+    .form-group input, .form-group textarea { padding: 12px 14px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 0.95rem; width: 100%; }
+    .form-group input:focus, .form-group textarea:focus { border-color: #d90429; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
 
     .btn-submit { background: #4f46e5; color: #fff; border: none; padding: 14px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; margin-top: 10px; transition: background 0.2s; }
     .btn-submit:hover { background: #4338ca; }
 
-    .btn-save { background: #10b981; margin-top: 15px; display: none; }
-    .btn-save:hover { background: #059669; }
-    
-    #aiAnalysisBox {
-      margin-top: 20px;
-      padding: 15px;
-      background-color: #f0fdf4;
-      color: #166534;
-      border: 1px solid #bbf7d0;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      display: none;
-      white-space: pre-line;
-    }
+    .btn-search-google { background: #d90429; margin-top: 10px; }
+    .btn-search-google:hover { background: #b50322; }
 
-    /* Stilovi za tabelu rezultata */
-    .table-responsive { width: 100%; overflow-x: auto; margin-top: 20px; }
-    .results-table { width: 100%; border-collapse: collapse; background: #fff; font-size: 0.9rem; }
-    .results-table th { background: #2b2d42; color: #fff; padding: 12px; text-align: left; }
-    .results-table td { padding: 12px; border-bottom: 1px solid #ddd; vertical-align: middle; }
-    .results-table tr:hover { background-color: #f8f9fa; }
-    
-    .no-results { text-align: center; color: #777; padding: 20px; font-size: 1rem; }
+    #aiChatBox { margin-top: 20px; padding: 20px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; display: none; }
+    #aiChatBox h3 { color: #4f46e5; margin-bottom: 10px; font-size: 1.1rem; }
+    #aiChatContent { font-size: 0.95rem; line-height: 1.6; color: #334155; white-space: pre-line; margin-bottom: 15px; }
+
+    #infoBox { margin-top: 15px; padding: 12px; border-radius: 8px; background: #e8f4fd; color: #0056b3; font-size: 0.9rem; border: 1px solid #b8daff; display: none; }
+
+    /* Stilovi za prikaz rezultata pretrage */
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; margin-top: 20px; }
+    .result-card { background: #fff; border: 1px solid #e1e4e8; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: transform 0.2s; }
+    .result-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .result-body { padding: 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .result-title { font-size: 1.05rem; font-weight: bold; color: #2b2d42; text-decoration: none; }
+    .result-title:hover { color: #d90429; }
+    .result-snippet { font-size: 0.9rem; color: #555; line-height: 1.4; }
+    .no-results { text-align: center; color: #777; padding: 20px; font-size: 1rem; grid-column: 1/-1; }
 
     footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
   </style>
@@ -66,33 +62,41 @@
   <header>
     <a href="DASHBOARD.html" class="logo">❤️ LjubavNaPrviKlik</a>
     <div class="nav-actions">
-      <a href="PRETRAGA_NOVA.html" class="btn-back">⬅️ Nazad na Bazu</a>
+      <a href="DASHBOARD.html" class="btn-back">⬅️ Nazad na Dashboard</a>
     </div>
   </header>
 
   <div class="main-container">
     <div class="card">
-      <h2>🌐 Pretraga Biznisa i Analiza Upita</h2>
-      <p class="sub">Unesite pojam. Sistem će prvo analizirati i razjasniti šta tačno tražite prije slanja u bazu:</p>
+      <h2>🤖 Groq AI Asistent za Definisanje Upita</h2>
+      <p class="sub">Unesite šta otprilike tražite. Naš AI će vam postaviti dodatna pitanja, pomoći vam da precizirate zahtjev i pripremiti savršen upit za admina i internet pretragu:</p>
 
       <div class="form-group">
-        <label for="searchInput">🔍 Pojam za pretragu (Naziv firme, grad ili usluga):</label>
-        <input type="text" id="searchInput" placeholder="Npr. OTKUP PALETA, Sarajevo..." onkeypress="handleKeyPress(event)">
+        <label for="searchInput">🔍 Šta tražite? (Osnovna ideja):</label>
+        <input type="text" id="searchInput" placeholder="Npr. Otkup paleta, građevinski materijal..." onkeypress="handleKeyPress(event)">
       </div>
 
-      <button class="btn-submit" onclick="pokreniAnalizuIPretragu()">🔍 1. Analiziraj Upit i Prikupi Podatke</button>
-      
-      <!-- Box gdje AI pojašnjava šta je korisnik tražio -->
-      <div id="aiAnalysisBox"></div>
+      <button class="btn-submit" onclick="pokreniGroqAsistent()">✨ Pokreni AI Analizu i Pitanja</button>
 
-      <!-- Dugme za snimanje u bazu koje se pojavljuje tek nakon analize -->
-      <button class="btn-submit btn-save" id="saveBtn" onclick="spremiUBazu()">💾 2. Potvrdi i Pošalji u Bazu</button>
+      <!-- AI Dijalog i Pitanja -->
+      <div id="aiChatBox">
+        <h3>💬 Groq AI Prijedlozi i Dodatna Pitanja:</h3>
+        <div id="aiChatContent">Učitavanje...</div>
+        
+        <div class="form-group" style="margin-top: 15px;">
+          <label for="dodatniOdgovori">Unesite vaše odgovore ili dodatne detalje (lokacija, količina itd.):</label>
+          <textarea id="dodatniOdgovori" placeholder="Npr. Tražim u Sarajevu, oko 500 komada mjesečno..."></textarea>
+        </div>
+        <button class="btn-submit btn-search-google" onclick="finalizirajI_Posalji()">🚀 Generiši konačan upit, pošalji adminu i pretraži internet</button>
+      </div>
+
+      <div id="infoBox"></div>
     </div>
 
-    <!-- Sekcija za prikaz rezultata u tabeli -->
+    <!-- Sekcija za prikaz rezultata -->
     <div class="card" id="resultsCard" style="display: none;">
-      <h2>Rezultati pretrage</h2>
-      <div class="table-responsive" id="resultsContainer"></div>
+      <h2>Rezultati pretrage sa interneta</h2>
+      <div id="resultsContainer" class="results-grid"></div>
     </div>
   </div>
 
@@ -101,158 +105,140 @@
   </footer>
 
 <script>
+  // SUPABASE KONFIGURACIJA
   const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  let zadnjiPojam = "";
-  let zadnjiOpis = "";
+  // GOOGLE API PODACI
+  const API_KEY = "AIzaSyAZAkjpv1DA3jci_tvdtaqmxeXAZgGXEt4";
+  const SEARCH_ENGINE_ID = "d34bb19acdcc3474c";
 
-  async function pokreniAnalizuIPretragu() {
+  // GROQ API KLJUČ
+  const GROQ_API_KEY = "Ovdje_unesi_svoj_groq_kljuc";
+
+  let poslednjiAIRezultat = "";
+
+  async function pokreniGroqAsistent() {
     const query = document.getElementById('searchInput').value.trim();
-    const resultsCard = document.getElementById('resultsCard');
-    const container = document.getElementById('resultsContainer');
-    const aiBox = document.getElementById('aiAnalysisBox');
-    const saveBtn = document.getElementById('saveBtn');
+    const chatBox = document.getElementById('aiChatBox');
+    const contentBox = document.getElementById('aiChatContent');
 
     if (!query) {
-      alert("Molimo unesite pojam za pretragu!");
+      alert("Molimo unesite osnovnu ideju šta tražite!");
       return;
     }
 
-    aiBox.style.display = 'block';
-    aiBox.innerHTML = "🤖 AI analizira vaš zahtjev i priprema analizu za lakše pretraživanje...";
-    resultsCard.style.display = 'none';
-    saveBtn.style.display = 'none';
+    chatBox.style.display = 'block';
+    contentBox.innerHTML = "✨ Groq AI analizira vaš zahtjev i priprema pametna pitanja...";
 
     try {
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/PRETRAGA`, {
-        method: 'POST',
+      if (!GROQ_API_KEY || GROQ_API_KEY.includes("Ovdje")) {
+        throw new Error("Groq API ključ nije unesen u skriptu.");
+      }
+
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          "Authorization": `Bearer ${GROQ_API_KEY}`,
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify({ pojam: query })
+        body: JSON.stringify({
+          model: "llama3-70b-8192",
+          messages: [{
+            role: "user",
+            content: `Korisnik želi pronaći sljedeće na internetu: "${query}". 
+            Ponašaj se kao profesionalni savjetnik za nabavku i pretragu firmi. 
+            1. Postavi 2-3 kratka i bitna dodatna pitanja korisniku (npr. o lokaciji, količini, specifičnostima) kako bi upit bio precizniji.
+            2. Predloži kako bi trebao glasiti idealan Google upit za pretragu.`
+          }]
+        })
       });
 
-      const data = await response.json();
-
-      if (data && data.choices && data.choices[0] && data.choices[0].message) {
-        let responseData = JSON.parse(data.choices[0].message.content);
-        
-        let analizaTekst = responseData.analiza || "Nema dostupne analize.";
-        let parsedItems = responseData.firme || [];
-
-        // 1. Prikaz AI analize i prijedloga u zelenom boksu
-        aiBox.innerHTML = `<strong>📋 AI Analiza i Prijedlozi za Upit:</strong><br><br>${analizaTekst}`;
-
-        if (parsedItems.length > 0) {
-          // 2. Kreiranje tabele sa rezultatima
-          let tableHtml = `
-            <table class="results-table">
-              <thead>
-                <tr>
-                  <th>Naziv / Subjekt</th>
-                  <th>Lokacija</th>
-                  <th>Opis</th>
-                  <th>Telefon</th>
-                  <th>Email</th>
-                  <th>LinkedIn</th>
-                  <th>Facebook</th>
-                  <th>Web / Link</th>
-                </tr>
-              </thead>
-              <tbody>
-          `;
-
-          let kratkiOpisi = [];
-
-          parsedItems.forEach(item => {
-            let naziv = item.naziv || 'Nepoznato';
-            let lokacija = item.lokacija || 'Nije dostupno';
-            let opis = item.opis || '';
-            let telefon = item.telefon || 'Nije dostupno';
-            let email = item.email && item.email !== 'Nije dostupno' ? `<a href="mailto:${item.email}" style="color: #0056b3;">${item.email}</a>` : 'Nije dostupno';
-            let linkedin = item.linkedin && item.linkedin !== 'Nije dostupno' ? `<a href="${item.linkedin}" target="_blank" style="color: #0077b5; font-weight: bold;">LinkedIn ↗</a>` : 'Nije dostupno';
-            let facebook = item.facebook && item.facebook !== 'Nije dostupno' ? `<a href="${item.facebook}" target="_blank" style="color: #1877f2; font-weight: bold;">Facebook ↗</a>` : 'Nije dostupno';
-            let link = item.link && item.link !== '#' ? `<a href="${item.link}" target="_blank" style="color: #d90429; font-weight: bold;">Posjeti ↗</a>` : 'Nije dostupno';
-
-            kratkiOpisi.push(`${naziv} (${lokacija}, Tel: ${telefon})`);
-
-            tableHtml += `
-              <tr>
-                <td style="font-weight: bold;">${naziv}</td>
-                <td>${lokacija}</td>
-                <td>${opis}</td>
-                <td>${telefon}</td>
-                <td>${email}</td>
-                <td>${linkedin}</td>
-                <td>${facebook}</td>
-                <td>${link}</td>
-              </tr>
-            `;
-          });
-
-          tableHtml += `</tbody></table>`;
-          container.innerHTML = tableHtml;
-          resultsCard.style.display = 'block';
-
-          // Pripremi podatke za dugme za snimanje u bazu
-          zadnjiPojam = query;
-          zadnjiOpis = `[Analiza: ${analizaTekst}] | Firme: ` + kratkiOpisi.join(" | ");
-          saveBtn.style.display = 'block'; 
-
-        } else {
-          container.innerHTML = '<div class="no-results">Nema pronađenih rezultata za uneseni pojam.</div>';
-        }
+      const data = await res.json();
+      if (data.choices && data.choices[0]) {
+        poslednjiAIRezultat = data.choices[0].message.content;
+        contentBox.innerHTML = poslednjiAIRezultat;
       } else {
-        throw new Error(data.error || "Greška pri obradi podataka.");
+        throw new Error("AI nije vratio odgovor.");
       }
-    } catch (error) {
-      console.error(error);
-      aiBox.style.background = '#fee2e2';
-      aiBox.style.color = '#991b1b';
-      aiBox.style.border = '1px solid #fecaca';
-      aiBox.innerHTML = `❌ Greška: ${error.message}`;
+    } catch (err) {
+      contentBox.innerHTML = `<span style="color: red;">Greška sa Groq AI: ${err.message}</span>`;
     }
   }
 
-  async function spremiUBazu() {
-    const saveBtn = document.getElementById('saveBtn');
-    saveBtn.innerText = "⏳ Upisujem u bazu...";
+  async function finalizirajI_Posalji() {
+    const osnovniUpit = document.getElementById('searchInput').value.trim();
+    const odgovori = document.getElementById('dodatniOdgovori').value.trim();
+    const infoBox = document.getElementById('infoBox');
 
+    const konacniUpit = `${osnovniUpit} ${odgovori ? '(' + odgovori + ')' : ''}`;
+    const trenutniLink = window.location.origin + window.location.pathname + `?q=${encodeURIComponent(konacniUpit)}`;
+
+    // 1. Slanje adminu u Supabase bazu
     try {
       const { data: { user } } = await _supabase.auth.getUser();
       const korisnikMail = user ? user.email : "Gost";
 
-      const { error } = await _supabase.from('PRETRAGA_INTERNET').insert([
+      await _supabase.from('PRETRAGA_INTERNET').insert([
         {
-          "KORISNIK": korisnikMail,
-          "POJAM": zadnjiPojam,
-          "OPIS": zadnjiOpis
+          korisnik: korisnikMail,
+          pojam: konacniUpit,
+          link_pretrage: trenutniLink,
+          status: 'Na cekanju'
         }
       ]);
 
-      if (error) throw error;
-
-      saveBtn.style.backgroundColor = '#059669';
-      saveBtn.innerText = "✅ Uspješno snimljeno u bazu!";
-      setTimeout(() => {
-        saveBtn.style.display = 'none';
-        saveBtn.innerText = "💾 2. Potvrdi i Pošalji u Bazu";
-        saveBtn.style.backgroundColor = '#10b981';
-      }, 4000);
-
+      infoBox.style.display = 'block';
+      infoBox.innerHTML = `✅ Konačan upit je uspješno poslat administratoru na pregled sa sačuvanim linkom!`;
     } catch (err) {
-      console.error("Greška pri snimanju u bazu:", err);
-      alert("Došlo je do greške pri upisu u bazu: " + err.message);
-      saveBtn.innerText = "💾 2. Potvrdi i Pošalji u Bazu";
+      console.warn("Greška pri snimanju u bazu:", err);
+    }
+
+    // 2. Pretraga interneta za firme
+    let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${SEARCH_ENGINE_ID}&q=${encodeURIComponent(konacniUpit)}`;
+
+    const resultsCard = document.getElementById('resultsCard');
+    const container = document.getElementById('resultsContainer');
+    
+    resultsCard.style.display = 'block';
+    container.innerHTML = '<div class="no-results">Pretraga firmi u toku...</div>';
+
+    try {
+      let response = await fetch(apiUrl);
+      let data = await response.json();
+
+      container.innerHTML = '';
+
+      if (data.items && data.items.length > 0) {
+        data.items.forEach(item => {
+          let pageUrl = item.link;
+          let title = item.title || 'Firma / Stranica';
+          let snippet = item.snippet || '';
+
+          let cardHtml = `
+            <div class="result-card">
+              <div class="result-body">
+                <a href="${pageUrl}" target="_blank" class="result-title">${title}</a>
+                <p class="result-snippet">${snippet}</p>
+                <small style="color: #666; word-break: break-all; margin-top: auto;">🔗 ${pageUrl}</small>
+              </div>
+            </div>
+          `;
+          container.innerHTML += cardHtml;
+        });
+      } else {
+        container.innerHTML = '<div class="no-results">Nema pronađenih rezultata za ove firme na internetu.</div>';
+      }
+    } catch (error) {
+      console.error(error);
+      container.innerHTML = '<div class="no-results" style="color: red;">Došlo je do greške prilikom učitavanja pretrage.</div>';
     }
   }
 
   function handleKeyPress(event) {
     if (event.key === 'Enter') {
-      pokreniAnalizuIPretragu();
+      pokreniGroqAsistent();
     }
   }
 </script>
