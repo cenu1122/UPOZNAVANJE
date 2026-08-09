@@ -68,15 +68,15 @@
 
   <div class="main-container">
     <div class="card">
-      <h2>🤖 Groq AI Asistent za Definisanje Upita</h2>
-      <p class="sub">Unesite šta otprilike tražite. Naš AI će vam postaviti dodatna pitanja, pomoći vam da precizirate zahtjev i pripremiti savršen upit za admina i internet pretragu:</p>
+      <h2>🤖 Groq AI Asistent (Preko Edge Funkcije)</h2>
+      <p class="sub">Unesite šta tražite. Sistem poziva sigurnu Edge funkciju koja preko Groq AI analizira upit i postavlja dodatna pitanja:</p>
 
       <div class="form-group">
         <label for="searchInput">🔍 Šta tražite? (Osnovna ideja):</label>
         <input type="text" id="searchInput" placeholder="Npr. Otkup paleta, građevinski materijal..." onkeypress="handleKeyPress(event)">
       </div>
 
-      <button class="btn-submit" onclick="pokreniGroqAsistent()">✨ Pokreni AI Analizu i Pitanja</button>
+      <button class="btn-submit" onclick="pokreniGroqAsistent()">✨ Pokreni AI Analizu preko Edge Funkcije</button>
 
       <!-- AI Dijalog i Pitanja -->
       <div id="aiChatBox">
@@ -84,7 +84,7 @@
         <div id="aiChatContent">Učitavanje...</div>
         
         <div class="form-group" style="margin-top: 15px;">
-          <label for="dodatniOdgovori">Unesite vaše odgovore ili dodatne detalje (lokacija, količina itd.):</label>
+          <label for="dodatniOdgovori">Unesite vaše odgovori ili dodatne detalje (lokacija, količina itd.):</label>
           <textarea id="dodatniOdgovori" placeholder="Npr. Tražim u Sarajevu, oko 500 komada mjesečno..."></textarea>
         </div>
         <button class="btn-submit btn-search-google" onclick="finalizirajI_Posalji()">🚀 Generiši konačan upit, pošalji adminu i pretraži internet</button>
@@ -114,11 +114,6 @@
   const API_KEY = "AIzaSyAZAkjpv1DA3jci_tvdtaqmxeXAZgGXEt4";
   const SEARCH_ENGINE_ID = "d34bb19acdcc3474c";
 
-  // VAŠ GROQ API KLJUČ
-  const GROQ_API_KEY = "gsk_P1yOq0K1wJq2m3N4o5P6Q7R8S9T0U1V2W3X4Y5Z6a7b8c9d0"; // Ubaci svoj pravi Groq ključ ukoliko se ovaj razlikuje
-
-  let poslednjiAIRezultat = "";
-
   async function pokreniGroqAsistent() {
     const query = document.getElementById('searchInput').value.trim();
     const chatBox = document.getElementById('aiChatBox');
@@ -130,40 +125,25 @@
     }
 
     chatBox.style.display = 'block';
-    contentBox.innerHTML = "✨ Groq AI analizira vaš zahtjev i priprema pametna pitanja...";
+    contentBox.innerHTML = "✨ Pozivam Edge funkciju i čekam Groq AI odgovor...";
 
     try {
-      if (!GROQ_API_KEY || GROQ_API_KEY.includes("Ovdje")) {
-        throw new Error("Groq API ključ nije unesen u skriptu.");
-      }
-
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${GROQ_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "llama3-70b-8192",
-          messages: [{
-            role: "user",
-            content: `Korisnik želi pronaći sljedeće na internetu: "${query}". 
-            Ponašaj se kao profesionalni savjetnik za nabavku i pretragu firmi. 
-            1. Postavi 2-3 kratka i bitna dodatna pitanja korisniku (npr. o lokaciji, količini, specifičnostima) kako bi upit bio precizniji.
-            2. Predloži kako bi trebao glasiti idealan Google upit za pretragu.`
-          }]
-        })
+      // Pozivamo našu Supabase Edge funkciju umjesto direktnog API-ja
+      const { data, error } = await _supabase.functions.invoke('groq-asistent', {
+        body: { query: query }
       });
 
-      const data = await res.json();
-      if (data.choices && data.choices[0]) {
-        poslednjiAIRezultat = data.choices[0].message.content;
-        contentBox.innerHTML = poslednjiAIRezultat;
+      if (error) throw error;
+
+      if (data && data.otpis) {
+        contentBox.innerHTML = data.otpis;
+      } else if (data && data.choices) {
+        contentBox.innerHTML = data.choices[0].message.content;
       } else {
-        throw new Error("AI nije vratio odgovor.");
+        contentBox.innerHTML = JSON.stringify(data);
       }
     } catch (err) {
-      contentBox.innerHTML = `<span style="color: red;">Greška sa Groq AI: ${err.message}</span>`;
+      contentBox.innerHTML = `<span style="color: red;">Greška sa Edge funkcijom: ${err.message}</span>`;
     }
   }
 
