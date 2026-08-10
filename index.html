@@ -6,14 +6,14 @@
   <title>LjubavNaPrviKlik | Pronađi Svoju Srodnu Dušu</title>
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18358301333"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
 
-  gtag('config', 'AW-18358301333');
-  gtag('config', 'G-7LELHW0FEZ');
-</script>
+    gtag('config', 'AW-18358301333');
+    gtag('config', 'G-7LELHW0FEZ');
+  </script>
   
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -73,6 +73,8 @@
     form { max-width: 600px; margin: auto; display: flex; flex-direction: column; background: #fff; padding: 35px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
     input, textarea { padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; outline: none; }
     input:focus, textarea:focus { border-color: #d90429; }
+
+    #formStatus { margin-top: 15px; text-align: center; font-weight: bold; font-size: 0.95rem; }
 
     /* Footer */
     footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 25px 0; margin-top: 50px; }
@@ -194,11 +196,12 @@
 
   <section id="contact">
     <h2 data-i18n="contact_title">Imate Pitanja? Kontaktirajte Nas</h2>
-    <form id="contactForm">
-      <input type="text" placeholder="Vaše ime" data-i18n-ph="ph_name" required>
-      <input type="email" placeholder="Vaš E-mail" data-i18n-ph="ph_email" required>
-      <textarea placeholder="Vaša poruka" rows="5" data-i18n-ph="ph_message" required></textarea>
+    <form id="contactForm" onsubmit="handleContactSubmit(event)">
+      <input type="text" id="contactName" placeholder="Vaše ime" data-i18n-ph="ph_name" required>
+      <input type="email" id="contactEmail" placeholder="Vaš E-mail" data-i18n-ph="ph_email" required>
+      <textarea id="contactMessage" placeholder="Vaša poruka" rows="5" data-i18n-ph="ph_message" required></textarea>
       <button type="submit" class="btn btn-primary" style="background-color: #d90429; color: white;" data-i18n="btn_send">Pošalji Upit</button>
+      <div id="formStatus"></div>
     </form>
   </section>
 
@@ -207,6 +210,11 @@
   </footer>
 
   <script>
+    // SUPABASE KONFIGURACIJA
+    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     // 1. AUTOMATSKO HVATANJE I PAMĆENJE IZVORA KADA NEKO DOĐE PREKO LINKA (npr. ?izvor=viber_grupa)
     (function sacuvajDolazniIzvor() {
       const params = new URLSearchParams(window.location.search);
@@ -326,6 +334,36 @@
         }
       } catch (err) {
         resultDiv.textContent = "Greška u mrežnoj vezi s prevodiocem.";
+      }
+    }
+
+    // Funkcija za slanje kontakt poruke u Supabase bazu
+    async function handleContactSubmit(event) {
+      event.preventDefault();
+      
+      const ime = document.getElementById('contactName').value.trim();
+      const mail = document.getElementById('contactEmail').value.trim();
+      const poruka = document.getElementById('contactMessage').value.trim();
+      const statusDiv = document.getElementById('formStatus');
+
+      statusDiv.style.color = '#0056b3';
+      statusDiv.textContent = 'Slanje poruke u toku...';
+
+      try {
+        const { error } = await _supabase
+          .from('KONTAKT_PORUKE')
+          .insert([
+            { ime: ime, mail: mail, poruka: poruka, status: 'Nova' }
+          ]);
+
+        if (error) throw error;
+
+        statusDiv.style.color = 'green';
+        statusDiv.textContent = 'Vaša poruka je uspješno poslata! Odgovorit ćemo vam uskoro.';
+        document.getElementById('contactForm').reset();
+      } catch (err) {
+        statusDiv.style.color = 'red';
+        statusDiv.textContent = 'Došlo je do greške pri slanju: ' + err.message;
       }
     }
   </script>
