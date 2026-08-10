@@ -3,71 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LjubavNaPrviKlik | Pronađi Svoju Srodnu Dušu</title>
+  <title>DocBizHub | Pametno Upravljanje Dokumentima i Pretraga</title>
 
-  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18358301333"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'AW-18358301333');
-    gtag('config', 'G-7LELHW0FEZ');
-  </script>
-  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; background-color: #fff0f3; color: #2b2d42; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; background-color: #f4f6f9; color: #2b2d42; }
     
     /* Navigation Bar */
-    header { background-color: #d90429; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
     .logo { font-size: 1.6rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
     
     nav ul { display: flex; list-style: none; align-items: center; }
     nav ul li { margin-left: 20px; }
     nav ul li a { color: #fff; text-decoration: none; font-weight: 500; transition: color 0.3s; }
-    nav ul li a:hover { color: #ffccd5; }
+    nav ul li a:hover { color: #d90429; }
 
     /* Language Switcher */
-    .lang-select { background: #ef233c; color: #fff; border: 1px solid #ffb3c1; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; outline: none; font-weight: bold; }
+    .lang-select { background: #4f46e5; color: #fff; border: 1px solid #818cf8; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; outline: none; font-weight: bold; }
 
     /* Hero Section */
-    #hero { background: linear-gradient(rgba(217, 4, 41, 0.75), rgba(43, 45, 66, 0.85)), url('https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1350&q=80') center/cover no-repeat; color: #fff; text-align: center; padding: 130px 20px; }
+    #hero { background: linear-gradient(rgba(43, 45, 66, 0.85), rgba(26, 28, 41, 0.9)), url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1350&q=80') center/cover no-repeat; color: #fff; text-align: center; padding: 130px 20px; }
     #hero h1 { font-size: 3.2rem; margin-bottom: 15px; font-weight: 800; }
-    #hero p { font-size: 1.3rem; max-width: 750px; margin: 0 auto 35px auto; color: #ffe5ec; }
+    #hero p { font-size: 1.3rem; max-width: 750px; margin: 0 auto 35px auto; color: #cbd5e1; }
     
     /* Hero Buttons */
     .hero-buttons { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
     .btn { padding: 14px 32px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; text-decoration: none; transition: all 0.3s ease; cursor: pointer; border: none; }
-    .btn-primary { background-color: #ffb3c1; color: #800020; box-shadow: 0 4px 15px rgba(255, 179, 193, 0.4); }
-    .btn-primary:hover { background-color: #ffffff; color: #d90429; transform: translateY(-3px); }
+    .btn-primary { background-color: #d90429; color: #fff; box-shadow: 0 4px 15px rgba(217, 4, 41, 0.4); }
+    .btn-primary:hover { background-color: #b50322; transform: translateY(-3px); }
     .btn-secondary { background-color: transparent; color: #fff; border: 2px solid #fff; }
-    .btn-secondary:hover { background-color: #fff; color: #d90429; transform: translateY(-3px); }
+    .btn-secondary:hover { background-color: #fff; color: #2b2d42; transform: translateY(-3px); }
 
     /* Common Section Layout */
     section { padding: 70px 20px; max-width: 1200px; margin: auto; }
-    h2 { text-align: center; margin-bottom: 30px; color: #800020; font-size: 2.2rem; position: relative; }
-    h2::after { content: '❤️'; font-size: 1.2rem; display: block; margin-top: 5px; }
+    h2 { text-align: center; margin-bottom: 30px; color: #2b2d42; font-size: 2.2rem; position: relative; }
+    h2::after { content: '📁'; font-size: 1.2rem; display: block; margin-top: 5px; }
 
     /* Cards Grid */
     .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 20px; }
-    .card { background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(217, 4, 41, 0.08); text-align: center; border-bottom: 4px solid #ef233c; transition: transform 0.3s; }
+    .card { background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: center; border-bottom: 4px solid #d90429; transition: transform 0.3s; }
     .card:hover { transform: translateY(-5px); }
-    .card h3 { margin-bottom: 15px; color: #d90429; }
+    .card h3 { margin-bottom: 15px; color: #2b2d42; }
 
-    /* Translator Box */
+    /* AI Tool Box */
     .translator-box { background: #fff; padding: 35px; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); max-width: 700px; margin: auto; text-align: center; }
     .translator-inputs { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
-    .lang-pair { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
-    .lang-pair select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; font-weight: bold; }
     
     /* Reviews Section */
     .reviews-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
-    .review-card { background: #fff; padding: 25px; border-radius: 15px; width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); font-style: italic; border-left: 5px solid #d90429; }
+    .review-card { background: #fff; padding: 25px; border-radius: 15px; width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); font-style: italic; border-left: 5px solid #4f46e5; }
     .review-card p { margin-bottom: 12px; color: #4a4e69; }
-    .review-card strong { display: block; font-style: normal; color: #d90429; text-align: right; }
+    .review-card strong { display: block; font-style: normal; color: #2b2d42; text-align: right; }
 
     /* Contact Form */
     form { max-width: 600px; margin: auto; display: flex; flex-direction: column; background: #fff; padding: 35px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
@@ -84,20 +72,18 @@
       nav ul { flex-wrap: wrap; justify-content: center; gap: 10px; }
       nav ul li { margin-left: 0; }
       #hero h1 { font-size: 2.3rem; }
-      .lang-pair { flex-direction: column; }
     }
   </style>
 </head>
 <body>
 
   <header>
-    <a href="#hero" class="logo">❤️ LjubavNaPrviKlik</a>
+    <a href="#hero" class="logo">📄 DocBizHub</a>
     <nav>
       <ul>
         <li><a href="#hero" data-i18n="nav_home">Početna</a></li>
         <li><a href="#about" data-i18n="nav_about">O nama</a></li>
         <li><a href="#why-us" data-i18n="nav_why">Zašto mi</a></li>
-        <li><a href="#translator" data-i18n="nav_trans">Prevodilac</a></li>
         <li><a href="#reviews" data-i18n="nav_reviews">Iskustva</a></li>
         <li><a href="#contact" data-i18n="nav_contact">Kontakt</a></li>
         <li>
@@ -112,84 +98,55 @@
   </header>
 
   <section id="hero">
-    <h1 data-i18n="hero_title">Pronađite Ljubav Svog Života</h1>
-    <p data-i18n="hero_desc">Upoznajte slobodne muškarce i žene iz cijelog svijeta. Sigurna, brza i jednostavna platforma za spajanje srodnih duša.</p>
+    <h1 data-i18n="hero_title">Pametno Upravljanje Dokumentima i Pretraga</h1>
+    <p data-i18n="hero_desc">DocBizHub je vaša centralna platforma za brzu analizu, pretragu poslovnih resursa i naprednu saradnju uz podršku vještačke inteligencije.</p>
     <div class="hero-buttons">
-      <a href="REGISTRACIJA.html" class="btn btn-primary" data-i18n="btn_register">REGISTRACIJA</a>
-      <a href="LOGIN.html" class="btn btn-secondary" data-i18n="btn_login">LOGIN</a>
+      <a href="DASHBOARD.html" class="btn btn-primary" data-i18n="btn_dashboard">Otvori Dashboard</a>
+      <a href="PRETRAGA_INTERNET.html" class="btn btn-secondary" data-i18n="btn_search">Pretraga Tržišta</a>
     </div>
   </section>
 
   <section id="about">
-    <h2 data-i18n="about_title">O Našem Portalu</h2>
+    <h2 data-i18n="about_title">O Našoj Platformi</h2>
     <div style="text-align: center; max-width: 800px; margin: auto;">
-      <p data-i18n="about_text1">Naša misija je spajanje ljudi koji traže iskrene veze, ljubav i prijateljstvo. Bez obzira gdje se nalazite, pomažemo vam da pronađete idealnog partnera.</p>
+      <p data-i18n="about_text1">DocBizHub je nastao s ciljem da olakša svakodnevne administrativne i poslovne procese. Naša platforma kombinuje moć moderne tehnologije, sigurnih baza podataka i vještačke inteligencije.</p>
       <br>
-      <p data-i18n="about_text2">Uz moderne opcije filtriranja profila i ugrađeni sustav za automatsko prevođenje poruka, jezične barijere više ne postoje!</p>
+      <p data-i18n="about_text2">Bilo da vodite mali biznis, tražite poslovne partnere ili želite da organizujete svoje dokumente na jednom mjestu, DocBizHub vam pruža sve alate za uspjeh.</p>
     </div>
   </section>
 
   <section id="why-us">
-    <h2 data-i18n="why_title">Zašto Izabrati Nas</h2>
+    <h2 data-i18n="why_title">Zašto Izabrati DocBizHub</h2>
     <div class="grid-container">
       <div class="card">
-        <h3 data-i18n="why_1_title">🔒 100% Sigurnost</h3>
-        <p data-i18n="why_1_desc">Svi profili su provjereni kako bismo vam osigurali ugodno i sigurno iskustvo dopisivanja.</p>
+        <h3 data-i18n="why_1_title">⚡ Brza i Efikasna Pretraga</h3>
+        <p data-i18n="why_1_desc">Napredni alati i asistenti omogućavaju vam da u sekundi pronađete tražene podatke i resurse.</p>
       </div>
       <div class="card">
-        <h3 data-i18n="why_2_title">💬 Automatski Prevodilac</h3>
-        <p data-i18n="why_2_desc">Razgovarajte s partnerima iz bilo koje zemlje – naše poruke se automatski prevode na vaš jezik.</p>
+        <h3 data-i18n="why_2_title">🔒 Sigurnost Podataka</h3>
+        <p data-i18n="why_2_desc">Vaši dokumenti i pretrage su zaštićeni uz naprednu Supabase enkripciju i zaštitu.</p>
       </div>
       <div class="card">
-        <h3 data-i18n="why_3_title">🎯 Pametno Spajanje</h3>
-        <p data-i18n="why_3_desc">Naš algoritam spaja muškarce i žene na temelju zajedničkih interesa, hobija i životnih ciljeva.</p>
-      </div>
-    </div>
-  </section>
-
-  <section id="translator">
-    <h2 data-i18n="trans_title">Automatsko Prevođenje Poruka</h2>
-    <div class="translator-box">
-      <p data-i18n="trans_desc">Komunicirajte s partnerom bez jezičkih prepreka! Isprobajte kako naš sustav u realnom vremenu prevodi vašu poruku partneru:</p>
-      
-      <div class="translator-inputs">
-        <div class="lang-pair">
-          <span><strong>Moj jezik:</strong> Bosanski</span>
-          <span>➡️</span>
-          <div>
-            <strong>Jezik partnera:</strong>
-            <select id="partnerLang">
-              <option value="en">English (Engleski)</option>
-              <option value="de">Deutsch (Njemački)</option>
-            </select>
-          </div>
-        </div>
-
-        <textarea id="sourceText" rows="3" placeholder="Upišite poruku ovdje (npr. Zdravo, kako si danas?)..."></textarea>
-        <button class="btn btn-primary" onclick="translateMessage()" data-i18n="btn_translate">Prevedi i Pošalji</button>
-
-        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: left; border: 1px solid #eee;">
-          <small style="color: #666;" data-i18n="trans_result_label">Kako partner vidi vašu poruku:</small>
-          <div id="translatedResult" style="font-size: 1.1rem; font-weight: bold; color: #d90429; margin-top: 5px;">...</div>
-        </div>
+        <h3 data-i18n="why_3_title">🤖 Pametna AI Integracija</h3>
+        <p data-i18n="why_3_desc">Korištenje moćnih AI modela za automatsko generisanje ideja, analizu upita i rješavanje zadataka.</p>
       </div>
     </div>
   </section>
 
   <section id="reviews">
-    <h2 data-i18n="reviews_title">Iskustva Sretnih Parova</h2>
+    <h2 data-i18n="reviews_title">Iskustva Naših Korisnika</h2>
     <div class="reviews-container">
       <div class="review-card">
-        <p data-i18n="rev_1_text">"Zahvaljujući automatskom prevodiocu upoznala sam Thomasa iz Njemačke. Danas smo sretno vjenčani!"</p>
-        <strong>- Emina & Thomas 💍</strong>
+        <p data-i18n="rev_1_text">"DocBizHub nam je uštedio stotine sati rada. Pretraga firmi i asistenti su nevjerovatno korisni!"</p>
+        <strong>- Emir H., Direktor 📁</strong>
       </div>
       <div class="review-card">
-        <p data-i18n="rev_2_text">"Najbolji portal za upoznavanje! Registrirao sam se bez velikih očekivanja i pronašao ženu svog života."</p>
-        <strong>- Amer K. ❤️</strong>
+        <p data-i18n="rev_2_text">"Izuzetno jednostavan interfejs i moćne funkcije. Sistem automatskog slanja upita adminu radi besprijekorno."</p>
+        <strong>- Selma K., Menadžer 💼</strong>
       </div>
       <div class="review-card">
-        <p data-i18n="rev_3_text">"Sigurno okruženje, odlični profili i jednostavna komunikacija. Toplo preporučujem svima!"</p>
-        <strong>- Sabina M. ✨</strong>
+        <p data-i18n="rev_3_text">"Platforma koja nudi sve na jednom mjestu. Topla preporuka svim preduzetnicima."</p>
+        <strong>- Nermin M., Preduzetnik ✨</strong>
       </div>
     </div>
   </section>
@@ -200,13 +157,13 @@
       <input type="text" id="contactName" placeholder="Vaše ime" data-i18n-ph="ph_name" required>
       <input type="email" id="contactEmail" placeholder="Vaš E-mail" data-i18n-ph="ph_email" required>
       <textarea id="contactMessage" placeholder="Vaša poruka" rows="5" data-i18n-ph="ph_message" required></textarea>
-      <button type="submit" class="btn btn-primary" style="background-color: #d90429; color: white;" data-i18n="btn_send">Pošalji Upit</button>
+      <button type="submit" class="btn btn-primary" style="background-color: #2b2d42; color: white;" data-i18n="btn_send">Pošalji Upit</button>
       <div id="formStatus"></div>
     </form>
   </section>
 
   <footer>
-    <p>© 2026 LjubavNaPrviKlik. <span data-i18n="footer_rights">Sva prava zadržana. Pronađite sreću.</span></p>
+    <p>© 2026 DocBizHub. <span data-i18n="footer_rights">Sva prava zadržana.</span></p>
   </footer>
 
   <script>
@@ -215,7 +172,7 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 1. AUTOMATSKO HVATANJE I PAMĆENJE IZVORA KADA NEKO DOĐE PREKO LINKA (npr. ?izvor=viber_grupa)
+    // 1. AUTOMATSKO HVATANJE I PAMĆENJE IZVORA KADA NEKO DOĐE PREKO LINKA
     (function sacuvajDolazniIzvor() {
       const params = new URLSearchParams(window.location.search);
       const izvorIzUrl = params.get('izvor');
@@ -226,73 +183,64 @@
       }
     })();
 
-    // Prijevodi stranice
+    // Prijevodi stranice za DocBizHub
     const translations = {
       bs: {
-        nav_home: "Početna", nav_about: "O nama", nav_why: "Zašto mi", nav_trans: "Prevodilac", nav_reviews: "Iskustva", nav_contact: "Kontakt",
-        hero_title: "Pronađite Ljubav Svog Života",
-        hero_desc: "Upoznajte slobodne muškarce i žene iz cijelog svijeta. Sigurna, brza i jednostavna platforma za spajanje srodnih duša.",
-        btn_register: "REGISTRACIJA", btn_login: "LOGIN",
-        about_title: "O Našem Portalu",
-        about_text1: "Naša misija je spajanje ljudi koji traže iskrene veze, ljubav i prijateljstvo. Bez obzira gdje se nalazite, pomažemo vam da pronađete idealnog partnera.",
-        about_text2: "Uz moderne opcije filtriranja profila i ugrađeni sustav za automatsko prevođenje poruka, jezične barijere više ne postoje!",
-        why_title: "Zašto Izabrati Nas",
-        why_1_title: "🔒 100% Sigurnost", why_1_desc: "Svi profili su provjereni kako bismo vam osigurali ugodno i sigurno iskustvo dopisivanja.",
-        why_2_title: "💬 Automatski Prevodilac", why_2_desc: "Razgovarajte s partnerima iz bilo koje zemlje – naše poruke se automatski prevode na vaš jezik.",
-        why_3_title: "🎯 Pametno Spajanje", why_3_desc: "Naš algoritam spaja muškarce i žene na temelju zajedničkih interesa, hobija i životnih ciljeva.",
-        trans_title: "Automatsko Prevođenje Poruka",
-        trans_desc: "Komunicirajte s partnerom bez jezičkih prepreka! Isprobajte kako naš sustav u realnom vremenu prevodi vašu poruku partneru:",
-        btn_translate: "Prevedi i Pošalji", trans_result_label: "Kako partner vidi vašu poruku:",
-        reviews_title: "Iskustva Sretnih Parova",
-        rev_1_text: '"Zahvaljujući automatskom prevodiocu upoznala sam Thomasa iz Njemačke. Danas smo sretno vjenčani!"',
-        rev_2_text: '"Najbolji portal za upoznavanje! Registrirao sam se bez velikih očekivanja i pronašao ženu svog života."',
-        rev_3_text: '"Sigurno okruženje, odlični profili i jednostavna komunikacija. Toplo preporučujem svima!"',
+        nav_home: "Početna", nav_about: "O nama", nav_why: "Zašto mi", nav_reviews: "Iskustva", nav_contact: "Kontakt",
+        hero_title: "Pametno Upravljanje Dokumentima i Pretraga",
+        hero_desc: "DocBizHub je vaša centralna platforma za brzu analizu, pretragu poslovnih resursa i naprednu saradnju uz podršku vještačke inteligencije.",
+        btn_dashboard: "Otvori Dashboard", btn_search: "Pretraga Tržišta",
+        about_title: "O Našoj Platformi",
+        about_text1: "DocBizHub je nastao s ciljem da olakša svakodnevne administrativne i poslovne procese. Naša platforma kombinuje moć moderne tehnologije, sigurnih baza podataka i vještačke inteligencije.",
+        about_text2: "Bilo da vodite mali biznis, tražite poslovne partnere ili želite da organizujete svoje dokumente na jednom mjestu, DocBizHub vam pruža sve alate za uspjeh.",
+        why_title: "Zašto Izabrati DocBizHub",
+        why_1_title: "⚡ Brza i Efikasna Pretraga", why_1_desc: "Napredni alati i asistenti omogućavaju vam da u sekundi pronađete tražene podatke i resurse.",
+        why_2_title: "🔒 Sigurnost Podataka", why_2_desc: "Vaši dokumenti i pretrage su zaštićeni uz naprednu Supabase enkripciju i zaštitu.",
+        why_3_title: "🤖 Pametna AI Integracija", why_3_desc: "Korištenje moćnih AI modela za automatsko generisanje ideja, analizu upita i rješavanje zadataka.",
+        reviews_title: "Iskustva Naših Korisnika",
+        rev_1_text: '"DocBizHub nam je uštedio stotine sati rada. Pretraga firmi i asistenti su nevjerovatno korisni!"',
+        rev_2_text: '"Izuzetno jednostavan interfejs i moćne funkcije. Sistem automatskog slanja upita adminu radi besprijekorno."',
+        rev_3_text: '"Platforma koja nudi sve na jednom mjestu. Topla preporuka svim preduzetnicima."',
         contact_title: "Imate Pitanja? Kontaktirajte Nas",
         ph_name: "Vaše ime", ph_email: "Vaš E-mail", ph_message: "Vaša poruka", btn_send: "Pošalji Upit",
-        footer_rights: "Sva prava zadržana. Pronađite sreću."
+        footer_rights: "Sva prava zadržana."
       },
       en: {
-        nav_home: "Home", nav_about: "About Us", nav_why: "Why Us", nav_trans: "Translator", nav_reviews: "Success Stories", nav_contact: "Contact",
-        hero_title: "Find The Love Of Your Life",
-        hero_desc: "Meet single men and women from all over the world. Safe, fast and simple platform to match soulmates.",
-        btn_register: "REGISTRATION", btn_login: "LOGIN",
-        about_title: "About Our Dating Site",
-        about_text1: "Our mission is to connect people looking for genuine relationships, love, and friendship. No matter where you are, we help you find your match.",
-        about_text2: "With modern filters and built-in automatic chat translation, language barriers no longer exist!",
-        why_title: "Why Choose Us",
-        why_1_title: "🔒 100% Safe", why_1_desc: "All profiles are verified to ensure a comfortable and secure chatting experience.",
-        why_2_title: "💬 Auto Translator", why_2_desc: "Chat with partners from any country – messages are automatically translated to your language.",
-        why_3_title: "🎯 Smart Matchmaker", why_3_desc: "Our algorithm matches men and women based on shared interests, hobbies, and goals.",
-        trans_title: "Automatic Message Translation",
-        trans_desc: "Communicate without language limits! Try how our real-time system translates your text to your partner:",
-        btn_translate: "Translate & Send", trans_result_label: "How your partner sees your message:",
-        reviews_title: "Happy Couple Stories",
-        rev_1_text: '"Thanks to the automatic translator I met Thomas from Germany. Today we are happily married!"',
-        rev_2_text: '"Best dating portal! I registered without high expectations and found the love of my life."',
-        rev_3_text: '"Safe environment, great profiles and easy communication. Highly recommended!"',
+        nav_home: "Home", nav_about: "About Us", nav_why: "Why Us", nav_reviews: "Reviews", nav_contact: "Contact",
+        hero_title: "Smart Document Management & Search",
+        hero_desc: "DocBizHub is your central platform for fast analysis, business resource search, and advanced AI-powered collaboration.",
+        btn_dashboard: "Open Dashboard", btn_search: "Market Search",
+        about_title: "About Our Platform",
+        about_text1: "DocBizHub was created to simplify everyday administrative and business processes. Our platform combines modern technology, secure databases, and artificial intelligence.",
+        about_text2: "Whether you run a small business, look for partners, or organize documents in one place, DocBizHub provides all tools for success.",
+        why_title: "Why Choose DocBizHub",
+        why_1_title: "⚡ Fast & Efficient Search", why_1_desc: "Advanced tools and assistants let you find requested data and resources in seconds.",
+        why_2_title: "🔒 Data Security", why_2_desc: "Your documents and searches are protected with advanced Supabase encryption.",
+        why_3_title: "🤖 Smart AI Integration", why_3_desc: "Using powerful AI models for automated idea generation, query analysis, and task resolution.",
+        reviews_title: "User Reviews",
+        rev_1_text: '"DocBizHub saved us hundreds of hours of work. Company search and assistants are incredibly useful!"',
+        rev_2_text: '"Extremely simple interface and powerful features. The automatic query submission to admin works flawlessly."',
+        rev_3_text: '"A platform that offers everything in one place. Highly recommended for all entrepreneurs."',
         contact_title: "Have Questions? Contact Us",
         ph_name: "Your Name", ph_email: "Your E-mail", ph_message: "Your Message", btn_send: "Send Inquiry",
-        footer_rights: "All rights reserved. Find happiness."
+        footer_rights: "All rights reserved."
       },
       de: {
-        nav_home: "Startseite", nav_about: "Über uns", nav_why: "Warum wir", nav_trans: "Übersetzer", nav_reviews: "Erfolgsgeschichten", nav_contact: "Kontakt",
-        hero_title: "Finden Sie die Liebe Ihres Lebens",
-        hero_desc: "Lernen Sie single Männer und Frauen aus der ganzen Welt kennen. Sichere und einfache Dating-Plattform.",
-        btn_register: "REGISTRIERUNG", btn_login: "LOGIN",
-        about_title: "Über unser Portal",
-        about_text1: "Unsere Mission ist es, Menschen zu verbinden, die nach echten Beziehungen, Liebe und Freundschaft suchen.",
-        about_text2: "Mit moderner Filtersuche und automatischer Nachrichtenübersetzung gibt es keine Sprachbarrieren mehr!",
-        why_title: "Warum uns wählen",
-        why_1_title: "🔒 100% Sicher", why_1_desc: "Alle Profile werden überprüft, um ein sicheres Chat-Erlebnis zu gewährleisten.",
-        why_2_title: "💬 Auto-Übersetzer", why_2_desc: "Chatten Sie mit Partnern aus jedem Land – Nachrichten werden automatisch übersetzt.",
-        why_3_title: "🎯 Intelligentes Matching", why_3_desc: "Unser Algorithmus verbindet Männer und Frauen basierend auf gemeinsamen Interessen.",
-        trans_title: "Automatische Nachrichtenübersetzung",
-        trans_desc: "Kommunizieren Sie ohne Sprachgrenzen! Testen Sie unsere Echtzeit-Übersetzung:",
-        btn_translate: "Übersetzen & Senden", trans_result_label: "So sieht Ihr Partner die Nachricht:",
-        reviews_title: "Erfolgsgeschichten von Paaren",
-        rev_1_text: '"Dank des automatischen Übersetzers habe ich Thomas kennengelernt. Heute sind wir verheiratet!"',
-        rev_2_text: '"Beste Dating-Seite! Ich habe hier die Liebe meines Lebens gefunden."',
-        rev_3_text: '"Sichere Umgebung, tolle Profile und einfache Kommunikation. Sehr zu empfehlen!"',
+        nav_home: "Startseite", nav_about: "Über uns", nav_why: "Warum wir", nav_reviews: "Bewertungen", nav_contact: "Kontakt",
+        hero_title: "Intelligentes Dokumentenmanagement & Suche",
+        hero_desc: "DocBizHub ist Ihre zentrale Plattform für schnelle Analyse, Geschäftssuche und KI-gestützte Zusammenarbeit.",
+        btn_dashboard: "Dashboard Öffnen", btn_search: "Marktsuche",
+        about_title: "Über Unsere Plattform",
+        about_text1: "DocBizHub wurde entwickelt, um administrative und geschäftliche Prozesse zu vereinfachen. Unsere Plattform kombiniert moderne Technologie, sichere Datenbanken und Künstliche Intelligenz.",
+        about_text2: "Egal ob Sie ein kleines Unternehmen führen oder Dokumente an einem Ort organisieren möchten, DocBizHub bietet alle Werkzeuge.",
+        why_title: "Warum DocBizHub Wählen",
+        why_1_title: "⚡ Schnelle Suche", why_1_desc: "Fortschrittliche Tools und Assistenten helfen Ihnen, Daten in Sekundenschnelle zu finden.",
+        why_2_title: "🔒 Datensicherheit", why_2_desc: "Ihre Dokumente und Suchanfragen sind durch fortschrittliche Supabase-Verschlüsselung geschützt.",
+        why_3_title: "🤖 Intelligente KI-Integration", why_3_desc: "Nutzen Sie leistungsstarke KI-Modelle für automatisierte Analysen und Aufgabenlösungen.",
+        reviews_title: "Kundenbewertungen",
+        rev_1_text: '"DocBizHub hat uns hunderte Stunden Arbeit erspart. Die Firmensuche und Assistenten sind extrem nützlich!"',
+        rev_2_text: '"Äusserst einfache Benutzeroberfläche und leistungsstarke Funktionen. Das System funktioniert einwandfrei."',
+        rev_3_text: '"Eine Plattform, die alles an einem Ort bietet. Sehr zu empfehlen für alle Unternehmer."',
         contact_title: "Haben Sie Fragen? Kontaktieren Sie uns",
         ph_name: "Ihr Name", ph_email: "Ihre E-Mail", ph_message: "Ihre Nachricht", btn_send: "Anfrage Senden",
         footer_rights: "Alle Rechte vorbehalten."
@@ -309,32 +257,6 @@
         const key = el.getAttribute('data-i18n-ph');
         if (translations[lang] && translations[lang][key]) el.setAttribute('placeholder', translations[lang][key]);
       });
-    }
-
-    async function translateMessage() {
-      const text = document.getElementById('sourceText').value;
-      const targetLang = document.getElementById('partnerLang').value;
-      const resultDiv = document.getElementById('translatedResult');
-
-      if (!text.trim()) {
-        resultDiv.textContent = "Molimo unesite poruku za prevođenje!";
-        return;
-      }
-
-      resultDiv.textContent = "Prevođenje u toku...";
-
-      try {
-        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=bs|${targetLang}`);
-        const data = await res.json();
-        
-        if (data.responseData) {
-          resultDiv.textContent = `[${targetLang.toUpperCase()}] "${data.responseData.translatedText}"`;
-        } else {
-          resultDiv.textContent = "Greška pri prevođenju.";
-        }
-      } catch (err) {
-        resultDiv.textContent = "Greška u mrežnoj vezi s prevodiocem.";
-      }
     }
 
     // Funkcija za slanje kontakt poruke u Supabase bazu
