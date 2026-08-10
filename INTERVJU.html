@@ -14,7 +14,7 @@
             color: #333;
         }
         .container {
-            max-width: 800px;
+            max-width: 850px;
             margin: 30px auto;
             background: #ffffff;
             border-radius: 12px;
@@ -31,12 +31,6 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
-        }
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
         }
         .logo-area h2 {
             margin: 0;
@@ -70,7 +64,9 @@
             font-weight: bold;
             transition: background 0.2s;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
         .credits-badge button:hover, .btn-account:hover, .btn-dashboard:hover, .btn-external:hover {
             background: #2563eb;
@@ -79,12 +75,37 @@
         .btn-account:hover { background: #0f766e; }
         .btn-dashboard { background: #475569; }
         .btn-dashboard:hover { background: #334155; }
+        
+        /* Stilovi sa opisima za Autovox i AutomatikaEU dugmad */
         .btn-autovox { background: #0284c7; }
         .btn-autovox:hover { background: #0369a1; }
         .btn-automatika { background: #7c3aed; }
         .btn-automatika:hover { background: #6d28d9; }
 
-        /* Stil za Google Translate widget da se uklopi */
+        .external-btn-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        .external-btn-wrapper:hover .tooltip-desc {
+            display: block;
+        }
+        .tooltip-desc {
+            display: none;
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: #fff;
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 4px;
+            white-space: nowrap;
+            z-index: 10;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Google Translate widget stil */
         .goog-te-combo {
             padding: 6px;
             border-radius: 6px;
@@ -272,7 +293,7 @@
 <div class="container">
     <div class="header">
         <div class="logo-area">
-            <h2>📄 DocBizHub | AI Asistent za Intervju</h2>
+            <h2>📄 DocBizHub | AI Asistent</h2>
         </div>
         <div class="header-actions">
             <!-- Google Translate Widget za sve svjetske jezike -->
@@ -280,8 +301,19 @@
 
             <a href="index.html" class="btn-dashboard">🏠 Početna</a>
             <a href="dashboard.html" class="btn-dashboard">⬅️ Dashboard</a>
-            <a href="https://www.autovoxa.com" target="_blank" class="btn-external btn-autovox">🚗 Autovoxa</a>
-            <a href="https://automatikaeu.store" target="_blank" class="btn-external btn-automatika">⚙️ AutomatikaEU</a>
+            
+            <!-- Autovoxa dugme sa opisom (tooltip) -->
+            <div class="external-btn-wrapper">
+                <a href="https://www.autovoxa.com" target="_blank" class="btn-external btn-autovox">🚗 Autovoxa</a>
+                <div class="tooltip-desc">Glasovni AI Asistent i aplikacije</div>
+            </div>
+
+            <!-- AutomatikaEU dugme sa opisom (tooltip) -->
+            <div class="external-btn-wrapper">
+                <a href="https://automatikaeu.store" target="_blank" class="btn-external btn-automatika">⚙️ AutomatikaEU</a>
+                <div class="tooltip-desc">Industrijska automatika i prodaja</div>
+            </div>
+
             <button class="btn-account" onclick="otvoriRacunModal()">📄 Račun</button>
             <div class="credits-badge">
                 <span>Krediti: <strong id="user-credits">1500</strong> znakova</span>
