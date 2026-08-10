@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Asistent za Poslovni Intervju | Portal</title>
+    <title>AI Asistent za Poslovni Intervju | DocBizHub</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         body {
@@ -14,7 +14,7 @@
             color: #333;
         }
         .container {
-            max-width: 750px;
+            max-width: 800px;
             margin: 30px auto;
             background: #ffffff;
             border-radius: 12px;
@@ -30,9 +30,15 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 15px;
         }
-        .header h2 {
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .logo-area h2 {
             margin: 0;
             font-size: 18px;
             font-weight: 600;
@@ -53,11 +59,11 @@
             gap: 8px;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .credits-badge button, .btn-account, .btn-dashboard {
+        .credits-badge button, .btn-account, .btn-dashboard, .btn-external {
             background: #3b82f6;
             color: white;
             border: none;
-            padding: 5px 10px;
+            padding: 6px 12px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 12px;
@@ -66,21 +72,31 @@
             text-decoration: none;
             display: inline-block;
         }
-        .credits-badge button:hover, .btn-account:hover, .btn-dashboard:hover {
+        .credits-badge button:hover, .btn-account:hover, .btn-dashboard:hover, .btn-external:hover {
             background: #2563eb;
         }
-        .btn-account {
-            background: #0d9488;
+        .btn-account { background: #0d9488; }
+        .btn-account:hover { background: #0f766e; }
+        .btn-dashboard { background: #475569; }
+        .btn-dashboard:hover { background: #334155; }
+        .btn-autovox { background: #0284c7; }
+        .btn-autovox:hover { background: #0369a1; }
+        .btn-automatika { background: #7c3aed; }
+        .btn-automatika:hover { background: #6d28d9; }
+
+        /* Stil za Google Translate widget da se uklopi */
+        .goog-te-combo {
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-size: 12px;
+            background: #fff;
+            color: #1e293b;
+            outline: none;
         }
-        .btn-account:hover {
-            background: #0f766e;
-        }
-        .btn-dashboard {
-            background: #475569;
-        }
-        .btn-dashboard:hover {
-            background: #334155;
-        }
+        .goog-logo-link, .VIpgJd-ZVi9od-ORHb-OEVmcd { display: none !important; }
+        body { top: 0 !important; }
+
         .control-bar {
             padding: 15px 25px;
             background: #f8fafc;
@@ -255,13 +271,21 @@
 
 <div class="container">
     <div class="header">
-        <h2>AI Asistent za Poslovni Intervju</h2>
+        <div class="logo-area">
+            <h2>📄 DocBizHub | AI Asistent za Intervju</h2>
+        </div>
         <div class="header-actions">
-            <a href="dashboard.html" class="btn-dashboard">⬅️ Nazad na Dashboard</a>
-            <button class="btn-account" onclick="otvoriRacunModal()">📄 Moj Broj Računa</button>
+            <!-- Google Translate Widget za sve svjetske jezike -->
+            <div id="google_translate_element"></div>
+
+            <a href="index.html" class="btn-dashboard">🏠 Početna</a>
+            <a href="dashboard.html" class="btn-dashboard">⬅️ Dashboard</a>
+            <a href="https://www.autovoxa.com" target="_blank" class="btn-external btn-autovox">🚗 Autovoxa</a>
+            <a href="https://automatikaeu.store" target="_blank" class="btn-external btn-automatika">⚙️ AutomatikaEU</a>
+            <button class="btn-account" onclick="otvoriRacunModal()">📄 Račun</button>
             <div class="credits-badge">
                 <span>Krediti: <strong id="user-credits">1500</strong> znakova</span>
-                <button onclick="topUpCredits()">Dopuni (PayPal)</button>
+                <button onclick="topUpCredits()">Dopuni</button>
             </div>
         </div>
     </div>
@@ -298,7 +322,7 @@
         <div class="account-box">
             Broj računa: <strong>1610000000000000</strong><br>
             Banka: Vaša Banka d.d.<br>
-            Primalac: Vaše Ime / Firma
+            Primalac: DocBizHub d.o.o.
         </div>
 
         <p style="font-size: 12px; color: #64748b;">Nakon izvršene uplate, pošaljite potvrdu putem kontakt forme i krediti će vam biti ručno dodati na račun.</p>
@@ -306,6 +330,18 @@
         <button class="modal-close" onclick="zatvoriRacunModal()">Zatvori</button>
     </div>
 </div>
+
+<!-- Google Translate Script -->
+<script type="text/javascript">
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'bs',
+            includedLanguages: 'en,de,fr,es,it,tr,ar,zh-CN,ru,bs,hr,sr',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+        }, 'google_translate_element');
+    }
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 <script>
     let userCredits = 1500;
@@ -465,10 +501,6 @@
         } else {
             if (callback) callback();
         }
-    }
-
-    function playElevenLabsVoice(text) {
-        console.log("Poziv ElevenLabs API-ju za tekst dužine:", text.length);
     }
 
     function escapeHtml(unsafe) {
