@@ -343,7 +343,7 @@
       prikaziKorisnike(filtrirani);
     }
 
-    // DINAMIČKO UČITAVANJE NOTIFIKACIJA SA VELIKIM SLOVIMA ZA TABELU I KOLONE
+    // ČITANJE NOTIFIKACIJA DIREKTNO IZ SUPABASE TABELE
     let notifications = [];
 
     async function ucitajNotifikacijeSaForuma() {
@@ -360,7 +360,7 @@
             if (data && data.length > 0) {
                 notifications = data.map(item => ({
                     id: item.ID || item.id || Date.now(),
-                    text: `Nova tema: "${item.NASLOV || item.Tekst || 'Pogledaj objavu'}"`,
+                    text: `Nova tema: "${item.NASLOV || item.tekst || 'Pogledaj objavu'}"`,
                     time: "Nedavno",
                     unread: true
                 }));
