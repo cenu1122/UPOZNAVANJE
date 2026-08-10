@@ -192,7 +192,7 @@
     <div class="nav-actions">
       <!-- Forum dugme i Notifikacije u gornjem desnom uglu -->
       <div class="top-nav-utilities">
-          <a href="GORUM.html" class="nav-btn">
+          <a href="FORUM.html" class="nav-btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
               Forum
           </a>
@@ -343,11 +343,33 @@
       prikaziKorisnike(filtrirani);
     }
 
-    // Skripta za notifikacije i zvonce
-    let notifications = JSON.parse(localStorage.getItem('forum_notifications')) || [
-        { id: 1, text: "Nova tema: 'Pomoć oko HTML kodiranja'", time: "Prije 5 min", unread: true },
-        { id: 2, text: "Korisnik je komentarisao vašu objavu.", time: "Prije 1 sat", unread: true }
-    ];
+    // DINAMIČKO UČITAVANJE NOTIFIKACIJA SA FORUMA IZ SUPABASE BAZE
+    let notifications = [];
+
+    async function ucitajNotifikacijeSaForuma() {
+        if (!_supabase) return;
+        try {
+            const { data, error } = await _supabase
+                .from('FORUM_TEME')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                notifications = data.map(item => ({
+                    id: item.id || Date.now(),
+                    text: `Nova tema: "${item.naslov || item.tekst || 'Pogledaj objavu'}"`,
+                    time: "Nedavno",
+                    unread: true
+                }));
+                updateNotificationsUI();
+            }
+        } catch (e) {
+            console.log("Greška pri učitavanju notifikacija iz baze.");
+        }
+    }
 
     function updateNotificationsUI() {
         const listEl = document.getElementById('notifList');
@@ -379,7 +401,7 @@
             item.onclick = () => {
                 notif.unread = false;
                 saveAndRefresh();
-                window.location.href = 'GORUM.html';
+                window.location.href = 'FORUM.html';
             };
             listEl.appendChild(item);
         });
@@ -396,19 +418,7 @@
     }
 
     function saveAndRefresh() {
-        localStorage.setItem('forum_notifications', JSON.stringify(notifications));
         updateNotificationsUI();
-    }
-
-    function addForumNotification(text) {
-        const newNotif = {
-            id: Date.now(),
-            text: text,
-            time: "Upravo sada",
-            unread: true
-        };
-        notifications.unshift(newNotif);
-        saveAndRefresh();
     }
 
     window.addEventListener('click', function(e) {
@@ -420,7 +430,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         ucitajKorisnikeZaPosao();
-        updateNotificationsUI();
+        ucitajNotifikacijeSaForuma();
     });
   </script>
 
