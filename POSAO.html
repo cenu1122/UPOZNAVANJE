@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Posao & Karijera | LjubavNaPrviKlik</title>
+  <title>Posao & Karijera | DocBizHub</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -11,19 +11,71 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fff0f3; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
 
-    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; position: relative; }
+    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 12px; position: relative; }
     .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
 
     .nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .btn-nav { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
+    .btn-nav { background: #d90429; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
     .btn-nav:hover { background: #ef233c; }
 
-    /* Stilovi za specifične linkove (Autovox i AutomatikaEU) */
-    .btn-external-autovox { background: #0284c7; color: #fff; }
-    .btn-external-autovox:hover { background: #0369a1; }
-    
-    .btn-external-automatika { background: #7c3aed; color: #fff; }
-    .btn-external-automatika:hover { background: #6d28d9; }
+    /* Poseban dio i stilovi za Autovox i AutomatikaEU sa opisima */
+    .external-projects-section {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(255, 255, 255, 0.08);
+        padding: 6px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .project-card-link {
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+        padding: 6px 12px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    .project-card-link:hover {
+        transform: translateY(-2px);
+    }
+    .project-title {
+        font-size: 13px;
+        font-weight: bold;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .project-desc {
+        font-size: 10px;
+        color: #64748b;
+    }
+
+    /* Google Translate Widget stil */
+    .lang-wrapper {
+        background: #fff;
+        padding: 4px 8px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #cbd5e1;
+    }
+    .goog-te-combo {
+        padding: 4px;
+        border-radius: 4px;
+        border: 1px solid #cbd5e1;
+        font-size: 12px;
+        background: #fff;
+        color: #1e293b;
+        outline: none;
+        cursor: pointer;
+    }
+    .goog-logo-link, .VIpgJd-ZVi9od-ORHb-OEVmcd { display: none !important; }
+    body { top: 0 !important; }
 
     /* Stilovi za gornju desnu navigaciju (Dugme foruma, WhatsApp pretraga i Notifikacije) */
     .top-nav-utilities {
@@ -208,30 +260,38 @@
     <a href="DASHBOARD.html" class="logo">💼 Posao & Karijera Portal</a>
 
     <div class="nav-actions">
+      <!-- Google Translate widget sa filterom za jezike -->
       <div class="lang-wrapper">
         <span>🌐</span>
         <div id="google_translate_element"></div>
       </div>
 
       <a href="POSAO_VIDEO.html" class="btn-nav" style="background: #10b981;">📺 Video Projekti</a>
-      <a href="DASHBOARD.html" class="btn-nav">🏠 Nazad na Dashboard</a>
+      <a href="DASHBOARD.html" class="btn-nav">🏠 Dashboard</a>
       <a href="KONTAKT.html" class="btn-nav">📩 Podrška</a>
-      
-      <!-- Dodana dva nova dugmeta za Autovox i AutomatikaEU -->
-      <a href="https://autovoxa.com" target="_blank" class="btn-nav btn-external-autovox">🚗 Autovoxa</a>
-      <a href="https://automatikaeu.store" target="_blank" class="btn-nav btn-external-automatika">⚙️ AutomatikaEU</a>
+
+      <!-- Posebna sekcija sa linkovima i opisima za Autovoxa i AutomatikaEU -->
+      <div class="external-projects-section">
+          <a href="https://www.autovoxa.com" target="_blank" class="project-card-link">
+              <span class="project-title">🚗 Autovoxa</span>
+              <span class="project-desc">Glasovni AI Asistent</span>
+          </a>
+          <a href="https://automatikaeu.store" target="_blank" class="project-card-link">
+              <span class="project-title">⚙️ AutomatikaEU</span>
+              <span class="project-desc">Industrijska rješenja</span>
+          </a>
+      </div>
     </div>
     
     <div class="nav-actions">
       <!-- Forum dugme, WhatsApp pretraga i Notifikacije u gornjem desnom uglu -->
       <div class="top-nav-utilities">
-          <!-- Novo dodano dugme za WhatsApp pretragu -->
           <a href="PRETRAGA_WHATSAPP.html" class="nav-btn nav-btn-wa">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
               WhatsApp Pretraga
           </a>
 
-          <a href="POSAO_FORUM.html" class="nav-btn">
+          <a href="FORUM.html" class="nav-btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
               Forum
           </a>
@@ -271,6 +331,18 @@
   <footer>
     <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
   </footer>
+
+  <!-- Google Translate Skripta za sve svjetske jezike -->
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'bs',
+        includedLanguages: 'en,de,fr,es,it,tr,ar,zh-CN,ru,bs,hr,sr',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+      }, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
   <script>
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
@@ -415,7 +487,7 @@
             item.onclick = () => {
                 notif.unread = false;
                 saveAndRefresh();
-                window.location.href = 'POSAO_FORUM.html';
+                window.location.href = 'FORUM.html';
             };
             listEl.appendChild(item);
         });
