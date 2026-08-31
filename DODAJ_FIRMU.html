@@ -25,30 +25,29 @@
         .main-container {
             background-color: #1e1e1e;
             border-radius: 12px;
-            padding: 30px;
-            width: 600px;
+            padding: 25px;
+            width: 550px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.5);
             text-align: center;
         }
 
         h2 {
-            font-size: 22px;
-            margin-bottom: 10px;
+            font-size: 20px;
+            margin-bottom: 8px;
         }
 
         p.opis {
             color: #a0a0a0;
-            font-size: 14px;
-            margin-bottom: 25px;
+            font-size: 13px;
+            margin-bottom: 15px;
             line-height: 1.4;
         }
 
         .upload-box {
             border: 2px dashed #4f46e5;
             border-radius: 10px;
-            padding: 30px;
+            padding: 20px;
             background-color: #252525;
-            transition: all 0.3s ease;
             cursor: pointer;
             margin-bottom: 15px;
         }
@@ -62,31 +61,26 @@
             background-color: #4f46e5;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 8px 16px;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 15px;
-            transition: background 0.2s;
-        }
-
-        .btn-izaberi:hover {
-            background-color: #4338ca;
+            margin-top: 10px;
         }
 
         .btn-upload {
             background-color: #10b981;
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 12px 20px;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
             width: 100%;
-            transition: background 0.2s;
             margin-top: 10px;
+            transition: background 0.2s;
         }
 
         .btn-upload:hover {
@@ -95,14 +89,14 @@
 
         #file-name {
             color: #34d399;
-            margin-bottom: 15px;
-            font-size: 14px;
+            margin-bottom: 10px;
+            font-size: 13px;
             font-weight: 500;
         }
 
         #status-poruka {
-            margin-top: 15px;
-            font-size: 14px;
+            margin-top: 10px;
+            font-size: 13px;
         }
     </style>
 </head>
@@ -111,40 +105,37 @@
     <div class="main-container">
         <h2>🏢 Dodaj Firmu / Bulk Excel Upload</h2>
         <p class="opis">
-            Izaberi ili prevuci svoj Excel (<code>.xlsx</code>) ili CSV fajl sa firmama i kontaktima. Sistem će pročitati podatke i prebaciti ih direktno u Supabase tabelu.
+            Izaberi svoj Excel (<code>.xlsx</code>) ili CSV fajl. Podaci će biti ubačeni u tabelu <strong>POSAO_KOKORISNICI</strong>.
         </p>
 
         <!-- Upload okvir -->
         <div class="upload-box" id="drop-zone" onclick="document.getElementById('file-input').click();">
             📂
-            <p style="margin: 10px 0 5px 0; font-weight: 500;">Klikni ovdje ili prevuci fajl</p>
-            <span style="color: #71717a; font-size: 12px;">Podržani formati: .xlsx, .xls, .csv</span>
+            <p style="margin: 8px 0 5px 0; font-weight: 500; font-size: 14px;">Klikni ovdje ili prevuci fajl</p>
+            <span style="color: #71717a; font-size: 11px;">Podržani formati: .xlsx, .xls, .csv</span>
             <br>
             <button type="button" class="btn-izaberi" onclick="event.stopPropagation(); document.getElementById('file-input').click();">Izaberi fajl sa računara</button>
             
-            <!-- Sakriveni pravi input za fajlove -->
             <input type="file" id="file-input" accept=".xlsx, .xls, .csv" style="display: none;" onchange="fajlIzabran(this)">
         </div>
 
         <div id="file-name"></div>
 
-        <!-- Glavno dugme za prebacivanje u Supabase bazu - Sada je stalno tu -->
-        <button type="button" class="btn-upload" id="btn-submit" onclick="uploadUBazu()">Prebaci podatke u Supabase</button>
+        <!-- STALNO VIDLJIVO ZELENO DUGME -->
+        <button type="button" class="btn-upload" id="btn-submit" onclick="uploadUBazu()">🚀 Prebaci podatke u Supabase bazu</button>
         
         <div id="status-poruka"></div>
     </div>
 
     <script>
-        // 1. OVDJE UNESI SVOJE SUPABASE PODATKE (ako već nisu tu)
-        const SUPABASE_URL = 'TVOJ_SUPABASE_URL';
-        const SUPABASE_ANON_KEY = 'TVOJ_SUPABASE_ANON_KEY';
+        // Uneseni tvoji pravi Supabase podaci
+        const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
         
-        // Inicijalizacija Supabase klijenta
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let izabraniPodaci = [];
 
-        // Funkcija kada korisnik izabere fajl
         function fajlIzabran(input) {
             const fajl = input.files[0];
             if (!fajl) return;
@@ -155,49 +146,43 @@
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
-
-                // Uzimamo prvi sheet (list) iz Excel-a
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
 
-                // Pretvaramo podatke u JSON niz objekata
                 izabraniPodaci = XLSX.utils.sheet_to_json(worksheet);
 
                 if (izabraniPodaci.length > 0) {
-                    document.getElementById('status-poruka').innerHTML = `<span style="color: #34d399;">Uspješno učitano ${izabraniPodaci.length} redova iz fajla. Klikni zeleno dugme za slanje!</span>`;
+                    document.getElementById('status-poruka').innerHTML = `<span style="color: #34d399;">Uspješno pročitano ${izabraniPodaci.length} redova. Klikni zeleno dugme!</span>`;
                 } else {
-                    document.getElementById('status-poruka').innerHTML = `<span style="color: #ef4444;">Fajl je prazan ili pogrešno formatiran.</span>`;
+                    document.getElementById('status-poruka').innerHTML = `<span style="color: #ef4444;">Fajl je prazan.</span>`;
                 }
             };
             reader.readAsArrayBuffer(fajl);
         }
 
-        // Funkcija koja klikom na dugme prebacuje podatke u Supabase tabelu
         async function uploadUBazu() {
             if (izabraniPodaci.length === 0) {
-                alert('Molimo te da prvo izaberi Excel ili CSV fajl!');
+                alert('Prvo izaberi Excel ili CSV fajl!');
                 return;
             }
 
             const statusEl = document.getElementById('status-poruka');
-            statusEl.innerHTML = '<span style="color: #f59e0b;">Slanje podataka u Supabase u toku...</span>';
+            statusEl.innerHTML = '<span style="color: #f59e0b;">Slanje u Supabase u toku...</span>';
 
             try {
-                // Slanje u Supabase tabelu (korištena donja crta umjesto dvotočke)
+                // Upis u tabelu POSAO_KOKORISNICI
                 const { data, error } = await supabaseClient
                     .from('POSAO_KOKORISNICI') 
                     .insert(izabraniPodaci);
 
-                if (error) {
-                    throw error;
-                }
+                if (error) throw error;
 
-                statusEl.innerHTML = '<span style="color: #10b981; font-weight: bold;">✅ Svi podaci su uspješno prebačeni u Supabase tabelu!</span>';
+                statusEl.innerHTML = '<span style="color: #10b981; font-weight: bold;">✅ Podaci uspješno prebačeni u bazu!</span>';
                 izabraniPodaci = [];
                 document.getElementById('file-name').innerText = '';
 
             } catch (err) {
-                console.error('Greška pri upisu:', err);
+                console.error('Greška:', err);
                 statusEl.innerHTML = `<span style="color: #ef4444;">❌ Greška: ${err.message}</span>`;
             }
         }
