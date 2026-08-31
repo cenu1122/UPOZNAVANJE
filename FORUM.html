@@ -1,516 +1,207 @@
 <!DOCTYPE html>
-<html lang="bs">
+<html lang="hr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Forum | DocBizHub</title>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
-  <script type="text/javascript">
-    function googleTranslateElementInit() {
-      new google.translate.TranslateElement({
-        pageLanguage: 'bs',
-        includedLanguages: 'bs,en,de,fr,tr,es,it,ar,zh-CN,ru',
-        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-        autoDisplay: false
-      }, 'google_translate_element');
-    }
-  </script>
-  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; top: 0 !important; }
-
-    .goog-te-banner-frame, .skiptranslate, #google_translate_element { display: none !important; }
-    body { top: 0px !important; }
-
-    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
-    .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
-
-    .nav-actions { display: flex; align-items: center; gap: 12px; }
-    .btn-nav { background: #3742fa; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
-    .btn-nav:hover { background: #2f3542; }
-
-    /* PADAJUĆI MENI ZA JEZIKE */
-    .lang-dropdown-wrapper { position: relative; display: inline-block; }
-    .lang-btn {
-      background: #3d405b; color: #fff; border: 1px solid #555;
-      padding: 8px 14px; border-radius: 20px; font-weight: bold;
-      font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px;
-      transition: background 0.2s;
-    }
-    .lang-btn:hover { background: #3742fa; border-color: #3742fa; }
-
-    .lang-dropdown-menu {
-      display: none; position: absolute; right: 0; top: 115%;
-      background: #ffffff; min-width: 240px; border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2); border: 1px solid #eee;
-      z-index: 10000; padding: 10px; flex-direction: column; gap: 8px;
-    }
-    .lang-dropdown-menu.show { display: flex !important; }
-
-    .lang-search-box input {
-      width: 100%; padding: 8px 12px; border: 1px solid #ccc;
-      border-radius: 8px; font-size: 0.85rem; outline: none;
-    }
-    .lang-search-box input:focus { border-color: #3742fa; }
-
-    .lang-list { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
-    .lang-option {
-      padding: 8px 12px; border-radius: 6px; font-size: 0.85rem;
-      color: #2b2d42; cursor: pointer; transition: background 0.2s;
-    }
-    .lang-option:hover { background: #e0e0ff; color: #3742fa; font-weight: bold; }
-
-    .main-container { flex: 1; padding: 30px 20px; max-width: 900px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
-
-    /* Forma za kreiranje objave */
-    .create-post-card { background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #b8bfff; }
-    .create-post-card h2 { color: #1e1f29; margin-bottom: 15px; font-size: 1.3rem; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dodaj Firmu i Excel Upload | DocBizHub</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    .form-group { margin-bottom: 12px; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1px solid #ccc; border-radius: 10px; font-family: inherit; font-size: 0.95rem; outline: none; }
-    .form-group textarea { resize: vertical; min-height: 80px; }
-    
-    .btn-submit { background: #3742fa; color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-    .btn-submit:hover { background: #2f3542; }
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
-    /* Lista objava */
-    .forum-feed { display: flex; flex-direction: column; gap: 20px; }
-    
-    .post-card { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; }
-    .post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; }
-    .post-author { font-weight: bold; color: #3742fa; font-size: 0.95rem; }
-    .post-time { font-size: 0.75rem; color: #888; }
-    .post-category { background: #e0e0ff; color: #3742fa; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-weight: bold; }
-    .post-title { font-size: 1.2rem; color: #2b2d42; margin-bottom: 8px; }
-    .post-content { font-size: 0.95rem; color: #444; line-height: 1.5; margin-bottom: 15px; }
+        .main-container {
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            padding: 30px;
+            width: 600px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            text-align: center;
+        }
 
-    /* Sekcija za komentare */
-    .comments-section { background: #fafafa; padding: 15px; border-radius: 12px; border-top: 1px solid #eee; margin-top: 10px; }
-    .comments-title { font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 10px; }
-    
-    .comment-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
-    .comment-item { background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px solid #e0e0e0; font-size: 0.85rem; display: flex; flex-direction: column; gap: 2px; }
-    .comment-header-info { display: flex; justify-content: space-between; align-items: center; }
-    .comment-author { font-weight: bold; color: #2b2d42; }
-    .comment-time { font-size: 0.7rem; color: #999; }
-    .comment-text { color: #444; margin-top: 2px; }
+        h2 {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
 
-    .add-comment-box { display: flex; gap: 8px; }
-    .add-comment-box input { flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.85rem; outline: none; }
-    .btn-comment { background: #2b2d42; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
-    .btn-comment:hover { background: #495057; }
+        p.opis {
+            color: #a0a0a0;
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
 
-    /* NOTIFIKACIJA U GORNJEM DESNOM UGLU */
-    .notification-toast {
-      position: fixed; top: 25px; right: 25px; background: #2b2d42; color: #fff;
-      padding: 14px 20px; border-radius: 12px; border-left: 5px solid #3742fa;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center;
-      gap: 12px; z-index: 9999; opacity: 0; transform: translateY(-20px);
-      transition: all 0.4s ease; pointer-events: none;
-    }
-    .notification-toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
-    .notification-icon { font-size: 1.4rem; }
-    .notification-body strong { display: block; color: #b8bfff; font-size: 0.85rem; }
-    .notification-body p { font-size: 0.8rem; margin-top: 2px; }
+        .upload-box {
+            border: 2px dashed #4f46e5;
+            border-radius: 10px;
+            padding: 30px;
+            background-color: #252525;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
 
-    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
-  </style>
+        .upload-box:hover {
+            border-color: #6366f1;
+            background-color: #2a2a2a;
+        }
+
+        .upload-box img, .folder-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .btn-izaberi {
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+
+        .btn-izaberi:hover {
+            background-color: #4338ca;
+        }
+
+        .btn-upload {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+            display: none; /* Prikazuje se tek kada se izabere fajl */
+        }
+
+        .btn-upload:hover {
+            background-color: #059669;
+        }
+
+        #file-name {
+            color: #34d399;
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        #status-poruka {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
 
-  <div id="google_translate_element"></div>
+    <div class="main-container">
+        <h2>🏢 Dodaj Firmu / Bulk Excel Upload</h2>
+        <p class="opis">
+            Izaberi ili prevuci svoj Excel (<code>.xlsx</code>) ili CSV fajl sa firmama i kontaktima. Sistem će automatski pročitati sve kolone i sinhronizovati ih direktno u Supabase tabelu <strong>POSAO:KOKORISNICI</strong>.
+        </p>
 
-  <header>
-    <a href="DASHBOARD.html" class="logo">🚀 DocBizHub - Poslovni Forum</a>
-
-    <div class="nav-actions">
-      <div class="lang-dropdown-wrapper" id="langDropdownWrapper">
-        <button class="lang-btn" onclick="toggleLangMenu(event)">
-          🌐 <span id="selectedLangText">Bosanski</span> ▼
-        </button>
-
-        <div class="lang-dropdown-menu" id="langDropdownMenu">
-          <div class="lang-search-box" onclick="event.stopPropagation()">
-            <input 
-              type="text" 
-              id="langSearchInput" 
-              placeholder="🔍 Pretraži jezik..." 
-              oninput="filtrirajJezike(event)"
-              onclick="event.stopPropagation()"
-            />
-          </div>
-          <div class="lang-list" id="langList"></div>
+        <div class="upload-box" id="drop-zone" onclick="document.getElementById('file-input').click();">
+            📂
+            <p style="margin: 10px 0 5px 0; font-weight: 500;">Klikni ovdje ili prevuci fajl</p>
+            <span style="color: #71717a; font-size: 12px;">Podržani formati: .xlsx, .xls, .csv</span>
+            <br>
+            <button type="button" class="btn-izaberi" onclick="event.stopPropagation(); document.getElementById('file-input').click();">Izaberi fajl sa računara</button>
+            
+            <input type="file" id="file-input" accept=".xlsx, .xls, .csv" style="display: none;" onchange="fajlIzabran(this)">
         </div>
-      </div>
 
-      <a href="DASHBOARD.html" class="btn-nav">🏠 Dashboard</a>
-    </div>
-  </header>
+        <div id="file-name"></div>
 
-  <div id="toastNotification" class="notification-toast">
-    <div class="notification-icon">🔔</div>
-    <div class="notification-body">
-      <strong id="toastTitle">Novi sadržaj!</strong>
-      <p id="toastMessage">Neko je upravo objavio na forumu.</p>
-    </div>
-  </div>
-
-  <div class="main-container">
-
-    <div class="create-post-card">
-      <h2>🗣️ Započni novu poslovnu temu</h2>
-      <div class="form-group">
-        <input type="text" id="postTitleInput" placeholder="Naslov teme ili projekta..." />
-      </div>
-      <div class="form-group">
-        <select id="postCategorySelect">
-          <option value="Biznis & Strategija">📈 Biznis & Strategija</option>
-          <option value="AI & Automatizacija">🤖 AI & Automatizacija</option>
-          <option value="Razvoj Projekata">💡 Razvoj Projekata</option>
-          <option value="Networking">🤝 Networking & Partnerstva</option>
-          <option value="Opšte diskusije">💬 Opšte diskusije</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <textarea id="postContentInput" placeholder="Napišite vašu ideju, pitanje ili ponudu za saradnju..."></textarea>
-      </div>
-      <button class="btn-submit" onclick="objaviTemu()">Objavi temu 🚀</button>
-    </div>
-
-    <div class="forum-feed" id="forumFeed">
-      <div style="text-align:center; color:#888; padding:20px;">Učitavanje tema sa foruma...</div>
-    </div>
-
-  </div>
-
-  <footer>
-    <p>© 2026 DocBizHub. Sva prava zadržana.</p>
-  </footer>
-
-  <script>
-    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
-
-    let _supabase = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-    let trenutniKorisnik = null;
-    let korisnikIme = "Član";
-    let jePrvoUcitavanje = true;
-
-    const SVI_JEZICI = [
-      { kod: 'bs', ime: 'Bosanski' },
-      { kod: 'hr', ime: 'Hrvatski' },
-      { kod: 'sr', ime: 'Srpski' },
-      { kod: 'en', ime: 'English (Engleski)' },
-      { kod: 'de', ime: 'Deutsch (Njemački)' },
-      { kod: 'fr', ime: 'Français (Francuski)' },
-      { kod: 'it', ime: 'Italiano (Italijanski)' },
-      { kod: 'es', ime: 'Español (Španski)' },
-      { kod: 'ru', ime: 'Русский (Ruski)' },
-      { kod: 'tr', ime: 'Türkçe (Turski)' },
-      { kod: 'ar', ime: 'العربية (Arapski)' },
-      { kod: 'zh-CN', ime: '中文 (Kineski)' }
-    ];
-
-    function popuniListuJezika(lista) {
-      const listEl = document.getElementById('langList');
-      if (!listEl) return;
-      listEl.innerHTML = '';
-      lista.forEach(j => {
-        const opt = document.createElement('div');
-        opt.className = 'lang-option';
-        opt.innerText = j.ime;
-        opt.onclick = (e) => {
-          e.stopPropagation();
-          izaberiJezik(j.kod, j.ime);
-        };
-        listEl.appendChild(opt);
-      });
-    }
-
-    function toggleLangMenu(e) {
-      if (e) e.stopPropagation();
-      const menu = document.getElementById('langDropdownMenu');
-      if (menu) menu.classList.toggle('show');
-    }
-
-    function filtrirajJezike(e) {
-      if (e) e.stopPropagation();
-      const term = e.target.value.toLowerCase().trim();
-      const filtrirani = SVI_JEZICI.filter(j => j.ime.toLowerCase().includes(term));
-      popuniListuJezika(filtrirani);
-    }
-
-    function izaberiJezik(kod, ime) {
-      document.getElementById('selectedLangText').innerText = ime;
-      const menu = document.getElementById('langDropdownMenu');
-      if (menu) menu.classList.remove('show');
-
-      let googleSelect = document.querySelector('.goog-te-combo');
-      if (googleSelect) {
-        googleSelect.value = kod;
-        googleSelect.dispatchEvent(new Event('change'));
-      }
-    }
-
-    document.addEventListener('click', function(e) {
-      const wrapper = document.getElementById('langDropdownWrapper');
-      if (wrapper && !wrapper.contains(e.target)) {
-        const menu = document.getElementById('langDropdownMenu');
-        if (menu) menu.classList.remove('show');
-      }
-    });
-
-    function formatirajVrijeme(rawDatum) {
-      if (!rawDatum) return '';
-      const str = String(rawDatum).replace(' ', 'T');
-      const d = new Date(str);
-      if (isNaN(d.getTime())) return String(rawDatum);
-
-      const dan = String(d.getDate()).padStart(2, '0');
-      const mjesec = String(d.getMonth() + 1).padStart(2, '0');
-      const godina = d.getFullYear();
-      const sati = String(d.getHours()).padStart(2, '0');
-      const minute = String(d.getMinutes()).padStart(2, '0');
-
-      return `${dan}.${mjesec}.${godina}. ${sati}:${minute}`;
-    }
-
-    async function inicijalizujForum() {
-      popuniListuJezika(SVI_JEZICI);
-      if (!_supabase) return;
-
-      try {
-        const { data: { user } } = await _supabase.auth.getUser();
-        if (user) {
-          trenutniKorisnik = user;
-          const { data: profile } = await _supabase
-            .from('UPOZNAVANJ_KORISNICI')
-            .select('IME')
-            .or(`USER.eq.${user.id},MAIL.eq.${user.email}`)
-            .maybeSingle();
-
-          if (profile && profile.IME) {
-            korisnikIme = profile.IME;
-          } else if (user.email) {
-            korisnikIme = user.email.split('@')[0];
-          }
-        }
-      } catch (e) {
-        console.warn("Greška pri dohvaćanju profila:", e);
-      }
-
-      // Provjera i automatsko pokretanje AI biznis teme svaka 2 dana
-      provjeriIPokreniGroqBiznisTemu();
-
-      await ucitajSveTeme();
-      jePrvoUcitavanje = false;
-      slusajPromjeneNaForumu();
-    }
-
-    // AUTOMATSKA PROVJERA DA GROQ ZAPOČNE NOVU BIZNIS TEMU SVAKA 2 DANA
-    async function provjeriIPokreniGroqBiznisTemu() {
-      try {
-        const zadnjaAIObjavaKey = 'docbizhub_zadnji_ai_biznis_post';
-        const zadnjeVrijeme = localStorage.getItem(zadnjaAIObjavaKey);
-        const sad = new Date().getTime();
-        const dvaDanaMs = 2 * 24 * 60 * 60 * 1000; // 48 sati
-
-        // Ako je prošlo više od 2 dana ili nikad nije pokrenuto u lokalnoj memoriji
-        if (!zadnjeVrijeme || (sad - parseInt(zadnjeVrijeme)) > dvaDanaMs) {
-          console.log("Pokrećem Groq AI da generiše novu dvodnevnu biznis temu...");
-          
-          await _supabase.functions.invoke('zapocni-biznis-temu-ai', {
-            body: { tip: 'dvodnevna_biznis_tema' }
-          });
-
-          localStorage.setItem(zadnjaAIObjavaKey, String(sad));
-        }
-      } catch (e) {
-        console.warn("Automatsko pokretanje AI teme u pozadini:", e);
-      }
-    }
-
-    async function ucitajSveTeme() {
-      if (!_supabase) return;
-      const feedEl = document.getElementById('forumFeed');
-
-      try {
-        const { data: postovi, error } = await _supabase
-          .from('FORUM_POSTOVI')
-          .select('*, FORUM_KOMENTARI(*)')
-          .order('created_at', { ascending: false });
-
-        feedEl.innerHTML = '';
-
-        if (error || !postovi || postovi.length === 0) {
-          feedEl.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">Trenutno nema objavljenih tema. Započnite prvu poslovnu diskusiju!</div>';
-          return;
-        }
-
-        postovi.forEach(post => {
-          const postBox = document.createElement('div');
-          postBox.className = 'post-card';
-
-          const datum = formatirajVrijeme(post.created_at);
-          const komentari = post.FORUM_KOMENTARI || [];
-
-          komentari.sort((a, b) => new Date(String(a.created_at).replace(' ', 'T')) - new Date(String(b.created_at).replace(' ', 'T')));
-
-          let komentariHtml = '';
-          komentari.forEach(k => {
-            const kDatum = formatirajVrijeme(k.created_at);
-            komentariHtml += `
-              <div class="comment-item">
-                <div class="comment-header-info">
-                  <span class="comment-author">${k.autor_ime || 'Član'}</span>
-                  <span class="comment-time">${kDatum}</span>
-                </div>
-                <div class="comment-text">${k.sadrzaj}</div>
-              </div>
-            `;
-          });
-
-          postBox.innerHTML = `
-            <div class="post-header">
-              <div>
-                <span class="post-author">👤 ${post.autor_ime || 'Član'}</span>
-                <span class="post-time">• ${datum}</span>
-              </div>
-              <span class="post-category">${post.kategorija || 'Biznis'}</span>
-            </div>
-            <h3 class="post-title">${post.naslov || post.sadrzaj}</h3>
-            <div class="post-content">${post.sadrzaj}</div>
-
-            <div class="comments-section">
-              <div class="comments-title">💬 Komentari (${komentari.length})</div>
-              <div class="comment-list" id="comments-list-${post.id}">
-                ${komentariHtml || '<div style="color:#aaa; font-style:italic; font-size:0.8rem;">Nema komentara. Budite prvi koji će prokomentarisati!</div>'}
-              </div>
-              <div class="add-comment-box">
-                <input type="text" id="comment-input-${post.id}" placeholder="Napišite komentar..." onkeypress="if(event.key==='Enter') dodajKomentar('${post.id}')">
-                <button class="btn-comment" onclick="dodajKomentar('${post.id}')">Komentariši</button>
-              </div>
-            </div>
-          `;
-
-          feedEl.appendChild(postBox);
-        });
-
-      } catch (e) {
-        console.error("Greška pri učitavanju foruma:", e);
-        feedEl.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">Greška pri učitavanju tema.</div>';
-      }
-    }
-
-    async function objaviTemu() {
-      const naslovInput = document.getElementById('postTitleInput');
-      const kategorijaSelect = document.getElementById('postCategorySelect');
-      const sadrzajInput = document.getElementById('postContentInput');
-
-      const naslov = naslovInput.value.trim();
-      const kategorija = kategorijaSelect.value;
-      const sadrzaj = sadrzajInput.value.trim();
-
-      if (!naslov || !sadrzaj) {
-        alert("Molimo unesite naslov i tekst teme!");
-        return;
-      }
-
-      try {
-        const mojId = trenutniKorisnik ? String(trenutniKorisnik.id) : 'gost';
+        <button type="button" class="btn-upload" id="btn-submit" onclick="uploadUBazu()">Prebaci podatke u Supabase (POSAO:KOKORISNICI)</button>
         
-        const { data: noviPost } = await _supabase
-          .from('FORUM_POSTOVI')
-          .insert([{ autor_id: mojId, autor_ime: korisnikIme, naslov: naslov, kategorija: kategorija, sadrzaj: sadrzaj }])
-          .select().single();
+        <div id="status-poruka"></div>
+    </div>
 
-        naslovInput.value = '';
-        sadrzajInput.value = '';
-        await ucitajSveTeme();
+    <script>
+        // 1. OVDJE UNESI SVOJE SUPABASE PODATKE
+        const SUPABASE_URL = 'TVOJ_SUPABASE_URL';
+        const SUPABASE_ANON_KEY = 'TVOJ_SUPABASE_ANON_KEY';
+        
+        // Inicijalizacija Supabase klijenta (ako koristiš Supabase JS v2)
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        if (noviPost && noviPost.id) {
-          pozoviGroqZaForumOdgovor(noviPost.id, sadrzaj, "tema");
+        let izabraniPodaci = [];
+
+        // Funkcija kada korisnik izabere fajl
+        function fajlIzabran(input) {
+            const fajl = input.files[0];
+            if (!fajl) return;
+
+            document.getElementById('file-name').innerText = `Izabrani fajl: ${fajl.name}`;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                // Uzimamo prvi sheet (list) iz Excel-a
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+
+                // Pretvaramo podatke u JSON niz objekata (gdje su ključevi nazivi kolona iz Excel-a)
+                izabraniPodaci = XLSX.utils.sheet_to_json(worksheet);
+
+                if (izabraniPodaci.length > 0) {
+                    document.getElementById('btn-submit').style.display = 'block';
+                    document.getElementById('status-poruka').innerHTML = `<span style="color: #34d399;">Uspješno učitano ${izabraniPodaci redova iz fajla. Klikni dugme za slanje!</span>`;
+                } else {
+                    document.getElementById('status-poruka').innerHTML = `<span style="color: #ef4444;">Fajl je prazan ili pogrešno formatiran.</span>`;
+                }
+            };
+            reader.readAsArrayBuffer(fajl);
         }
 
-      } catch (e) {
-        console.error("Greška pri objavi teme:", e);
-      }
-    }
+        // Funkcija koja klikom na dugme prebacuje podatke u Supabase tabelu
+        async function uploadUBazu() {
+            if (izabraniPodaci.length === 0) {
+                alert('Nema podataka za slanje!');
+                return;
+            }
 
-    async function dodajKomentar(postId) {
-      const input = document.getElementById(`comment-input-${postId}`);
-      const tekst = input.value.trim();
+            const statusEl = document.getElementById('status-poruka');
+            statusEl.innerHTML = '<span style="color: #f59e0b;">Slanje podataka u Supabase u toku...</span>';
 
-      if (!tekst) return;
+            try {
+                // Slanje u Supabase tabelu 'POSAO:KOKORISNICI' 
+                // Napomena: Ako ti je naziv tabele u Supabase doslovno "POSAO:KOKORISNICI", unesi ga ispod:
+                const { data, error } = await supabaseClient
+                    .from('POSAO:KOKORISNICI') 
+                    .insert(izabraniPodaci);
 
-      try {
-        const mojId = trenutniKorisnik ? String(trenutniKorisnik.id) : 'gost';
+                if (error) {
+                    throw error;
+                }
 
-        await _supabase
-          .from('FORUM_KOMENTARI')
-          .insert([{
-            post_id: postId,
-            autor_id: mojId,
-            autor_ime: korisnikIme,
-            sadrzaj: tekst
-          }]);
+                statusEl.innerHTML = '<span style="color: #10b981; font-weight: bold;">✅ Svi podaci su uspješno prebačeni u Supabase tabelu!</span>';
+                document.getElementById('btn-submit').style.display = 'none';
 
-        input.value = '';
-        await ucitajSveTeme();
-
-        pozoviGroqZaForumOdgovor(postId, tekst, "komentar");
-
-      } catch (e) {
-        console.error("Greška pri dodavanju komentara:", e);
-      }
-    }
-
-    async function pozoviGroqZaForumOdgovor(postId, tekst, tip) {
-      try {
-        _supabase.functions.invoke('odgovori-forum-ai', {
-          body: { postId: postId, tekst: tekst, tip: tip }
-        });
-      } catch (e) {
-        console.warn("Greška pri pozivanju AI servisa:", e);
-      }
-    }
-
-    function prikaziNotifikaciju(naslov, poruka) {
-      const toast = document.getElementById('toastNotification');
-      if (!toast) return;
-      document.getElementById('toastTitle').innerText = naslov;
-      document.getElementById('toastMessage').innerText = poruka;
-
-      toast.classList.add('show');
-      setTimeout(() => { toast.classList.remove('show'); }, 4500);
-    }
-
-    function slusajPromjeneNaForumu() {
-      if (!_supabase) return;
-
-      _supabase.channel('public:FORUM_POSTOVI')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'FORUM_POSTOVI' }, payload => {
-          ucitajSveTeme();
-          if (!jePrvoUcitavanje && payload.new.autor_ime !== korisnikIme) {
-            prikaziNotifikaciju("🗣️ Nova biznis tema!", `${payload.new.autor_ime}: ${payload.new.naslov}`);
-          }
-        }).subscribe();
-
-      _supabase.channel('public:FORUM_KOMENTARI')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'FORUM_KOMENTARI' }, payload => {
-          ucitajSveTeme();
-          if (!jePrvoUcitavanje && payload.new.autor_ime !== korisnikIme) {
-            prikaziNotifikaciju("💬 Novi komentar!", `${payload.new.autor_ime}: "${payload.new.sadrzaj}"`);
-          }
-        }).subscribe();
-    }
-
-    document.addEventListener('DOMContentLoaded', inicijalizujForum);
-  </script>
-
+            } catch (err) {
+                console.error('Greška pri upisu:', err);
+                statusEl.innerHTML = `<span style="color: #ef4444;">❌ Greška: ${err.message}</span>`;
+            }
+        }
+    </script>
 </body>
 </html>
