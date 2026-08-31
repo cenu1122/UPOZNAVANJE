@@ -105,7 +105,7 @@
     <div class="main-container">
         <h2>🏢 Dodaj Firmu / Bulk Excel Upload</h2>
         <p class="opis">
-            Izaberi svoj Excel (<code>.xlsx</code>) ili CSV fajl. Podaci će biti ubačeni u tabelu <strong>POSAO_KOKORISNICI</strong>.
+            Izaberi svoj Excel (<code>.xlsx</code>) ili CSV fajl. Podaci će biti ubačeni u tabelu <strong>POSAO_KORISNICI</strong>.
         </p>
 
         <!-- Upload okvir -->
@@ -170,9 +170,9 @@
             statusEl.innerHTML = '<span style="color: #f59e0b;">Slanje u Supabase u toku...</span>';
 
             try {
-                // Upis u tabelu POSAO_KOKORISNICI
+                // Upis u tabelu POSAO_KORISNICI
                 const { data, error } = await supabaseClient
-                    .from('POSAO_KOKORISNICI') 
+                    .from('POSAO_KORISNICI') 
                     .insert(izabraniPodaci);
 
                 if (error) throw error;
