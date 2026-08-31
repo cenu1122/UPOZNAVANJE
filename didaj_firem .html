@@ -1,0 +1,36 @@
+import { createClient } from '@supabase/supabase-js';
+
+// 1. Postavi svoje pristupne podatke
+const SUPABASE_URL = 'https://TVOJ_PROJEKAT.supabase.co';
+const SUPABASE_KEY = 'TVOJ_SUPABASE_ANON_ILI_SERVICE_KEY';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// 2. Tvojih 17 rezultata (primjer niza objekata)
+const rezultati = [
+  { kolona1: 'Vrijednost 1', kolona2: 123 },
+  { kolona1: 'Vrijednost 2', kolona2: 456 },
+  // ... ostalih 15 rezultata
+];
+
+async function sacuvajUSupabase() {
+  try {
+    // 3. Masovni unos u tabelu
+    const { data, error } = await supabase
+      .from('naziv_tvoje_tabele') // Zamijeni sa tačnim nazivom tabele
+      .insert(rezultati)
+      .select(); // Vraća ubačene podatke radi provjere
+
+    if (error) {
+      console.error('Greška pri upisu u Supabase:', error.message);
+      return;
+    }
+
+    console.log(`Uspješno ubačeno ${data.length} redova:`, data);
+  } catch (err) {
+    console.error('Neočekivana greška:', err);
+  }
+}
+
+// Pokreni funkciju
+sacuvajUSupabase();
