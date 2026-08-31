@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Bulk Insert - POSAO_KORISNICI</title>
+    <!-- Učitavanje Supabase JavaScript klijent biblioteke -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        button {
+            background-color: #3ecf8e;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #34b27b;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+
+    <h2>Ubaci podatke u tabelu POSAO_KORISNICI</h2>
+    <p>Klikom na dugme ispod pokreće se ubacivanje podataka u Supabase bazu.</p>
+    
+    <button id="insertBtn">Pokreni Ubacivanje Podataka</button>
+    <div id="status"></div>
+
+    <script>
+        // 1. Ovdje unesi svoje Supabase podatke (uzmi ih iz svog Supabase Dashboard -> Settings -> API)
+        const SUPABASE_URL = 'TVOJ_SUPABASE_URL_OVDJE';
+        const SUPABASE_ANON_KEY = 'TVOJ_SUPABASE_ANON_KEY_OVDJE';
+
+        // Inicijalizacija Supabase klijenta
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.getElementById('insertBtn').addEventListener('click', async () => {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = '';
+            statusDiv.innerHTML = 'Ubacivanje u toku...';
+
+            // 2. Priprema niza podataka (ovdje možeš staviti koliko god hoćeš redova, npr. stotinu)
+            const noviPodaci = [
+                {
+                    USER: 'korisnik_1',
+                    SIFRA: '123456',
+                    SLIKE_URL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=1',
+                    SPOL: 'M',
+                    MAIL: 'korisnik1@example.com',
+                    IME: 'Marko',
+                    NADIMAK: 'Mare',
+                    DRZAVA: 'BiH',
+                    TELEFON: '+38761111222',
+                    JA: 'Opis prvog korisnika...',
+                    TRAZIM: 'Posao u struci',
+                    GODINE: '28',
+                    VJERA: 'Islam',
+                    IS_ONLINE: true,
+                    LAST_SEEN: new Date().toISOString(),
+                    IZVOR: 'web',
+                    FACEBOOK: 'fb.com/marko',
+                    LINKEDIN: 'linkedin.com/in/marko',
+                    SITE: 'https://example.com'
+                },
+                {
+                    USER: 'korisnik_2',
+                    SIFRA: '654321',
+                    SLIKE_URL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=2',
+                    SPOL: 'Ž',
+                    MAIL: 'korisnik2@example.com',
+                    IME: 'Ana',
+                    NADIMAK: 'Anči',
+                    DRZAVA: 'BiH',
+                    TELEFON: '+38762333444',
+                    JA: 'Opis drugog korisnika...',
+                    TRAZIM: 'Suradnju',
+                    GODINE: '25',
+                    VJERA: 'Kršćanstvo',
+                    IS_ONLINE: false,
+                    LAST_SEEN: new Date().toISOString(),
+                    IZVOR: 'web',
+                    FACEBOOK: 'fb.com/ana',
+                    LINKEDIN: 'linkedin.com/in/ana',
+                    SITE: 'https://example2.com'
+                }
+                // Ovdje možeš dodati još redova prateći isti format (odvojene zarezom)
+            ];
+
+            // 3. Slanje podataka u Supabase tabelu "POSAO_KORISNICI"
+            const { data, error } = await _supabase
+                .from('POSAO_KORISNICI')
+                .insert(noviPodaci);
+
+            if (error) {
+                console.error('Greška:', error);
+                statusDiv.className = 'error';
+                statusDiv.innerHTML = 'Greška pri ubacivanju: ' + error.message;
+            } else {
+                console.log('Uspjeh:', data);
+                statusDiv.className = 'success';
+                statusDiv.innerHTML = 'Uspješno uneseno redova: ' + noviPodaci.length;
+            }
+        });
+    </script>
+
+</body>
+</html>
