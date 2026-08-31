@@ -1,144 +1,206 @@
 <!DOCTYPE html>
-<html lang="bs">
+<html lang="hr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dodaj Firmu i Excel Upload | DocBizHub</title>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; color: #2b2d42; display: flex; flex-direction: column; min-height: 100vh; }
-
-    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
-    .logo { font-size: 1.4rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
-
-    .nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dodaj Firmu i Excel Upload | DocBizHub</title>
+    <!-- Biblioteka za čitanje Excel/CSV fajlova (SheetJS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Supabase JS klijent -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    .lang-wrapper { display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 10px; border-radius: 20px; border: 2px solid #3742fa; }
-    #google_translate_element select { padding: 4px 8px; border: none; background: transparent; font-weight: bold; font-size: 0.85rem; color: #2b2d42; outline: none; cursor: pointer; }
-    
-    .btn-nav { background: #3742fa; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; border: none; cursor: pointer; }
-    .btn-nav:hover { background: #2f3542; }
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
-    .main-container { flex: 1; padding: 30px 20px; max-width: 800px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 25px; }
+        .main-container {
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            padding: 30px;
+            width: 600px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            text-align: center;
+        }
 
-    .card { background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(55, 66, 250, 0.08); border-left: 6px solid #3742fa; display: flex; flex-direction: column; gap: 20px; }
-    .card h1 { color: #1e1f29; font-size: 1.6rem; }
-    .card p { color: #666; font-size: 0.95rem; line-height: 1.5; }
+        h2 {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
 
-    .upload-box { border: 2px dashed #3742fa; padding: 40px 20px; text-align: center; border-radius: 12px; background: #f8f9ff; cursor: pointer; transition: background 0.2s; }
-    .upload-box:hover { background: #f0f2ff; }
-    .upload-box input { display: none; }
-    .upload-box .icon { font-size: 3rem; margin-bottom: 10px; }
+        p.opis {
+            color: #a0a0a0;
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
 
-    #status { font-weight: bold; font-size: 0.95rem; padding: 10px; border-radius: 8px; text-align: center; display: none; }
-    #status.success { background: #d4edda; color: #155724; display: block; }
-    #status.error { background: #f8d7da; color: #721c24; display: block; }
-    #status.loading { background: #cce5ff; color: #004085; display: block; }
+        .upload-box {
+            border: 2px dashed #4f46e5;
+            border-radius: 10px;
+            padding: 30px;
+            background-color: #252525;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
 
-    footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
-  </style>
+        .upload-box:hover {
+            border-color: #6366f1;
+            background-color: #2a2a2a;
+        }
+
+        .btn-izaberi {
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+
+        .btn-izaberi:hover {
+            background-color: #4338ca;
+        }
+
+        .btn-upload {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-upload:hover {
+            background-color: #059669;
+        }
+
+        #file-name {
+            color: #34d399;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        #status-poruka {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
 
-  <header>
-    <a href="DASHBOARD.html" class="logo">🚀 DocBizHub</a>
-    <div class="nav-actions">
-      <div class="lang-wrapper">
-        <span>🌐</span>
-        <div id="google_translate_element"></div>
-      </div>
-      <a href="DASHBOARD.html" class="btn-nav">🏠 Dashboard</a>
+    <div class="main-container">
+        <h2>🏢 Dodaj Firmu / Bulk Excel Upload</h2>
+        <p class="opis">
+            Izaberi ili prevuci svoj Excel (<code>.xlsx</code>) ili CSV fajl sa firmama i kontaktima. Sistem će pročitati podatke i prebaciti ih direktno u Supabase tabelu.
+        </p>
+
+        <!-- Upload okvir -->
+        <div class="upload-box" id="drop-zone" onclick="document.getElementById('file-input').click();">
+            📂
+            <p style="margin: 10px 0 5px 0; font-weight: 500;">Klikni ovdje ili prevuci fajl</p>
+            <span style="color: #71717a; font-size: 12px;">Podržani formati: .xlsx, .xls, .csv</span>
+            <br>
+            <button type="button" class="btn-izaberi" onclick="event.stopPropagation(); document.getElementById('file-input').click();">Izaberi fajl sa računara</button>
+            
+            <!-- Sakriveni pravi input za fajlove -->
+            <input type="file" id="file-input" accept=".xlsx, .xls, .csv" style="display: none;" onchange="fajlIzabran(this)">
+        </div>
+
+        <div id="file-name"></div>
+
+        <!-- Glavno dugme za prebacivanje u Supabase bazu - Sada je stalno tu -->
+        <button type="button" class="btn-upload" id="btn-submit" onclick="uploadUBazu()">Prebaci podatke u Supabase</button>
+        
+        <div id="status-poruka"></div>
     </div>
-  </header>
 
-  <div class="main-container">
-    <div class="card">
-      <h1>🏢 Dodaj Firmu / Bulk Excel Upload</h1>
-      <p>Izaberi ili prevuci svoj Excel (`.xlsx`) ili CSV fajl sa firmama i kontaktima. Sistem će automatski pročitati sve kolone i sinhronizovati ih direktno u Supabase tabelu <strong>POSAO:KOKORISNICI</strong>.</p>
-      
-      <div class="upload-box" onclick="document.getElementById('excelFile').click()">
-        <div class="icon">📁</div>
-        <h3>Klikni ovdje ili prevuci fajl</h3>
-        <p>Podržani formati: .xlsx, .xls, .csv</p>
-        <input type="file" id="excelFile" accept=".xlsx, .xls, .csv" onchange="procesuirajExcel(event)">
-      </div>
+    <script>
+        // 1. OVDJE UNESI SVOJE SUPABASE PODATKE (ako već nisu tu)
+        const SUPABASE_URL = 'TVOJ_SUPABASE_URL';
+        const SUPABASE_ANON_KEY = 'TVOJ_SUPABASE_ANON_KEY';
+        
+        // Inicijalizacija Supabase klijenta
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      <div id="status"></div>
-    </div>
-  </div>
+        let izabraniPodaci = [];
 
-  <footer>
-    <p>© 2026 DocBizHub. Sva prava zadržana.</p>
-  </footer>
+        // Funkcija kada korisnik izabere fajl
+        function fajlIzabran(input) {
+            const fajl = input.files[0];
+            if (!fajl) return;
 
-  <script type="text/javascript">
-    function googleTranslateElementInit() {
-      new google.translate.TranslateElement({
-        pageLanguage: 'bs',
-        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-        autoDisplay: false
-      }, 'google_translate_element');
-    }
-  </script>
-  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+            document.getElementById('file-name').innerText = `Izabrani fajl: ${fajl.name}`;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
 
-  <script>
-    const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+                // Uzimamo prvi sheet (list) iz Excel-a
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
 
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                // Pretvaramo podatke u JSON niz objekata
+                izabraniPodaci = XLSX.utils.sheet_to_json(worksheet);
 
-    function setStatus(poruka, tip) {
-      const el = document.getElementById('status');
-      el.innerText = poruka;
-      el.className = tip;
-    }
-
-    function procesuirajExcel(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      setStatus("⏳ Učitavam i obrađujem fajl...", "loading");
-
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[firstSheetName];
-          const jsoniranje = XLSX.utils.sheet_to_json(worksheet);
-
-          if (jsoniranje.length === 0) {
-            setStatus("❌ Odabrani Excel fajl je prazan!", "error");
-            return;
-          }
-
-          setStatus(`📤 Pronađeno ${jsoniranje.length} zapisa. Šaljem podatke u bazu...`, "loading");
-
-          const { error } = await _supabase
-            .from('POSAO:KOKORISNICI')
-            .insert(jsoniranje);
-
-          if (error) {
-            console.error("Supabase error:", error);
-            setStatus("❌ Greška pri upisu u bazu: " + error.message, "error");
-          } else {
-            setStatus(`✅ Uspješno ubačeno ${jsoniranje.length} redova u tabelu POSAO:KOKORISNICI!`, "success");
-          }
-
-        } catch (err) {
-          console.error(err);
-          setStatus("❌ Greška pri čitanju Excel fajla: " + err.message, "error");
+                if (izabraniPodaci.length > 0) {
+                    document.getElementById('status-poruka').innerHTML = `<span style="color: #34d399;">Uspješno učitano ${izabraniPodaci.length} redova iz fajla. Klikni zeleno dugme za slanje!</span>`;
+                } else {
+                    document.getElementById('status-poruka').innerHTML = `<span style="color: #ef4444;">Fajl je prazan ili pogrešno formatiran.</span>`;
+                }
+            };
+            reader.readAsArrayBuffer(fajl);
         }
-      };
-      reader.readAsArrayBuffer(file);
-    }
-  </script>
 
+        // Funkcija koja klikom na dugme prebacuje podatke u Supabase tabelu
+        async function uploadUBazu() {
+            if (izabraniPodaci.length === 0) {
+                alert('Molimo te da prvo izaberi Excel ili CSV fajl!');
+                return;
+            }
+
+            const statusEl = document.getElementById('status-poruka');
+            statusEl.innerHTML = '<span style="color: #f59e0b;">Slanje podataka u Supabase u toku...</span>';
+
+            try {
+                // Slanje u Supabase tabelu (korištena donja crta umjesto dvotočke)
+                const { data, error } = await supabaseClient
+                    .from('POSAO_KOKORISNICI') 
+                    .insert(izabraniPodaci);
+
+                if (error) {
+                    throw error;
+                }
+
+                statusEl.innerHTML = '<span style="color: #10b981; font-weight: bold;">✅ Svi podaci su uspješno prebačeni u Supabase tabelu!</span>';
+                izabraniPodaci = [];
+                document.getElementById('file-name').innerText = '';
+
+            } catch (err) {
+                console.error('Greška pri upisu:', err);
+                statusEl.innerHTML = `<span style="color: #ef4444;">❌ Greška: ${err.message}</span>`;
+            }
+        }
+    </script>
 </body>
 </html>
