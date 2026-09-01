@@ -13,13 +13,19 @@
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; background-color: #f4f6f9; color: #2b2d42; }
     
     /* Navigation Bar */
-    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    header { background-color: #2b2d42; color: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 15px; }
     .logo { font-size: 1.6rem; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
     
-    nav ul { display: flex; list-style: none; align-items: center; }
-    nav ul li { margin-left: 20px; }
+    nav ul { display: flex; list-style: none; align-items: center; flex-wrap: wrap; gap: 15px; }
     nav ul li a { color: #fff; text-decoration: none; font-weight: 500; transition: color 0.3s; }
     nav ul li a:hover { color: #d90429; }
+
+    /* Auth Buttons in Nav */
+    .btn-auth-login { color: #fff; text-decoration: none; font-weight: 600; padding: 6px 14px; border: 1px solid #fff; border-radius: 20px; transition: all 0.3s; }
+    .btn-auth-login:hover { background-color: #fff; color: #2b2d42; }
+
+    .btn-auth-reg { background-color: #d90429; color: #fff; text-decoration: none; font-weight: 600; padding: 6px 14px; border-radius: 20px; transition: all 0.3s; box-shadow: 0 2px 8px rgba(217, 4, 41, 0.3); }
+    .btn-auth-reg:hover { background-color: #b50322; }
 
     /* Language Switcher */
     .lang-select { background: #4f46e5; color: #fff; border: 1px solid #818cf8; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; outline: none; font-weight: bold; }
@@ -65,9 +71,8 @@
     footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 25px 0; margin-top: 50px; }
 
     @media (max-width: 768px) {
-      header { flex-direction: column; gap: 15px; }
-      nav ul { flex-wrap: wrap; justify-content: center; gap: 10px; }
-      nav ul li { margin-left: 0; }
+      header { flex-direction: column; gap: 15px; text-align: center; }
+      nav ul { justify-content: center; }
       #hero h1 { font-size: 2.3rem; }
     }
   </style>
@@ -83,6 +88,8 @@
         <li><a href="#why-us" data-i18n="nav_why">Zašto mi</a></li>
         <li><a href="#reviews" data-i18n="nav_reviews">Iskustva</a></li>
         <li><a href="#contact" data-i18n="nav_contact">Kontakt</a></li>
+        <li><a href="LOGIN.html" class="btn-auth-login" data-i18n="btn_login">Prijava</a></li>
+        <li><a href="REGISTER.html" class="btn-auth-reg" data-i18n="btn_register">Registracija</a></li>
         <li>
           <select id="langSwitcher" class="lang-select" onchange="changeLanguage(this.value)">
             <option value="bs">BS 🇧🇦</option>
@@ -180,10 +187,11 @@
       }
     })();
 
-    // Prijevodi stranice za DocBizHub
+    // Prijevodi stranice za DocBizHub (uključujući gumbe za prijavu i registraciju)
     const translations = {
       bs: {
         nav_home: "Početna", nav_about: "O nama", nav_why: "Zašto mi", nav_reviews: "Iskustva", nav_contact: "Kontakt",
+        btn_login: "Prijava", btn_register: "Registracija",
         hero_title: "Pametno Upravljanje Dokumentima i Pretraga",
         hero_desc: "DocBizHub je vaša centralna platforma za brzu analizu, pretragu poslovnih resursa i naprednu saradnju uz podršku vještačke inteligencije.",
         btn_dashboard: "Otvori Dashboard", btn_search: "Pretraga Tržišta",
@@ -204,6 +212,7 @@
       },
       en: {
         nav_home: "Home", nav_about: "About Us", nav_why: "Why Us", nav_reviews: "Reviews", nav_contact: "Contact",
+        btn_login: "Login", btn_register: "Register",
         hero_title: "Smart Document Management & Search",
         hero_desc: "DocBizHub is your central platform for fast analysis, business resource search, and advanced AI-powered collaboration.",
         btn_dashboard: "Open Dashboard", btn_search: "Market Search",
@@ -224,6 +233,7 @@
       },
       de: {
         nav_home: "Startseite", nav_about: "Über uns", nav_why: "Warum wir", nav_reviews: "Bewertungen", nav_contact: "Kontakt",
+        btn_login: "Anmelden", btn_register: "Registrieren",
         hero_title: "Intelligentes Dokumentenmanagement & Suche",
         hero_desc: "DocBizHub ist Ihre zentrale Plattform für schnelle Analyse, Geschäftssuche und KI-gestützte Zusammenarbeit.",
         btn_dashboard: "Dashboard Öffnen", btn_search: "Marktsuche",
