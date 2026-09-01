@@ -20,13 +20,6 @@
     nav ul li a { color: #fff; text-decoration: none; font-weight: 500; transition: color 0.3s; }
     nav ul li a:hover { color: #d90429; }
 
-    /* Auth Buttons in Nav */
-    .btn-auth-login { color: #fff; text-decoration: none; font-weight: 600; padding: 6px 14px; border: 1px solid #fff; border-radius: 20px; transition: all 0.3s; }
-    .btn-auth-login:hover { background-color: #fff; color: #2b2d42; }
-
-    .btn-auth-reg { background-color: #d90429; color: #fff; text-decoration: none; font-weight: 600; padding: 6px 14px; border-radius: 20px; transition: all 0.3s; box-shadow: 0 2px 8px rgba(217, 4, 41, 0.3); }
-    .btn-auth-reg:hover { background-color: #b50322; }
-
     /* Language Switcher */
     .lang-select { background: #4f46e5; color: #fff; border: 1px solid #818cf8; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; outline: none; font-weight: bold; }
 
@@ -35,9 +28,9 @@
     #hero h1 { font-size: 3.2rem; margin-bottom: 15px; font-weight: 800; }
     #hero p { font-size: 1.3rem; max-width: 750px; margin: 0 auto 35px auto; color: #cbd5e1; }
     
-    /* Hero Buttons */
-    .hero-buttons { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
-    .btn { padding: 14px 32px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; text-decoration: none; transition: all 0.3s ease; cursor: pointer; border: none; }
+    /* Hero Buttons Container */
+    .hero-buttons { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 15px; }
+    .btn { padding: 14px 32px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; text-decoration: none; transition: all 0.3s ease; cursor: pointer; border: none; display: inline-block; }
     .btn-primary { background-color: #d90429; color: #fff; box-shadow: 0 4px 15px rgba(217, 4, 41, 0.4); }
     .btn-primary:hover { background-color: #b50322; transform: translateY(-3px); }
     .btn-secondary { background-color: transparent; color: #fff; border: 2px solid #fff; }
@@ -88,8 +81,6 @@
         <li><a href="#why-us" data-i18n="nav_why">Zašto mi</a></li>
         <li><a href="#reviews" data-i18n="nav_reviews">Iskustva</a></li>
         <li><a href="#contact" data-i18n="nav_contact">Kontakt</a></li>
-        <li><a href="LOGIN.html" class="btn-auth-login" data-i18n="btn_login">Prijava</a></li>
-        <li><a href="REGISTER.html" class="btn-auth-reg" data-i18n="btn_register">Registracija</a></li>
         <li>
           <select id="langSwitcher" class="lang-select" onchange="changeLanguage(this.value)">
             <option value="bs">BS 🇧🇦</option>
@@ -104,8 +95,16 @@
   <section id="hero">
     <h1 data-i18n="hero_title">Pametno Upravljanje Dokumentima i Pretraga</h1>
     <p data-i18n="hero_desc">DocBizHub je vaša centralna platforma za brzu analizu, pretragu poslovnih resursa i naprednu saradnju uz podršku vještačke inteligencije.</p>
+    
+    <!-- Prvi red dugmadi: Prijava i Registracija -->
     <div class="hero-buttons">
-      <a href="DASHBOARD.html" class="btn btn-primary" data-i18n="btn_dashboard">Otvori Dashboard</a>
+      <a href="LOGIN.html" class="btn btn-primary" data-i18n="btn_login">Prijava</a>
+      <a href="REGISTER.html" class="btn btn-secondary" data-i18n="btn_register">Registracija</a>
+    </div>
+
+    <!-- Drugi red dugmadi: Dashboard i Pretraga -->
+    <div class="hero-buttons">
+      <a href="DASHBOARD.html" class="btn btn-secondary" data-i18n="btn_dashboard">Otvori Dashboard</a>
       <a href="PRETRAGA_INTERNET.html" class="btn btn-secondary" data-i18n="btn_search">Pretraga Tržišta</a>
     </div>
   </section>
@@ -187,7 +186,7 @@
       }
     })();
 
-    // Prijevodi stranice za DocBizHub (uključujući gumbe za prijavu i registraciju)
+    // Prijevodi stranice za DocBizHub
     const translations = {
       bs: {
         nav_home: "Početna", nav_about: "O nama", nav_why: "Zašto mi", nav_reviews: "Iskustva", nav_contact: "Kontakt",
