@@ -27,7 +27,8 @@
       align-items: center; 
       box-shadow: 0 2px 10px rgba(0,0,0,0.15); 
     }
-    .logo { font-size: 1.5rem; font-weight: bold; color: #fff; text-decoration: none; }
+    .logo { font-size: 1.5rem; font-weight: bold; color: #fff; text-decoration: none; transition: color 0.3s; }
+    .logo:hover { color: #d90429; }
     
     .main-container { 
       flex: 1; 
@@ -48,17 +49,39 @@
     .login-card h2 { text-align: center; color: #2b2d42; margin-bottom: 8px; font-size: 1.8rem; }
     .subtitle { text-align: center; color: #666; font-size: 0.95rem; margin-bottom: 25px; }
 
-    .form-group { margin-bottom: 18px; }
+    .form-group { margin-bottom: 18px; text-align: left; }
     .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #2b2d42; }
+    
+    .input-wrapper { position: relative; }
     .form-group input { 
       width: 100%; 
-      padding: 12px; 
+      padding: 12px 40px 12px 12px; 
       border: 1px solid #ddd; 
       border-radius: 10px; 
       font-size: 1rem; 
       outline: none; 
     }
     .form-group input:focus { border-color: #d90429; }
+
+    /* Dugme za prikaz/sakrivanje lozinke */
+    .toggle-password { 
+      position: absolute; 
+      right: 12px; 
+      top: 50%; 
+      transform: translateY(-50%); 
+      background: none; 
+      border: none; 
+      cursor: pointer; 
+      font-size: 1.1rem; 
+      color: #666; 
+    }
+
+    /* Polje za "Zapamti me" i "Zaboravljena lozinka" */
+    .extra-links { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; margin-bottom: 20px; }
+    .extra-links label { display: flex; align-items: center; gap: 6px; cursor: pointer; color: #4a4e69; }
+    .extra-links input[type="checkbox"] { width: 16px; height: 16px; accent-color: #d90429; cursor: pointer; }
+    .extra-links a { color: #d90429; text-decoration: none; font-weight: 600; }
+    .extra-links a:hover { text-decoration: underline; }
 
     .btn-submit { 
       width: 100%; 
@@ -71,14 +94,14 @@
       font-weight: bold; 
       cursor: pointer; 
       transition: background 0.3s; 
-      margin-top: 10px; 
     }
     .btn-submit:hover { background-color: #b50322; }
 
-    #statusMessage { margin-top: 15px; text-align: center; font-weight: bold; word-break: break-word; }
+    #statusMessage { margin-top: 15px; text-align: center; font-weight: bold; word-break: break-word; font-size: 0.95rem; }
     
     .footer-links { text-align: center; margin-top: 20px; font-size: 0.95rem; }
     .footer-links a { color: #d90429; text-decoration: none; font-weight: bold; }
+    .footer-links a:hover { text-decoration: underline; }
 
     footer { background-color: #2b2d42; color: #fff; text-align: center; padding: 20px 0; margin-top: auto; }
   </style>
@@ -102,7 +125,17 @@
 
         <div class="form-group">
           <label>Lozinka</label>
-          <input type="password" id="password" placeholder="Vaša lozinka" required>
+          <div class="input-wrapper">
+            <input type="password" id="password" placeholder="Vaša lozinka" required>
+            <button type="button" class="toggle-password" onclick="togglePasswordVisibility()" title="Prikaži/Sakrij lozinku">👁️</button>
+          </div>
+        </div>
+
+        <div class="extra-links">
+          <label>
+            <input type="checkbox" id="rememberMe"> Zapamti me
+          </label>
+          <a href="#" onclick="forgotPassword(event)">Zaboravili ste lozinku?</a>
         </div>
 
         <button type="submit" class="btn-submit" id="loginBtn">PRIJAVI SE</button>
@@ -127,10 +160,60 @@
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // Učitavanje zapamćenog email-a pri pokretanju stranice
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedEmail = localStorage.getItem('saved_email');
+      if (savedEmail) {
+        document.getElementById('email').value = savedEmail;
+        document.getElementById('rememberMe').checked = true;
+      }
+    });
+
+    // Funkcija za prikaz/sakrivanje lozinke
+    function togglePasswordVisibility() {
+      const passwordInput = document.getElementById('password');
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+      } else {
+        passwordInput.type = 'password';
+      }
+    }
+
+    // Funkcija za slanje linka za resetovanje lozinke
+    async function forgotPassword(event) {
+      event.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const statusDiv = document.getElementById('statusMessage');
+
+      if (!email) {
+        statusDiv.style.color = 'red';
+        statusDiv.textContent = 'Molimo unesite vaš e-mail iznad da biste resetovali lozinku.';
+        return;
+      }
+
+      statusDiv.style.color = '#0056b3';
+      statusDiv.textContent = 'Slanje linka za oporavak u toku...';
+
+      try {
+        const { error } = await _supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + '/RESET_PASSWORD.html', // Stranica za postavljanje nove lozinke (opcionalno)
+        });
+
+        if (error) throw error;
+
+        statusDiv.style.color = 'green';
+        statusDiv.textContent = 'Link za oporavak lozinke je poslat na vaš e-mail!';
+      } catch (err) {
+        statusDiv.style.color = 'red';
+        statusDiv.textContent = 'Greška: ' + err.message;
+      }
+    }
+
     // Funkcija za prijavu korisnika i provjeru u POSAO_KORISNICI tabeli
     async function handleLogin() {
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
+      const rememberMe = document.getElementById('rememberMe').checked;
       const statusDiv = document.getElementById('statusMessage');
       const loginBtn = document.getElementById('loginBtn');
 
@@ -138,6 +221,13 @@
         statusDiv.style.color = 'red';
         statusDiv.textContent = 'Molimo unesite email i lozinku!';
         return;
+      }
+
+      // Pamćenje ili brisanje email-a iz memorije
+      if (rememberMe) {
+        localStorage.setItem('saved_email', email);
+      } else {
+        localStorage.removeItem('saved_email');
       }
 
       statusDiv.style.color = '#0056b3';
@@ -155,18 +245,13 @@
 
         const userId = authData.user.id;
 
-        // 2. Provjera ili ažuriranje statusa u tabeli POSAO_KORISNICI
+        // 2. Ažuriranje statusa u tabeli POSAO_KORISNICI
         const { data: existingUser, error: fetchError } = await _supabase
           .from('POSAO_KORISNICI')
           .select('*')
           .eq('USER', userId)
           .maybeSingle();
 
-        if (fetchError) {
-          console.warn("Greška pri čitanju iz POSAO_KORISNICI:", fetchError.message);
-        }
-
-        // Ako korisnik uspješno prođe login, a ne postoji red u tabeli, možemo ga opcionalno kreirati ili samo ažurirati online status
         if (existingUser) {
           await _supabase
             .from('POSAO_KORISNICI')
@@ -188,7 +273,6 @@
       } catch (err) {
         statusDiv.style.color = 'red';
         
-        // Prilagođavanje poruka o greškama
         if (err.message.includes('Invalid login credentials')) {
           statusDiv.textContent = 'Pogrešan e-mail ili lozinka!';
         } else if (err.message.includes('Email not confirmed')) {
