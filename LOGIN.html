@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prijava | LjubavNaPrviKlik</title>
+  <title>Prijava | DocBizHub</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -11,7 +11,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { 
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-      background-color: #fff0f3; 
+      background-color: #f4f6f9; 
       color: #2b2d42; 
       display: flex; 
       flex-direction: column; 
@@ -19,7 +19,7 @@
     }
     
     header { 
-      background-color: #d90429; 
+      background-color: #2b2d42; 
       color: #fff; 
       padding: 15px 5%; 
       display: flex; 
@@ -42,10 +42,10 @@
       max-width: 420px; 
       padding: 35px; 
       border-radius: 20px; 
-      box-shadow: 0 10px 25px rgba(217, 4, 41, 0.1); 
-      border-top: 5px solid #d90429; 
+      box-shadow: 0 10px 25px rgba(43, 45, 66, 0.08); 
+      border-top: 5px solid #2b2d42; 
     }
-    .login-card h2 { text-align: center; color: #800020; margin-bottom: 8px; font-size: 1.8rem; }
+    .login-card h2 { text-align: center; color: #2b2d42; margin-bottom: 8px; font-size: 1.8rem; }
     .subtitle { text-align: center; color: #666; font-size: 0.95rem; margin-bottom: 25px; }
 
     .form-group { margin-bottom: 18px; }
@@ -73,7 +73,7 @@
       transition: background 0.3s; 
       margin-top: 10px; 
     }
-    .btn-submit:hover { background-color: #ef233c; }
+    .btn-submit:hover { background-color: #b50322; }
 
     #statusMessage { margin-top: 15px; text-align: center; font-weight: bold; word-break: break-word; }
     
@@ -86,13 +86,13 @@
 <body>
 
   <header>
-    <a href="index.html" class="logo">❤️ LjubavNaPrviKlik</a>
+    <a href="index.html" class="logo">📄 DocBizHub</a>
   </header>
 
   <div class="main-container">
     <div class="login-card">
       <h2>Dobrodošli nazad</h2>
-      <p class="subtitle">Prijavite se na svoj profil</p>
+      <p class="subtitle">Prijavite se na svoj poslovni profil</p>
 
       <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
         <div class="form-group">
@@ -117,7 +117,7 @@
   </div>
 
   <footer>
-    <p>© 2026 LjubavNaPrviKlik. Sva prava zadržana.</p>
+    <p>© 2026 DocBizHub. Sva prava zadržana.</p>
   </footer>
 
   <script>
@@ -127,7 +127,7 @@
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Funkcija za prijavu korisnika
+    // Funkcija za prijavu korisnika i provjeru u POSAO_KORISNICI tabeli
     async function handleLogin() {
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
@@ -145,18 +145,42 @@
       loginBtn.disabled = true;
 
       try {
-        // Supabase prijava sa e-mailom i lozinkom
-        const { data, error } = await _supabase.auth.signInWithPassword({
+        // 1. Autentifikacija preko Supabase Auth sistema
+        const { data: authData, error: authError } = await _supabase.auth.signInWithPassword({
           email: email,
           password: password
         });
 
-        if (error) throw error;
+        if (authError) throw authError;
+
+        const userId = authData.user.id;
+
+        // 2. Provjera ili ažuriranje statusa u tabeli POSAO_KORISNICI
+        const { data: existingUser, error: fetchError } = await _supabase
+          .from('POSAO_KORISNICI')
+          .select('*')
+          .eq('USER', userId)
+          .maybeSingle();
+
+        if (fetchError) {
+          console.warn("Greška pri čitanju iz POSAO_KORISNICI:", fetchError.message);
+        }
+
+        // Ako korisnik uspješno prođe login, a ne postoji red u tabeli, možemo ga opcionalno kreirati ili samo ažurirati online status
+        if (existingUser) {
+          await _supabase
+            .from('POSAO_KORISNICI')
+            .update({ 
+              IS_ONLINE: true, 
+              LAST_SEEN: new Date().toLocaleDateString() 
+            })
+            .eq('USER', userId);
+        }
 
         statusDiv.style.color = 'green';
         statusDiv.textContent = 'Prijava uspješna! Preusmjeravanje...';
 
-        // Preusmjeravanje na DASHBOARD.html
+        // 3. Preusmjeravanje na DASHBOARD.html
         setTimeout(() => {
           window.location.href = 'DASHBOARD.html';
         }, 1200);
@@ -164,11 +188,11 @@
       } catch (err) {
         statusDiv.style.color = 'red';
         
-        // Prilagođavanje poruka o greškama na naš jezik
+        // Prilagođavanje poruka o greškama
         if (err.message.includes('Invalid login credentials')) {
           statusDiv.textContent = 'Pogrešan e-mail ili lozinka!';
         } else if (err.message.includes('Email not confirmed')) {
-          statusDiv.textContent = 'E-mail nije potvrđen. Provjerite vaš inbox ili isključite potvrdjivanje u Supabase-u!';
+          statusDiv.textContent = 'E-mail nije potvrđen. Provjerite vaš inbox!';
         } else {
           statusDiv.textContent = 'Greška: ' + err.message;
         }
