@@ -172,7 +172,7 @@
   <script>
     // SUPABASE KONFIGURACIJA
     const SUPABASE_URL = 'https://uduwpvdjmanrgpumdrfh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdXdwdmRqbWFucmdwdW1kcmZoIiwicm9sZSI6InWFub24iLCJpYXQiOjE3ODQ4MTEwODQsImV4cCI6MjEwMDM4NzA4NH0.zdxIxiCJcaauEP1pm75d1-4YXO1Dn6tsAhZehFh2vsQ';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // 1. AUTOMATSKO HVATANJE I PAMĆENJE IZVORA KADA NEKO DOĐE PREKO LINKA
@@ -293,6 +293,74 @@
         statusDiv.style.color = 'red';
         statusDiv.textContent = 'Došlo je do greške pri slanju: ' + err.message;
       }
+    }
+  </script>
+
+  <!-- ISKAČUĆI PROZOR ZA TROSTRUKI KLIK I KOPIRANJE TEKSTA -->
+  <div id="copyModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center; padding:20px;">
+    <div style="background:#fff; width:100%; max-width:450px; padding:30px; border-radius:15px; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.3); border-top:5px solid #d90429;">
+      <h3 style="color:#2b2d42; margin-bottom:15px;">🚀 Podijeli DocBizHub</h3>
+      <p style="color:#666; font-size:0.95rem; margin-bottom:15px;">Kliknuo si 3 puta! Kopiraj poruku i pozovi partnere na našu platformu:</p>
+      
+      <textarea id="shareText" style="width:100%; height:100px; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:0.9rem; resize:none; margin-bottom:15px; outline:none; background:#f9f9f9;">Pozdrav! Pozivam te da posjetiš DocBizHub – centralnu platformu za pretragu provjerenih firmi, poslovnih resursa i sigurnu saradnju. Pogledaj ovdje: https://docbizhub.com</textarea>
+      
+      <div style="display:flex; gap:10px;">
+        <button onclick="kopirajTekst()" style="flex:1; background:#d90429; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">📋 Kopiraj u Clipboard</button>
+        <button onclick="zatvoriCopyModal()" style="background:#2b2d42; color:#fff; border:none; padding:12px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">Zatvori</button>
+      </div>
+      <p id="copyStatus" style="margin-top:10px; font-weight:bold; font-size:0.9rem;"></p>
+    </div>
+  </div>
+
+  <script>
+    // Praćenje trostrukog klika bilo gdje na stranici
+    let clickCount = 0;
+    let clickTimer = null;
+
+    document.addEventListener('click', function(e) {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON' || e.target.tagName === 'SELECT') {
+        return;
+      }
+
+      clickCount++;
+      
+      if (clickCount === 1) {
+        clickTimer = setTimeout(function() {
+          clickCount = 0;
+        }, 600);
+      } else if (clickCount === 3) {
+        clearTimeout(clickTimer);
+        clickCount = 0;
+        otvoriCopyModal();
+      }
+    });
+
+    function otvoriCopyModal() {
+      document.getElementById('copyModal').style.display = 'flex';
+    }
+
+    function zatvoriCopyModal() {
+      document.getElementById('copyModal').style.display = 'none';
+      document.getElementById('copyStatus').textContent = '';
+    }
+
+    function kopirajTekst() {
+      const textarea = document.getElementById('shareText');
+      textarea.select();
+      textarea.setSelectionRange(0, 99999);
+
+      navigator.clipboard.writeText(textarea.value).then(() => {
+        const status = document.getElementById('copyStatus');
+        status.style.color = 'green';
+        status.textContent = 'Uspješno kopirano u clipboard! 🎉';
+        setTimeout(() => {
+          zatvoriCopyModal();
+        }, 1500);
+      }).catch(err => {
+        const status = document.getElementById('copyStatus');
+        status.style.color = 'red';
+        status.textContent = 'Greška pri kopiranju.';
+      });
     }
   </script>
 
