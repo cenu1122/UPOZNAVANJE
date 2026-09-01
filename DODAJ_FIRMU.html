@@ -58,7 +58,7 @@
   <div class="main-container">
     <div class="card">
       <h1>🏢 Dodaj Firmu / Bulk Excel Upload</h1>
-      <p>Izaberi ili prevuci svoj Excel (`.xlsx`) ili CSV fajl sa firmama i kontaktima. Sistem će automatski pročitati sve kolone i sinhronizovati ih direktno u Supabase tabelu <strong>POSAO:KOKORISNICI</strong>.</p>
+      <p>Izaberi ili prevuci svoj Excel (`.xlsx`) ili CSV fajl sa firmama i kontaktima. Sistem će automatski pročitati sve kolone i sinhronizovati ih direktno u Supabase tabelu <strong>POSAO_KORISNICI</strong>.</p>
       
       <div class="upload-box" onclick="document.getElementById('excelFile').click()">
         <div class="icon">📁</div>
@@ -121,14 +121,14 @@
           setStatus(`📤 Pronađeno ${jsoniranje.length} zapisa. Šaljem podatke u bazu...`, "loading");
 
           const { error } = await _supabase
-            .from('POSAO:KOKORISNICI')
+            .from('POSAO_KORISNICI')
             .insert(jsoniranje);
 
           if (error) {
             console.error("Supabase error:", error);
             setStatus("❌ Greška pri upisu u bazu: " + error.message, "error");
           } else {
-            setStatus(`✅ Uspješno ubačeno ${jsoniranje.length} redova u tabelu POSAO:KOKORISNICI!`, "success");
+            setStatus(`✅ Uspješno ubačeno ${jsoniranje.length} redova u tabelu POSAO_KORISNICI!`, "success");
           }
 
         } catch (err) {
